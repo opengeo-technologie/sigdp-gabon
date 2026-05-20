@@ -1,0 +1,551 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">security</i> Gestion des Rôles et
+      Permissions
+    </h1>
+    <p>
+      Gerer les rôles d'utilisateurs et leurs permissions associées pour
+      contrôler l'accès aux différentes fonctionnalités de l'application.
+    </p>
+  </div>
+</div>
+<div class="container" style="margin-top: 20px">
+  <!-- Onglets -->
+  <div class="row">
+    <div class="col s12">
+      <ul class="tabs">
+        <li class="tab col s6">
+          <a href="#tab-roles" class="active">Rôles</a>
+        </li>
+        <li class="tab col s6"><a href="#tab-permissions">Permissions</a></li>
+      </ul>
+    </div>
+
+    <!-- Tab 1: Gestion des Rôles -->
+    <div id="tab-roles" class="col s12">
+      <!-- Bouton créer rôle -->
+      <div class="row">
+        <div class="col s12">
+          <button
+            class="btn blue waves-effect waves-light"
+            (click)="openCreateRoleModal()"
+          >
+            <i class="material-icons left">add</i>
+            Nouveau rôle
+          </button>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div class="row" *ngIf="loading">
+        <div class="col s12 center-align">
+          <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des rôles -->
+      <div class="row" *ngIf="!loading">
+        <div class="col s12">
+          <div class="row">
+            <div class="col s12 m6 l4" *ngFor="let role of roles">
+              <div class="card">
+                <div class="card-content">
+                  <span class="card-title">
+                    {{ role.nom }}
+                    <span
+                      class="badge {{
+                        getRoleBadgeClass(role.niveau)
+                      }} white-text right"
+                    >
+                      N{{ role.niveau }}
+                    </span>
+                  </span>
+
+                  <p class="grey-text">{{ role.description }}</p>
+
+                  <p style="margin-top: 10px">
+                    <strong>Code:</strong> {{ role.code }}
+                  </p>
+
+                  <p>
+                    <strong>Permissions:</strong> {{ role.permissions.length }}
+                  </p>
+
+                  <p>
+                    <span *ngIf="role.actif" class="badge green white-text"
+                      >Actif</span
+                    >
+                    <span *ngIf="!role.actif" class="badge red white-text"
+                      >Inactif</span
+                    >
+                    <span *ngIf="role.est_systeme" class="badge blue white-text"
+                      >Système</span
+                    >
+                  </p>
+
+                  <!-- Liste des permissions du rôle -->
+                  <div style="margin-top: 15px">
+                    <strong>Modules autorisés:</strong>
+                    <div
+                      class="chip"
+                      *ngFor="let module of getUniqueModules(role.permissions)"
+                    >
+                      <i class="material-icons tiny">{{
+                        getModuleIcon(module)
+                      }}</i>
+                      {{ getModuleLabel(module) }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-action">
+                  <a class="blue-text" (click)="selectRole(role)">
+                    <i class="material-icons left tiny">edit</i>Modifier
+                  </a>
+                  <a
+                    class="red-text"
+                    (click)="deleteRole(role)"
+                    *ngIf="!role.est_systeme"
+                  >
+                    <i class="material-icons left tiny">delete</i>Supprimer
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message si aucun rôle -->
+          <div
+            *ngIf="roles.length === 0"
+            class="center-align"
+            style="padding: 40px"
+          >
+            <i class="material-icons large grey-text">admin_panel_settings</i>
+            <p class="grey-text">Aucun rôle configuré</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Liste des Permissions -->
+    <div id="tab-permissions" class="col s12">
+      <div class="row">
+        <div class="col s12">
+          <ul class="collapsible">
+            <li *ngFor="let module of modules">
+              <div class="collapsible-header">
+                <i class="material-icons">{{ getModuleIcon(module.module) }}</i>
+                <strong>{{ getModuleLabel(module.module) }}</strong>
+                <span class="badge"
+                  >{{ module.permissions.length }} permissions</span
+                >
+              </div>
+              <div class="collapsible-body">
+                <table class="striped">
+                  <thead>
+                    <tr>
+                      <th>Permission</th>
+                      <th>Code</th>
+                      <th>Action</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let perm of module.permissions">
+                      <td>
+                        <strong>{{ perm.nom }}</strong>
+                      </td>
+                      <td>
+                        <code>{{ perm.code }}</code>
+                      </td>
+                      <td>
+                        <span class="badge blue white-text">{{
+                          getActionLabel(perm.action)
+                        }}</span>
+                      </td>
+                      <td class="grey-text">{{ perm.description }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Message si aucune permission -->
+          <div
+            *ngIf="modules.length === 0"
+            class="center-align"
+            style="padding: 40px"
+          >
+            <i class="material-icons large grey-text">lock</i>
+            <p class="grey-text">Aucune permission configurée</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Créer un rôle -->
+<div id="modal-create-role" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h4>Créer un nouveau rôle</h4>
+
+    <form>
+      <!-- Informations de base -->
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">code</i>
+          <input
+            type="text"
+            id="new-code"
+            [(ngModel)]="newRole.code"
+            name="code"
+            [class.invalid]="errors.code"
+          />
+          <label for="new-code">Code *</label>
+          <span class="helper-text red-text" *ngIf="errors.code">{{
+            errors.code
+          }}</span>
+          <span class="helper-text"
+            >Ex: gestionnaire_qualite (sans espaces)</span
+          >
+        </div>
+
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">title</i>
+          <input
+            type="text"
+            id="new-nom"
+            [(ngModel)]="newRole.nom"
+            name="nom"
+            [class.invalid]="errors.nom"
+          />
+          <label for="new-nom">Nom *</label>
+          <span class="helper-text red-text" *ngIf="errors.nom">{{
+            errors.nom
+          }}</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">description</i>
+          <textarea
+            id="new-description"
+            class="materialize-textarea"
+            [(ngModel)]="newRole.description"
+            name="description"
+          ></textarea>
+          <label for="new-description">Description</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">trending_up</i>
+          <input
+            type="number"
+            id="new-niveau"
+            [(ngModel)]="newRole.niveau"
+            name="niveau"
+            min="1"
+            max="10"
+            [class.invalid]="errors.niveau"
+          />
+          <label for="new-niveau" class="active">Niveau hiérarchique *</label>
+          <span class="helper-text red-text" *ngIf="errors.niveau">{{
+            errors.niveau
+          }}</span>
+          <span class="helper-text">1 = bas, 10 = haut (admin)</span>
+        </div>
+
+        <div class="col s12 m6" style="padding-top: 30px">
+          <label>
+            <input
+              type="checkbox"
+              class="filled-in"
+              [(ngModel)]="newRole.actif"
+              name="actif"
+            />
+            <span>Rôle actif</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sélection des permissions -->
+      <div class="row">
+        <div class="col s12">
+          <h6>Sélectionner les permissions</h6>
+          <div class="divider"></div>
+        </div>
+      </div>
+
+      <ul class="collapsible">
+        <li *ngFor="let module of modules">
+          <div class="collapsible-header">
+            <i class="material-icons">{{ getModuleIcon(module.module) }}</i>
+            {{ getModuleLabel(module.module) }}
+            <span class="badge">
+              {{ getSelectedPermissionsCount(module) }}/{{
+                module.permissions.length
+              }}
+            </span>
+          </div>
+          <div class="collapsible-body">
+            <div class="row">
+              <div class="col s12">
+                <button
+                  type="button"
+                  class="btn-small blue waves-effect"
+                  (click)="selectAllModulePermissions(module)"
+                  style="margin-right: 10px"
+                >
+                  Tout sélectionner
+                </button>
+                <button
+                  type="button"
+                  class="btn-small red waves-effect"
+                  (click)="deselectAllModulePermissions(module)"
+                >
+                  Tout désélectionner
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div
+                class="col s12 m6 l4"
+                *ngFor="let perm of module.permissions"
+              >
+                <p>
+                  <label>
+                    <input
+                      type="checkbox"
+                      class="filled-in"
+                      [checked]="isPermissionSelected(perm.id)"
+                      (change)="togglePermission(perm.id)"
+                    />
+                    <span>
+                      <strong>{{ perm.nom }}</strong>
+                      <br />
+                      <small class="grey-text">{{ perm.code }}</small>
+                    </span>
+                  </label>
+                </p>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      class="btn-flat waves-effect waves-red"
+      (click)="closeModal('modal-create-role')"
+      [disabled]="saving"
+    >
+      Annuler
+    </button>
+    <button
+      class="btn blue waves-effect waves-light"
+      (click)="createRole()"
+      [disabled]="saving"
+    >
+      <i class="material-icons left">save</i>
+      {{ saving ? "Création..." : "Créer le rôle" }}
+    </button>
+  </div>
+</div>
+
+<!-- Modal: Modifier un rôle -->
+<div id="modal-edit-role" class="modal modal-fixed-footer" *ngIf="selectedRole">
+  <div class="modal-content">
+    <h4>Modifier le rôle</h4>
+
+    <form>
+      <!-- Informations de base -->
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">code</i>
+          <input
+            type="text"
+            id="edit-code"
+            [value]="selectedRole.code"
+            disabled
+          />
+          <label for="edit-code" class="active">Code</label>
+          <span class="helper-text">Le code ne peut pas être modifié</span>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">title</i>
+          <input
+            type="text"
+            id="edit-nom"
+            [(ngModel)]="selectedRole.nom"
+            name="nom"
+            [disabled]="selectedRole.est_systeme"
+          />
+          <label for="edit-nom" class="active">Nom</label>
+          <span class="helper-text" *ngIf="selectedRole.est_systeme">
+            Les rôles système ne peuvent pas être modifiés
+          </span>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="!selectedRole.est_systeme">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">description</i>
+          <textarea
+            id="edit-description"
+            class="materialize-textarea"
+            [(ngModel)]="selectedRole.description"
+            name="description"
+          ></textarea>
+          <label for="edit-description" class="active">Description</label>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="!selectedRole.est_systeme">
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">trending_up</i>
+          <input
+            type="number"
+            id="edit-niveau"
+            [(ngModel)]="selectedRole.niveau"
+            name="niveau"
+            min="1"
+            max="10"
+          />
+          <label for="edit-niveau" class="active">Niveau hiérarchique</label>
+        </div>
+
+        <div class="col s12 m6" style="padding-top: 30px">
+          <label>
+            <input
+              type="checkbox"
+              class="filled-in"
+              [(ngModel)]="selectedRole.actif"
+              name="actif"
+            />
+            <span>Rôle actif</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Permissions actuelles -->
+      <div class="row">
+        <div class="col s12">
+          <h6>Permissions du rôle</h6>
+          <div class="divider"></div>
+          <p class="grey-text">
+            {{ selectedRole.permissions.length }} permission(s) attribuée(s)
+          </p>
+        </div>
+      </div>
+
+      <!-- Modification permissions si non-système -->
+      <ul class="collapsible" *ngIf="!selectedRole.est_systeme">
+        <li *ngFor="let module of modules">
+          <div class="collapsible-header">
+            <i class="material-icons">{{ getModuleIcon(module.module) }}</i>
+            {{ getModuleLabel(module.module) }}
+            <span class="badge">
+              {{ getSelectedPermissionsCount(module) }}/{{
+                module.permissions.length
+              }}
+            </span>
+          </div>
+          <div class="collapsible-body">
+            <div class="row">
+              <div class="col s12">
+                <button
+                  type="button"
+                  class="btn-small blue waves-effect"
+                  (click)="selectAllModulePermissions(module)"
+                  style="margin-right: 10px"
+                >
+                  Tout sélectionner
+                </button>
+                <button
+                  type="button"
+                  class="btn-small red waves-effect"
+                  (click)="deselectAllModulePermissions(module)"
+                >
+                  Tout désélectionner
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div
+                class="col s12 m6 l4"
+                *ngFor="let perm of module.permissions"
+              >
+                <p>
+                  <label>
+                    <input
+                      type="checkbox"
+                      class="filled-in"
+                      [checked]="isPermissionSelected(perm.id)"
+                      (change)="togglePermission(perm.id)"
+                    />
+                    <span>
+                      <strong>{{ perm.nom }}</strong>
+                      <br />
+                      <small class="grey-text">{{ perm.code }}</small>
+                    </span>
+                  </label>
+                </p>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Affichage permissions si système -->
+      <div *ngIf="selectedRole.est_systeme">
+        <div class="collection">
+          <a
+            class="collection-item"
+            *ngFor="let perm of selectedRole.permissions"
+          >
+            <i class="material-icons left">check_circle</i>
+            <strong>{{ perm.nom }}</strong>
+            <span class="badge blue white-text">{{
+              getActionLabel(perm.action)
+            }}</span>
+            <br />
+            <small class="grey-text">{{ perm.code }}</small>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      class="btn-flat waves-effect waves-red"
+      (click)="closeModal('modal-edit-role')"
+      [disabled]="saving"
+    >
+      Annuler
+    </button>
+    <button
+      class="btn blue waves-effect waves-light"
+      (click)="updateRole()"
+      [disabled]="saving || selectedRole.est_systeme"
+    >
+      <i class="material-icons left">save</i>
+      {{ saving ? "Enregistrement..." : "Enregistrer" }}
+    </button>
+  </div>
+</div>

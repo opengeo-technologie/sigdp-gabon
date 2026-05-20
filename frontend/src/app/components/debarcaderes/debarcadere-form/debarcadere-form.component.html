@@ -1,0 +1,343 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{
+        isEditMode ? "edit" : "add_location"
+      }}</i>
+      {{ isEditMode ? "Modifier" : "Nouveau" }} débarcadère
+    </h1>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-content">
+      <form (ngSubmit)="saveDebarcadere()" #debarcadereForm="ngForm">
+        <!-- Informations de base -->
+        <h5>Informations de base</h5>
+        <div class="row">
+          <!-- <div class="input-field col s12 m6">
+            <input
+              id="code"
+              type="text"
+              [(ngModel)]="formData.code"
+              name="code"
+              required
+            />
+            <label for="code">Code du débarcadère *</label>
+            <span class="helper-text">Ex: GA-EST-DEB-001</span>
+          </div> -->
+          <div class="input-field col s12 m6">
+            <input
+              id="denomination"
+              type="text"
+              [(ngModel)]="formData.denomination"
+              name="denomination"
+              required
+            />
+            <label for="denomination"
+              >Dénomination <i class="required_field">* </i></label
+            >
+          </div>
+          <div class="input-field col s12 m6">
+            <input
+              id="nom_local"
+              type="text"
+              [(ngModel)]="formData.nom_local"
+              name="nom_local"
+            />
+            <label for="nom_local">Nom local</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <select [(ngModel)]="formData.type" name="type" required>
+              <option value="" disabled>Choisir le type</option>
+              <option value="Officiel">Officiel</option>
+              <option value="Informel">Informel</option>
+              <option value="Saisonnier">Saisonnier</option>
+            </select>
+            <label>Type de débarcadère <i class="required_field">* </i></label>
+          </div>
+          <div class="input-field col s12 m6">
+            <select [(ngModel)]="formData.milieu" name="milieu" required>
+              <option value="" disabled>Choisir le milieu</option>
+              <option value="Maritime">Maritime</option>
+              <option value="Fluvial">Fluvial</option>
+              <option value="Lagunaire">Lagunaire</option>
+            </select>
+            <label>Milieu <i class="required_field">* </i></label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <select
+              [(ngModel)]="formData.statut_operationnel"
+              name="statut"
+              required
+            >
+              <option value="" disabled>Choisir le statut</option>
+              <option value="Actif">Actif</option>
+              <option value="Inactif">Inactif</option>
+              <option value="En travaux">En travaux</option>
+            </select>
+            <label>Statut opérationnel <i class="required_field">* </i></label>
+          </div>
+        </div>
+
+        <!-- Localisation -->
+        <h5 class="mt-3">Localisation</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="latitude"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formData.latitude"
+              name="latitude"
+              required
+            />
+            <label for="latitude"
+              >Latitude <i class="required_field">* </i></label
+            >
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="longitude"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formData.longitude"
+              name="longitude"
+              required
+            />
+            <label for="longitude"
+              >Longitude <i class="required_field">* </i></label
+            >
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="capacite"
+              type="number"
+              [(ngModel)]="formData.capacite_accueil"
+              name="capacite"
+            />
+            <label for="capacite">Capacité d'accueil</label>
+            <span class="helper-text">Nombre de bateaux</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <select [(ngModel)]="formData.province" name="province" required>
+              <option value="" disabled>Choisir la province</option>
+              <option value="Estuaire">Estuaire</option>
+              <option value="Ogooué-Maritime">Ogooué-Maritime</option>
+              <option value="Nyanga">Nyanga</option>
+              <option value="Moyen-Ogooué">Moyen-Ogooué</option>
+              <option value="Woleu-Ntem">Woleu-Ntem</option>
+              <option value="Ngounié">Ngounié</option>
+              <option value="Haut-Ogooué">Haut-Ogooué</option>
+              <option value="Ogooué-Ivindo">Ogooué-Ivindo</option>
+              <option value="Ogooué-Lolo">Ogooué-Lolo</option>
+            </select>
+            <label>Province <i class="required_field">* </i></label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="departement"
+              type="text"
+              [(ngModel)]="formData.departement"
+              name="departement"
+            />
+            <label for="departement">Département</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="localite"
+              type="text"
+              [(ngModel)]="formData.localite"
+              name="localite"
+            />
+            <label for="localite">Localité</label>
+          </div>
+        </div>
+
+        <!-- Infrastructures -->
+        <h5 class="mt-3">Infrastructures disponibles</h5>
+        <div class="row">
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_quai"
+                  name="infra_quai"
+                />
+                <span>Quai</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_chambre_froide"
+                  name="infra_chambre"
+                />
+                <span>Chambre froide</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_glace"
+                  name="infra_glace"
+                />
+                <span>Glace</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_marche"
+                  name="infra_marche"
+                />
+                <span>Marché</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_carburant"
+                  name="infra_carburant"
+                />
+                <span>Carburant</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_eau"
+                  name="infra_eau"
+                />
+                <span>Eau potable</span>
+              </label>
+            </p>
+          </div>
+          <div class="col s12 m6 l4">
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formData.infrastructure_electricite"
+                  name="infra_elec"
+                />
+                <span>Électricité</span>
+              </label>
+            </p>
+          </div>
+        </div>
+
+        <!-- Section Photo -->
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">
+                <i class="material-icons left">portrait</i>
+                Photo du Débarcadère
+              </span>
+
+              <!-- Composant Photo Uploader -->
+              <app-photo-uploader
+                (photoSelected)="onPhotoSelected($event)"
+                (photoRemoved)="onPhotoRemoved()"
+              >
+              </app-photo-uploader>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent responsable -->
+        <h5 class="mt-3">Agent responsable</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="agent_nom"
+              type="text"
+              [(ngModel)]="formData.agent_responsable_nom"
+              name="agent_nom"
+            />
+            <label for="agent_nom">Nom de l'agent</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="agent_matricule"
+              type="text"
+              [(ngModel)]="formData.agent_responsable_matricule"
+              name="agent_matricule"
+            />
+            <label for="agent_matricule">Matricule</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="agent_tel"
+              type="tel"
+              [(ngModel)]="formData.agent_responsable_telephone"
+              name="agent_tel"
+            />
+            <label for="agent_tel">Téléphone</label>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea
+              id="description"
+              class="materialize-textarea"
+              [(ngModel)]="formData.description"
+              name="description"
+            ></textarea>
+            <label for="description">Description / Observations</label>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="row">
+          <div class="col s12">
+            <button
+              type="submit"
+              class="btn btn-primary waves-effect waves-light"
+              [disabled]="!debarcadereForm.form.valid"
+            >
+              <i class="material-icons left">save</i>
+              {{ isEditMode ? "Mettre à jour" : "Créer" }}
+            </button>
+            <a
+              routerLink="/debarcaderes"
+              class="btn btn-flat waves-effect waves-light ml-2"
+            >
+              <i class="material-icons left">cancel</i>
+              Annuler
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

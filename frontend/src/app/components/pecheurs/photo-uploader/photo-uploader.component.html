@@ -1,0 +1,145 @@
+<div class="photo-uploader-container">
+  <!-- Zone de sélection (si aucune photo) -->
+  <div *ngIf="!photoPreview && !cameraActive" class="selection-zone">
+    <div class="upload-options">
+      <h6 class="grey-text">Ajouter une photo</h6>
+
+      <div class="row">
+        <!-- Option 1: Depuis fichier -->
+        <div class="col s12 m6">
+          <button
+            type="button"
+            class="btn-large blue waves-effect waves-light"
+            (click)="selectFromFile()"
+            style="width: 100%"
+          >
+            <i class="material-icons left">folder_open</i>
+            Choisir un fichier
+          </button>
+          <p
+            class="grey-text center-align"
+            style="font-size: 0.85rem; margin-top: 8px"
+          >
+            JPG, PNG, max 5MB
+          </p>
+        </div>
+
+        <!-- Option 2: Depuis caméra -->
+        <div class="col s12 m6">
+          <button
+            type="button"
+            class="btn-large green waves-effect waves-light"
+            (click)="openCamera()"
+            [disabled]="!hasCamera"
+            style="width: 100%"
+          >
+            <i class="material-icons left">photo_camera</i>
+            Prendre une photo
+          </button>
+          <p
+            class="grey-text center-align"
+            style="font-size: 0.85rem; margin-top: 8px"
+          >
+            {{ hasCamera ? "Utiliser la caméra" : "Caméra non disponible" }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Message d'aide -->
+      <div class="card-panel blue lighten-5" style="margin-top: 20px">
+        <p class="blue-text text-darken-2" style="margin: 0">
+          <i class="material-icons tiny">info</i>
+          Vous pouvez sélectionner une photo depuis votre ordinateur ou en
+          prendre une avec votre caméra.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Caméra active -->
+  <div *ngIf="cameraActive" class="camera-zone">
+    <div class="camera-container">
+      <video #videoElement autoplay playsinline [muted]="true"></video>
+
+      <div class="camera-controls">
+        <button
+          type="button"
+          class="btn-floating btn-large red"
+          (click)="cancelCamera()"
+          style="margin-right: 15px"
+        >
+          <i class="material-icons">close</i>
+        </button>
+
+        <button
+          type="button"
+          class="btn-floating btn-large blue"
+          (click)="switchCamera()"
+          style="margin-right: 15px"
+        >
+          <i class="material-icons">flip_camera_android</i>
+        </button>
+
+        <button
+          type="button"
+          class="btn-floating btn-large green pulse"
+          (click)="capturePhoto()"
+        >
+          <i class="material-icons">camera</i>
+        </button>
+      </div>
+
+      <p class="white-text center-align" style="margin-top: 10px">
+        Positionnez-vous et cliquez sur le bouton vert pour capturer
+      </p>
+    </div>
+  </div>
+
+  <!-- Aperçu de la photo -->
+  <div *ngIf="photoPreview && !cameraActive" class="preview-zone">
+    <div class="photo-preview">
+      <img [src]="photoPreview" alt="Photo du pêcheur" />
+
+      <div class="photo-actions">
+        <button
+          type="button"
+          class="btn-small blue waves-effect"
+          (click)="rotatePhoto()"
+        >
+          <i class="material-icons left">rotate_right</i>
+          Pivoter
+        </button>
+
+        <button
+          type="button"
+          class="btn-small orange waves-effect"
+          (click)="selectFromFile()"
+        >
+          <i class="material-icons left">edit</i>
+          Changer
+        </button>
+
+        <button
+          type="button"
+          class="btn-small red waves-effect"
+          (click)="removePhoto()"
+        >
+          <i class="material-icons left">delete</i>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input file caché -->
+  <input
+    type="file"
+    #fileInput
+    accept="image/jpeg,image/jpg,image/png"
+    (change)="onFileSelected($event)"
+    style="display: none"
+  />
+
+  <!-- Canvas caché pour capture -->
+  <canvas #canvasElement style="display: none"></canvas>
+</div>

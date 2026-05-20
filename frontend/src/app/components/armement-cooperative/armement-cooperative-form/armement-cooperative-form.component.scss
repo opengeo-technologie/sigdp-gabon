@@ -1,0 +1,56 @@
+.section {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section h5 {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.section .divider {
+  height: 2px;
+  margin-bottom: 1.5rem;
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: #9e9e9e;
+}
+
+.card-title i {
+  font-size: 2rem;
+  vertical-align: middle;
+}
+
+/* Checkboxes */
+[type="checkbox"].filled-in:checked + span:not(.lever):after {
+  border: 2px solid #2196f3;
+  background-color: #2196f3;
+}
+
+/* Améliorer l'espacement des inputs */
+.input-field {
+  margin-top: 1.5rem;
+}
+
+/* Style pour les labels actifs */
+.input-field label.active {
+  font-size: 0.8rem;
+  color: #2196f3;
+}
+
+/* Améliorer les selects */
+.select-wrapper input.select-dropdown {
+  border-bottom: 1px solid #9e9e9e;
+}
+
+.select-wrapper input.select-dropdown:focus {
+  border-bottom: 1px solid #2196f3;
+}
+
+.required_field {
+  color: red;
+  font-size: 0.8rem;
+  margin-left: 5px;
+}

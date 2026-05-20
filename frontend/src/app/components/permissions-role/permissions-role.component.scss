@@ -1,0 +1,338 @@
+/* roles-permissions.component.css */
+
+/* Cards des rôles */
+.card {
+  border-radius: 4px;
+  transition: box-shadow 0.3s ease;
+  height: 500px;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.card-content p {
+  margin: 8px 0;
+}
+
+.card-action {
+  padding: 10px 24px;
+}
+
+.card-action a {
+  cursor: pointer;
+  margin-right: 15px;
+  text-transform: none;
+  font-weight: 500;
+}
+
+/* Badges */
+.badge {
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge.red {
+  background-color: #f44336;
+}
+
+.badge.blue {
+  background-color: #2196f3;
+}
+
+.badge.green {
+  background-color: #4caf50;
+}
+
+.badge.orange {
+  background-color: #ff9800;
+}
+
+.badge.purple {
+  background-color: #9c27b0;
+}
+
+/* Chips des modules */
+.chip {
+  margin: 4px;
+  font-size: 0.9rem;
+}
+
+.chip i.material-icons.tiny {
+  font-size: 1rem;
+  line-height: 32px;
+  margin-right: 4px;
+}
+
+/* Onglets */
+.tabs {
+  background-color: #2196f3;
+}
+
+.tabs .tab a {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tabs .tab a:hover,
+.tabs .tab a.active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tabs .indicator {
+  background-color: #fff;
+}
+
+/* Collapsible */
+.collapsible {
+  border: none;
+  box-shadow: none;
+}
+
+.collapsible-header {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.collapsible-header i.material-icons {
+  margin-right: 10px;
+  color: #2196f3;
+}
+
+.collapsible-header:hover {
+  background-color: #eeeeee;
+}
+
+.collapsible-body {
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Table dans collapsible */
+.collapsible-body table {
+  margin-top: 0;
+}
+
+.collapsible-body table code {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  font-family: "Courier New", monospace;
+}
+
+/* Modal */
+.modal {
+  max-height: 90%;
+  width: 80%;
+  max-width: 900px;
+}
+
+.modal .modal-content {
+  padding: 24px;
+}
+
+.modal h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #424242;
+}
+
+.modal h6 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #616161;
+  font-weight: 500;
+}
+
+.modal .divider {
+  margin: 10px 0 20px 0;
+}
+
+/* Formulaire dans modal */
+.modal .input-field {
+  margin-top: 20px;
+}
+
+.modal .input-field label {
+  font-size: 0.9rem;
+}
+
+.modal .helper-text {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.modal .red-text {
+  color: #f44336 !important;
+}
+
+/* Checkboxes dans modal */
+.modal label {
+  color: #424242;
+}
+
+.modal [type="checkbox"].filled-in:checked + span:not(.lever):after {
+  border: 2px solid #2196f3;
+  background-color: #2196f3;
+}
+
+/* Collection dans modal */
+.modal .collection {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+}
+
+.modal .collection .collection-item {
+  padding: 15px;
+}
+
+.modal .collection .collection-item i.material-icons {
+  color: #4caf50;
+  margin-right: 10px;
+}
+
+/* Boutons */
+.btn,
+.btn-small,
+.btn-flat {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.btn i.material-icons,
+.btn-small i.material-icons {
+  margin-right: 8px;
+}
+
+.btn:disabled,
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Messages vides */
+.center-align i.material-icons.large {
+  font-size: 5rem;
+  opacity: 0.3;
+}
+
+.center-align p.grey-text {
+  font-size: 1.1rem;
+  margin-top: 20px;
+}
+
+/* Loader */
+.preloader-wrapper {
+  margin: 40px auto;
+}
+
+/* Responsive */
+@media only screen and (max-width: 600px) {
+  .modal {
+    width: 95%;
+  }
+
+  .card-action a {
+    display: block;
+    margin: 10px 0;
+  }
+
+  .chip {
+    font-size: 0.8rem;
+  }
+
+  .collapsible-header {
+    font-size: 0.9rem;
+    padding: 12px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Sélection permissions */
+.permission-checkbox {
+  margin: 10px 0;
+}
+
+.permission-checkbox label {
+  display: flex;
+  align-items: flex-start;
+}
+
+.permission-checkbox strong {
+  color: #424242;
+}
+
+.permission-checkbox small {
+  color: #9e9e9e;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Badge niveau dans titre */
+.card-title .badge {
+  float: right;
+  margin-top: 5px;
+}
+
+/* Statut badges */
+.badge.white-text {
+  color: #fff !important;
+}
+
+/* Actions links */
+a.blue-text:hover {
+  text-decoration: underline;
+}
+
+a.red-text:hover {
+  text-decoration: underline;
+}
+
+/* Material icons sizing */
+.material-icons.tiny {
+  font-size: 1rem;
+  vertical-align: middle;
+}
+
+.material-icons.left {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Disabled state for system roles */
+input:disabled {
+  border-bottom: 1px dashed #ccc !important;
+  cursor: not-allowed;
+}
+
+textarea:disabled {
+  border-bottom: 1px dashed #ccc !important;
+  cursor: not-allowed;
+}

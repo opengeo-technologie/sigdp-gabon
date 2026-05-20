@@ -1,0 +1,15 @@
+h5 {
+  color: #0d47a1;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.ml-2 {
+  margin-left: 1rem;
+}
+
+.mt-3 {
+  margin-top: 2rem;
+}

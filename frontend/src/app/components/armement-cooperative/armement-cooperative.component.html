@@ -1,0 +1,160 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">anchor</i> Armements et Cooperatives</h1>
+    <p>Gestion des armements et coopératives de pêche</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Filtres et actions -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="input-field">
+            <select [(ngModel)]="filters.type" (change)="applyFilters()">
+              <option value="">Tous les types</option>
+              <option value="Armement">Armement</option>
+              <option value="Cooperative">Coopérative</option>
+            </select>
+            <label>Type d'affiliation</label>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="input-field">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="search()"
+              placeholder="Rechercher..."
+            />
+            <label>Nom ou sigle</label>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <a
+            routerLink="/armements-cooperatives/create"
+            class="btn btn-primary waves-effect waves-light"
+            style="margin-top: 1.5rem"
+          >
+            <i class="material-icons left">add</i>
+            Nouveau armement/coopérative
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-content">
+      <span class="card-title">
+        {{ armements.length }} armement(s)/coopérative(s) trouvé(s)
+      </span>
+      <div class="table-responsive">
+        <table class="highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>Sigle</th>
+              <th>Siège</th>
+              <th>Date création</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let armement of paginatedData">
+              <td>{{ armement.code }}</td>
+              <td>{{ armement.denomination || "Sans nom" }}</td>
+              <td>
+                <span class="badge blue lighten-4 blue-text text-darken-4">
+                  {{ armement.type_association }}
+                </span>
+              </td>
+              <td>{{ armement.sigle }}</td>
+              <td>
+                {{ armement.siege || "Non renseigné" }}
+              </td>
+              <td>
+                {{ armement.date_creation | date: "dd/MM/yyyy" }}
+              </td>
+              <td>
+                <a
+                  [routerLink]="['/armements-cooperatives', armement.id]"
+                  class="btn-small btn-flat waves-effect"
+                  title="Voir détails"
+                >
+                  <i class="material-icons">visibility</i>
+                </a>
+                <a
+                  [routerLink]="[
+                    '/armements-cooperatives',
+                    armement.id,
+                    'edit',
+                  ]"
+                  class="btn-small btn-flat waves-effect"
+                  title="Modifier"
+                >
+                  <i class="material-icons">edit</i>
+                </a>
+                <a
+                  class="btn-small btn-flat waves-effect red-text"
+                  title="Supprimer"
+                >
+                  <i class="material-icons">delete</i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="armements.length === 0">
+              <td colspan="8" class="center-align">
+                <p class="grey-text">
+                  Aucun armement/coopérative trouvé avec ces critères
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center" style="padding-top: 20px">
+          <button
+            (click)="prevPage()"
+            class="btn waves-effect waves-light white darken-4 btn-small"
+            [disabled]="currentPage === 1"
+          >
+            <i class="material-icons" style="color: #000000">chevron_left</i>
+          </button>
+          <span
+            class="page-number"
+            style="margin-left: 10px; margin-right: 10px"
+            >page {{ currentPage }} / {{ totalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            class="btn waves-effect waves-light white btn-small"
+            [disabled]="currentPage === totalPages()"
+          >
+            <i class="material-icons" style="color: #000000">chevron_right</i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

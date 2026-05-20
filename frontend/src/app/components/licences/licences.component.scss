@@ -1,0 +1,25 @@
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.badge.Actif {
+  background-color: #4caf50;
+  color: white;
+}
+
+.badge.Inactif {
+  background-color: #757575;
+  color: white;
+}
+
+.badge.En-réparation {
+  background-color: #ff9800;
+  color: white;
+}
+
+.badge.Retiré {
+  background-color: #f44336;
+  color: white;
+}

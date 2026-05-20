@@ -1,0 +1,323 @@
+<div class="container" style="margin-top: 20px; margin-bottom: 40px">
+  <div class="row">
+    <div class="col s12">
+      <h4>
+        <i class="material-icons left">{{
+          isEditMode ? "edit" : "person_add"
+        }}</i>
+        {{ isEditMode ? "Modifier un utilisateur" : "Créer un utilisateur" }}
+      </h4>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="row" *ngIf="loading">
+    <div class="col s12 center-align">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire -->
+  <form *ngIf="!loading" (ngSubmit)="saveUser()">
+    <!-- Section 1: Compte -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons left">account_box</i>
+              Informations du compte
+            </span>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">account_circle</i>
+                <input
+                  type="text"
+                  id="username"
+                  [(ngModel)]="user.username"
+                  name="username"
+                  [class.invalid]="errors.username"
+                  required
+                />
+                <label for="username">Nom d'utilisateur *</label>
+                <span class="helper-text red-text" *ngIf="errors.username">{{
+                  errors.username
+                }}</span>
+                <span class="helper-text" *ngIf="!errors.username"
+                  >Min 3 caractères, unique</span
+                >
+              </div>
+
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">email</i>
+                <input
+                  type="email"
+                  id="email"
+                  [(ngModel)]="user.email"
+                  name="email"
+                  [class.invalid]="errors.email"
+                  required
+                />
+                <label for="email">Email *</label>
+                <span class="helper-text red-text" *ngIf="errors.email">{{
+                  errors.email
+                }}</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">lock</i>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  [(ngModel)]="user.password"
+                  name="password"
+                  [class.invalid]="errors.password"
+                />
+                <label for="password">
+                  Mot de passe {{ isEditMode ? "(vide = inchangé)" : "*" }}
+                </label>
+                <span class="helper-text red-text" *ngIf="errors.password">{{
+                  errors.password
+                }}</span>
+                <span
+                  class="helper-text"
+                  *ngIf="!errors.password && !isEditMode"
+                  >Min 6 caractères</span
+                >
+              </div>
+
+              <div class="col s12 m6" style="padding-top: 25px">
+                <button
+                  type="button"
+                  class="btn-small blue"
+                  (click)="generatePassword()"
+                >
+                  <i class="material-icons left">vpn_key</i>Générer
+                </button>
+                <button
+                  type="button"
+                  class="btn-small grey"
+                  (click)="togglePasswordVisibility()"
+                  style="margin-left: 5px"
+                >
+                  <i class="material-icons">{{
+                    showPassword ? "visibility_off" : "visibility"
+                  }}</i>
+                </button>
+                <button
+                  type="button"
+                  class="btn-small green"
+                  (click)="copyPassword()"
+                  [disabled]="!user.password"
+                  style="margin-left: 5px"
+                >
+                  <i class="material-icons left">content_copy</i>Copier
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Informations personnelles -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons left">person</i>
+              Informations personnelles
+            </span>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">badge</i>
+                <input
+                  type="text"
+                  id="nom"
+                  [(ngModel)]="user.nom"
+                  name="nom"
+                  [class.invalid]="errors.nom"
+                  required
+                />
+                <label for="nom">Nom *</label>
+                <span class="helper-text red-text" *ngIf="errors.nom">{{
+                  errors.nom
+                }}</span>
+              </div>
+
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">badge</i>
+                <input
+                  type="text"
+                  id="prenom"
+                  [(ngModel)]="user.prenom"
+                  name="prenom"
+                  [class.invalid]="errors.prenom"
+                  required
+                />
+                <label for="prenom">Prénom *</label>
+                <span class="helper-text red-text" *ngIf="errors.prenom">{{
+                  errors.prenom
+                }}</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">phone</i>
+                <input
+                  type="tel"
+                  id="telephone"
+                  [(ngModel)]="user.telephone"
+                  name="telephone"
+                  [class.invalid]="errors.telephone"
+                />
+                <label for="telephone">Téléphone</label>
+                <span class="helper-text red-text" *ngIf="errors.telephone">{{
+                  errors.telephone
+                }}</span>
+                <span class="helper-text" *ngIf="!errors.telephone"
+                  >Ex: +241 01 23 45 67</span
+                >
+              </div>
+
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">location_city</i>
+                <input
+                  type="text"
+                  id="ville"
+                  [(ngModel)]="user.ville"
+                  name="ville"
+                />
+                <label for="ville">Ville</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12">
+                <i class="material-icons prefix">home</i>
+                <textarea
+                  id="adresse"
+                  class="materialize-textarea"
+                  [(ngModel)]="user.adresse"
+                  name="adresse"
+                ></textarea>
+                <label for="adresse">Adresse</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">markunread_mailbox</i>
+                <input
+                  type="text"
+                  id="code_postal"
+                  [(ngModel)]="user.code_postal"
+                  name="code_postal"
+                />
+                <label for="code_postal">Code postal</label>
+              </div>
+
+              <div class="input-field col s12 m6">
+                <i class="material-icons prefix">public</i>
+                <input
+                  type="text"
+                  id="pays"
+                  [(ngModel)]="user.pays"
+                  name="pays"
+                />
+                <label for="pays">Pays</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Rôle et statut -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons left">admin_panel_settings</i>
+              Rôle et statut
+            </span>
+
+            <div class="row">
+              <div class="input-field col s12 m6">
+                <select
+                  [(ngModel)]="user.role"
+                  name="role"
+                  [class.invalid]="errors.role"
+                >
+                  <option value="" disabled>Choisir un rôle</option>
+                  <option *ngFor="let role of roles" [ngValue]="role">
+                    {{ role.nom }} (N{{ role.niveau }})
+                  </option>
+                </select>
+                <label>Rôle *</label>
+                <span class="helper-text red-text" *ngIf="errors.role">{{
+                  errors.role
+                }}</span>
+              </div>
+
+              <div class="col s12 m6" style="padding-top: 20px">
+                <p>
+                  <label>
+                    <input
+                      type="checkbox"
+                      class="filled-in"
+                      [(ngModel)]="user.is_active"
+                      name="actif"
+                    />
+                    <span><strong>Compte actif</strong></span>
+                  </label>
+                </p>
+                <p class="grey-text" style="font-size: 0.9rem; margin-top: 5px">
+                  <i class="material-icons tiny">info</i>
+                  Un compte inactif ne peut pas se connecter
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons action -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-action right-align">
+            <button
+              type="button"
+              class="btn-flat grey-text"
+              (click)="cancel()"
+              [disabled]="saving"
+            >
+              <i class="material-icons left">cancel</i>Annuler
+            </button>
+            <button type="submit" class="btn blue" [disabled]="saving">
+              <i class="material-icons left">save</i>
+              {{
+                saving ? "Enregistrement..." : isEditMode ? "Modifier" : "Créer"
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

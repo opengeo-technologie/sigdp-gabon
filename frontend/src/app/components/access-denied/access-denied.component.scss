@@ -1,0 +1,197 @@
+/* app/pages/access-denied/access-denied.component.css */
+
+.access-denied-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.access-denied-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  padding: 50px 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icône */
+.icon-container {
+  margin-bottom: 25px;
+}
+
+.icon-container .material-icons {
+  font-size: 100px;
+  color: #ef5350;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+/* Titre */
+.title {
+  color: #333;
+  margin: 0 0 20px 0;
+  font-weight: 500;
+  font-size: 32px;
+}
+
+/* Message */
+.message {
+  color: #666;
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+}
+
+/* Info utilisateur */
+.user-info {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 25px 0;
+  border-left: 4px solid #ef5350;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.info-item:not(:last-child) {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.info-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Note */
+.note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  padding: 12px 20px;
+  margin: 25px 0;
+  color: #856404;
+  font-size: 14px;
+}
+
+.note .material-icons {
+  font-size: 20px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 30px 0 25px 0;
+}
+
+.actions .btn {
+  width: 100%;
+  margin: 0;
+  text-transform: none;
+  font-size: 15px;
+  padding: 0 20px;
+  height: 45px;
+  line-height: 45px;
+}
+
+.actions .btn .material-icons {
+  margin-right: 8px;
+}
+
+/* Footer */
+.footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer p {
+  color: #999;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .access-denied-card {
+    padding: 40px 25px;
+  }
+
+  .icon-container .material-icons {
+    font-size: 80px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .message {
+    font-size: 16px;
+  }
+
+  .info-item {
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 400px) {
+  .access-denied-wrapper {
+    padding: 10px;
+  }
+
+  .access-denied-card {
+    padding: 30px 20px;
+  }
+
+  .icon-container .material-icons {
+    font-size: 70px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+}

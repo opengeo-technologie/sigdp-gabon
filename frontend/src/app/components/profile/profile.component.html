@@ -1,0 +1,537 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">person</i> Profil utilisateur</h1>
+    <p>
+      Gérer votre profil, vos préférences et consulter votre historique
+      d'activité. Vous pouvez également télécharger vos données personnelles ou
+      supprimer votre compte.
+    </p>
+  </div>
+</div>
+<div class="container" style="margin-top: 20px">
+  <!-- Loader -->
+  <div class="row" *ngIf="loading">
+    <div class="col s12 center-align">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Chargement du profil...</p>
+    </div>
+  </div>
+
+  <!-- Contenu du profil -->
+  <div *ngIf="!loading && currentUser">
+    <!-- En-tête profil -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <div class="row" style="margin-bottom: 0">
+              <div class="col s12 m3 center-align">
+                <img
+                  [src]="
+                    picture_url +
+                    (currentUser.photo_profil || 'assets/default.png')
+                  "
+                  alt="Photo de profil"
+                  class="circle responsive-img"
+                  style="width: 150px; height: 150px; object-fit: cover"
+                />
+                <br /><br />
+                <span class="badge {{ getRoleBadgeClass(currentUser.role) }}">
+                  {{ getRoleLabel(currentUser.role) }}
+                </span>
+              </div>
+              <div class="col s12 m9">
+                <h5>{{ currentUser.prenom }} {{ currentUser.nom }}</h5>
+                <p class="grey-text">{{ currentUser.username }}</p>
+                <p>
+                  <i class="material-icons tiny">email</i>
+                  {{ currentUser.email }}
+                </p>
+                <p *ngIf="currentUser.telephone">
+                  <i class="material-icons tiny">phone</i>
+                  {{ currentUser.telephone }}
+                </p>
+                <p>
+                  <i class="material-icons tiny">calendar_today</i> Membre
+                  depuis {{ formatDate(currentUser.date_creation) }}
+                </p>
+                <p>
+                  <span *ngIf="currentUser.actif" class="badge green"
+                    >Compte actif</span
+                  >
+                  <span *ngIf="!currentUser.actif" class="badge red"
+                    >Compte inactif</span
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques utilisateur -->
+    <div class="row" *ngIf="stats">
+      <div class="col s12 m6 l3">
+        <div class="card blue darken-1 white-text">
+          <div class="card-content center-align">
+            <i class="material-icons large">login</i>
+            <h4>{{ stats.nb_connexions || 0 }}</h4>
+            <p>Connexions</p>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6 l3">
+        <div class="card green darken-1 white-text">
+          <div class="card-content center-align">
+            <i class="material-icons large">edit</i>
+            <h4>{{ stats.nb_modifications || 0 }}</h4>
+            <p>Modifications</p>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6 l3">
+        <div class="card orange darken-1 white-text">
+          <div class="card-content center-align">
+            <i class="material-icons large">download</i>
+            <h4>{{ stats.nb_exports || 0 }}</h4>
+            <p>Exports</p>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6 l3">
+        <div class="card purple darken-1 white-text">
+          <div class="card-content center-align">
+            <i class="material-icons large">access_time</i>
+            <h4 style="font-size: 30px">
+              {{
+                stats.derniere_connexion
+                  ? formatDate(stats.derniere_connexion)
+                  : "N/A"
+              }}
+            </h4>
+            <p>Dernière connexion</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="row">
+      <div class="col s12">
+        <ul class="tabs">
+          <li class="tab col s3">
+            <a href="#tab-informations" class="active">Informations</a>
+          </li>
+          <li class="tab col s3"><a href="#tab-securite">Sécurité</a></li>
+          <li class="tab col s3"><a href="#tab-preferences">Préférences</a></li>
+          <li class="tab col s3"><a href="#tab-activite">Activité</a></li>
+        </ul>
+      </div>
+
+      <!-- Tab 1: Informations personnelles -->
+      <div id="tab-informations" class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Informations personnelles</span>
+
+            <form (ngSubmit)="saveProfile()">
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">person</i>
+                  <input
+                    type="text"
+                    id="nom"
+                    [(ngModel)]="profileForm.nom"
+                    name="nom"
+                    [class.invalid]="errors.nom"
+                  />
+                  <label for="nom" class="active">Nom *</label>
+                  <span class="helper-text red-text" *ngIf="errors.nom">{{
+                    errors.nom
+                  }}</span>
+                </div>
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">person_outline</i>
+                  <input
+                    type="text"
+                    id="prenom"
+                    [(ngModel)]="profileForm.prenom"
+                    name="prenom"
+                    [class.invalid]="errors.prenom"
+                  />
+                  <label for="prenom" class="active">Prénom *</label>
+                  <span class="helper-text red-text" *ngIf="errors.prenom">{{
+                    errors.prenom
+                  }}</span>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">email</i>
+                  <input
+                    type="email"
+                    id="email"
+                    [(ngModel)]="profileForm.email"
+                    name="email"
+                    [class.invalid]="errors.email"
+                  />
+                  <label for="email" class="active">Email *</label>
+                  <span class="helper-text red-text" *ngIf="errors.email">{{
+                    errors.email
+                  }}</span>
+                </div>
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">phone</i>
+                  <input
+                    type="tel"
+                    id="telephone"
+                    [(ngModel)]="profileForm.telephone"
+                    name="telephone"
+                    [class.invalid]="errors.telephone"
+                  />
+                  <label for="telephone" class="active">Téléphone</label>
+                  <span class="helper-text red-text" *ngIf="errors.telephone">{{
+                    errors.telephone
+                  }}</span>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12">
+                  <i class="material-icons prefix">home</i>
+                  <textarea
+                    id="adresse"
+                    class="materialize-textarea"
+                    [(ngModel)]="profileForm.adresse"
+                    name="adresse"
+                  ></textarea>
+                  <label for="adresse" class="active">Adresse</label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <i class="material-icons prefix">location_city</i>
+                  <input
+                    type="text"
+                    id="ville"
+                    [(ngModel)]="profileForm.ville"
+                    name="ville"
+                  />
+                  <label for="ville" class="active">Ville</label>
+                </div>
+                <div class="input-field col s12 m4">
+                  <i class="material-icons prefix">markunread_mailbox</i>
+                  <input
+                    type="text"
+                    id="code_postal"
+                    [(ngModel)]="profileForm.code_postal"
+                    name="code_postal"
+                  />
+                  <label for="code_postal" class="active">Code postal</label>
+                </div>
+                <div class="input-field col s12 m4">
+                  <i class="material-icons prefix">flag</i>
+                  <input
+                    type="text"
+                    id="pays"
+                    [(ngModel)]="profileForm.pays"
+                    name="pays"
+                  />
+                  <label for="pays" class="active">Pays</label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col s12">
+                  <button
+                    type="submit"
+                    class="btn blue waves-effect waves-light"
+                    [disabled]="saving"
+                  >
+                    <i class="material-icons left">save</i>
+                    {{ saving ? "Enregistrement..." : "Enregistrer" }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Upload photo -->
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Photo de profil</span>
+            <div class="row">
+              <div class="col s12 m6">
+                <div class="file-field input-field">
+                  <div class="btn blue">
+                    <span>Choisir</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      (change)="onFileSelected($event)"
+                    />
+                  </div>
+                  <div class="file-path-wrapper">
+                    <input
+                      class="file-path validate"
+                      type="text"
+                      placeholder="Sélectionner une photo (max 2MB)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col s12 m6" *ngIf="photoPreview">
+                <img
+                  [src]="photoPreview"
+                  alt="Aperçu"
+                  class="responsive-img"
+                  style="max-height: 200px"
+                />
+                <br /><br />
+                <button
+                  class="btn green waves-effect waves-light"
+                  (click)="uploadPhoto()"
+                  [disabled]="saving"
+                >
+                  <i class="material-icons left">cloud_upload</i>
+                  Uploader
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Sécurité -->
+      <div id="tab-securite" class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Changer le mot de passe</span>
+
+            <form (ngSubmit)="changePassword()">
+              <div class="row">
+                <div class="input-field col s12">
+                  <i class="material-icons prefix">lock_outline</i>
+                  <input
+                    type="password"
+                    id="ancien_password"
+                    [(ngModel)]="passwordForm.ancien_password"
+                    name="ancien_password"
+                    [class.invalid]="errors.ancien_password"
+                  />
+                  <label for="ancien_password">Ancien mot de passe *</label>
+                  <span
+                    class="helper-text red-text"
+                    *ngIf="errors.ancien_password"
+                    >{{ errors.ancien_password }}</span
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">lock</i>
+                  <input
+                    type="password"
+                    id="nouveau_password"
+                    [(ngModel)]="passwordForm.nouveau_password"
+                    name="nouveau_password"
+                    [class.invalid]="errors.nouveau_password"
+                  />
+                  <label for="nouveau_password">Nouveau mot de passe *</label>
+                  <span
+                    class="helper-text red-text"
+                    *ngIf="errors.nouveau_password"
+                    >{{ errors.nouveau_password }}</span
+                  >
+                </div>
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">lock</i>
+                  <input
+                    type="password"
+                    id="confirmer_password"
+                    [(ngModel)]="passwordForm.confirmer_password"
+                    name="confirmer_password"
+                    [class.invalid]="errors.confirmer_password"
+                  />
+                  <label for="confirmer_password"
+                    >Confirmer mot de passe *</label
+                  >
+                  <span
+                    class="helper-text red-text"
+                    *ngIf="errors.confirmer_password"
+                    >{{ errors.confirmer_password }}</span
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col s12">
+                  <button
+                    type="submit"
+                    class="btn blue waves-effect waves-light"
+                    [disabled]="saving"
+                  >
+                    <i class="material-icons left">save</i>
+                    {{
+                      saving ? "Modification..." : "Modifier le mot de passe"
+                    }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Zone dangereuse -->
+        <div class="card red lighten-5">
+          <div class="card-content">
+            <span class="card-title red-text">Zone dangereuse</span>
+            <p class="grey-text">
+              Ces actions sont irréversibles. Utilisez-les avec précaution.
+            </p>
+            <br />
+            <button
+              class="btn red darken-2 waves-effect waves-light"
+              (click)="deleteAccount()"
+            >
+              <i class="material-icons left">delete_forever</i>
+              Supprimer mon compte
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Préférences -->
+      <div id="tab-preferences" class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Notifications par email</span>
+
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  [(ngModel)]="notificationSettings.email_debarquements"
+                />
+                <span>Recevoir les notifications de débarquements</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  [(ngModel)]="notificationSettings.email_alertes"
+                />
+                <span>Recevoir les alertes (quotas, espèces protégées)</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  [(ngModel)]="notificationSettings.email_rapports"
+                />
+                <span>Recevoir les rapports automatiques</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input
+                  type="checkbox"
+                  class="filled-in"
+                  [(ngModel)]="notificationSettings.email_quotas"
+                />
+                <span>Recevoir les alertes de quotas</span>
+              </label>
+            </p>
+
+            <br />
+            <span class="card-title">Fréquence des emails</span>
+            <div class="input-field">
+              <select [(ngModel)]="notificationSettings.frequence_emails">
+                <option value="temps_reel">Temps réel</option>
+                <option value="quotidien">Quotidien</option>
+                <option value="hebdomadaire">Hebdomadaire</option>
+                <option value="jamais">Jamais</option>
+              </select>
+              <label>Fréquence</label>
+            </div>
+
+            <br />
+            <button
+              class="btn blue waves-effect waves-light"
+              (click)="saveNotificationSettings()"
+              [disabled]="saving"
+            >
+              <i class="material-icons left">save</i>
+              Enregistrer les préférences
+            </button>
+          </div>
+        </div>
+
+        <!-- Export données -->
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Mes données</span>
+            <p>
+              Téléchargez toutes vos données personnelles au format JSON (RGPD).
+            </p>
+            <br />
+            <button
+              class="btn green waves-effect waves-light"
+              (click)="exportMyData()"
+            >
+              <i class="material-icons left">download</i>
+              Exporter mes données
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Activité -->
+      <div id="tab-activite" class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Historique d'activité</span>
+
+            <ul class="collection">
+              <li class="collection-item" *ngFor="let activity of activityLog">
+                <div>
+                  <i class="material-icons left">{{
+                    getActivityIcon(activity.action)
+                  }}</i>
+                  <strong>{{ activity.description }}</strong>
+                  <span class="secondary-content grey-text">{{
+                    formatDateTime(activity.date)
+                  }}</span>
+                  <p class="grey-text">{{ activity.details }}</p>
+                </div>
+              </li>
+              <li
+                class="collection-item center-align"
+                *ngIf="activityLog.length === 0"
+              >
+                <i class="material-icons large grey-text">history</i>
+                <p class="grey-text">Aucune activité récente</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

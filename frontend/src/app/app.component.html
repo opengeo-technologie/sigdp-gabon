@@ -1,0 +1,285 @@
+<div *ngIf="showNavigation">
+  <nav>
+    <div class="nav-wrapper container-fluid">
+      <a routerLink="/dashboard" class="brand-logo">
+        <img
+          src="../../../assets/logo_dp.jpeg"
+          alt=""
+          style="height: 50px; padding-top: 15px"
+        />
+
+        SIG-PECHE
+      </a>
+      <a href="#" data-target="mobile-menu" class="sidenav-trigger">
+        <i class="material-icons">menu</i>
+      </a>
+      <ul class="right hide-on-med-and-down">
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active">
+            <i class="material-icons left">dashboard</i>Tableau de bord
+          </a>
+        </li>
+        <li *appHasPermission="['debarcadere.read', 'bateau.read']">
+          <a class="dropdown-trigger" href="#!" data-target="infra-dropdown">
+            <i class="material-icons left">location_city</i>Infrastructures<i
+              class="material-icons right"
+              >arrow_drop_down</i
+            >
+          </a>
+        </li>
+
+        <li
+          *appHasPermission="[
+            'pecheur.read',
+            'espece.read',
+            'debarquement.read',
+          ]"
+        >
+          <a
+            class="dropdown-trigger"
+            href="#!"
+            data-target="activites-dropdown"
+          >
+            <i class="material-icons left">set_meal</i>Activités Halieutiques<i
+              class="material-icons right"
+              >arrow_drop_down</i
+            >
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/carte" routerLinkActive="active">
+            <i class="material-icons left">map</i>Carte
+          </a>
+        </li>
+
+        <li>
+          <a class="dropdown-trigger" href="#!" data-target="admin-dropdown">
+            <i class="material-icons left">security</i>Administration<i
+              class="material-icons right"
+              >arrow_drop_down</i
+            >
+          </a>
+        </li>
+
+        <li class="divider-vertical"></li>
+        <li>
+          <a class="dropdown-trigger" href="#!" data-target="user-dropdown">
+            <i class="material-icons left">account_circle</i
+            >{{ currentUser?.prenom || "Utilisateur"
+            }}<i class="material-icons right">arrow_drop_down</i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Dropdown Infrastructures -->
+  <ul id="infra-dropdown" class="dropdown-content">
+    <li *appHasPermission="'debarcadere.read'">
+      <a routerLink="/debarcaderes" routerLinkActive="active">
+        <i class="material-icons left">location_on</i>Sites de pêche
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a href="/armements-cooperatives"
+        ><i class="material-icons">anchor</i>Armements et coopératives</a
+      >
+    </li>
+    <li class="divider"></li>
+    <li *appHasPermission="'bateau.read'">
+      <a routerLink="/bateaux" routerLinkActive="active">
+        <i class="material-icons left">directions_boat</i>Embarcations
+      </a>
+    </li>
+  </ul>
+
+  <!-- Dropdown Activites Halieutiques -->
+  <ul id="activites-dropdown" class="dropdown-content">
+    <li *appHasPermission="'pecheur.read'">
+      <a routerLink="/pecheurs" routerLinkActive="active">
+        <i class="material-icons left">people</i>Pêcheurs
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li *appHasPermission="'espece.read'">
+      <a routerLink="/especes" routerLinkActive="active">
+        <i class="material-icons left">set_meal</i>Espèces
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li *appHasPermission="'debarquement.read'">
+      <a routerLink="/debarquements" routerLinkActive="active">
+        <i class="material-icons left">inventory</i>Captures
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a routerLink="/licences" routerLinkActive="active">
+        <i class="material-icons left">assignment</i>Licences & autorisations
+      </a>
+    </li>
+  </ul>
+
+  <!-- Dropdown Administration -->
+  <ul id="admin-dropdown" class="dropdown-content">
+    <li *appHasPermission="'user.read'">
+      <a href="/users"
+        ><i class="material-icons">person</i>Gestion des utilisateurs</a
+      >
+    </li>
+    <li class="divider"></li>
+    <li *appHasPermission="'user.manage_permissions'">
+      <a routerLink="/roles-permissions" routerLinkActive="active">
+        <i class="material-icons left">description</i>Gestion des permissions et
+        rôles
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a routerLink="/rapports" routerLinkActive="active">
+        <i class="material-icons left">description</i>Rapports
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li *appHasPermission="'system.audit'">
+      <a routerLink="/system" routerLinkActive="active">
+        <i class="material-icons left">settings</i>Système
+      </a>
+    </li>
+  </ul>
+
+  <!-- Dropdown utilisateur -->
+  <ul id="user-dropdown" class="dropdown-content">
+    <li>
+      <a href="/profile"><i class="material-icons">person</i>Profil</a>
+    </li>
+    <!-- <li>
+          <a href="#!"
+            ><i class="material-icons">badge</i>{{ currentUser?.role }}</a
+          >
+        </li> -->
+
+    <li class="divider"></li>
+    <li>
+      <a (click)="logout()"><i class="material-icons">logout</i>Déconnexion</a>
+    </li>
+  </ul>
+
+  <ul class="sidenav" id="mobile-menu">
+    <li>
+      <div class="user-view">
+        <div
+          class="background"
+          style="background: linear-gradient(135deg, #0d47a1, #1976d2)"
+        ></div>
+        <a href="#"
+          ><span class="white-text name"
+            >{{ currentUser?.prenom }} {{ currentUser?.nom }}</span
+          ></a
+        >
+        <a href="#"
+          ><span class="white-text email">{{ currentUser?.role }}</span></a
+        >
+      </div>
+    </li>
+    <li>
+      <a routerLink="/dashboard" (click)="closeSidenav()">
+        <i class="material-icons">dashboard</i>Tableau de bord
+      </a>
+    </li>
+    <li *appHasPermission="'debarcadere.read'">
+      <a routerLink="/debarcaderes" (click)="closeSidenav()">
+        <i class="material-icons">location_on</i>Débarcadères
+      </a>
+    </li>
+    <li *appHasPermission="'pecheur.read'">
+      <a routerLink="/pecheurs" (click)="closeSidenav()">
+        <i class="material-icons">people</i>Pêcheurs
+      </a>
+    </li>
+    <li *appHasPermission="'bateau.read'">
+      <a routerLink="/bateaux" (click)="closeSidenav()">
+        <i class="material-icons">directions_boat</i>Bateaux
+      </a>
+    </li>
+    <li *appHasPermission="'espece.read'">
+      <a routerLink="/especes" (click)="closeSidenav()">
+        <i class="material-icons">set_meal</i>Espèces
+      </a>
+    </li>
+    <li *appHasPermission="'debarquement.read'">
+      <a routerLink="/debarquements" (click)="closeSidenav()">
+        <i class="material-icons">inventory</i>Débarquements
+      </a>
+    </li>
+    <li>
+      <a routerLink="/carte" (click)="closeSidenav()">
+        <i class="material-icons">map</i>Carte
+      </a>
+    </li>
+    <li>
+      <a routerLink="/rapports" (click)="closeSidenav()">
+        <i class="material-icons">description</i>Rapports
+      </a>
+    </li>
+    <li>
+      <a routerLink="/profile" (click)="closeSidenav()">
+        <i class="material-icons">person</i>Profil
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a (click)="logout()">
+        <i class="material-icons">logout</i>Déconnexion
+      </a>
+    </li>
+  </ul>
+</div>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<footer
+  class="page-footer"
+  style="background-color: #0d47a1; margin-top: 3rem"
+  *ngIf="showNavigation"
+>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col l6 s12">
+        <h5 class="white-text">SIG-PECHE</h5>
+        <p class="grey-text text-lighten-4">
+          Système d'Information pour la Gestion des Débarcadères et de la Pêche
+          au Gabon
+        </p>
+      </div>
+      <div class="col l4 offset-l2 s12">
+        <h5 class="white-text">Liens</h5>
+        <ul>
+          <li>
+            <a class="grey-text text-lighten-3" href="#!"
+              >Ministère de la Mer, de la Pêche et de l'Economie Bleue</a
+            >
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" href="#!"
+              >Direction des Pêches</a
+            >
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" href="#!">Support technique</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copyright">
+    <div class="container-fluid">
+      © 2026 Ministère de la Mer, de la Pêche et de l'Economie Bleue -
+      République Gabonaise
+    </div>
+  </div>
+</footer>

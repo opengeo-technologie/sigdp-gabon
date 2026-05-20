@@ -1,0 +1,280 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">add</i> Enregistrer un débarquement</h1>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-content">
+      <form (ngSubmit)="onSubmit()" #debarquementForm="ngForm">
+        <h5>Informations générales</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <select
+              [(ngModel)]="formData.debarcadere_id"
+              name="debarcadere"
+              required
+            >
+              <option value="" disabled>Choisir</option>
+              <option *ngFor="let d of debarcaderes" [value]="d.id">
+                {{ d.denomination }}
+              </option>
+            </select>
+            <label>Débarcadère *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <select
+              [(ngModel)]="formData.pecheur_principal_id"
+              name="pecheur"
+              required
+              (change)="onPecheurChange()"
+            >
+              <option value="" disabled>Choisir</option>
+              <option *ngFor="let p of pecheurs" [value]="p.id">
+                {{ p.nom }} {{ p.prenom }}
+              </option>
+            </select>
+            <label>Pêcheur principal *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <select [(ngModel)]="formData.bateau_id" name="bateau" required>
+              <option value="" disabled>Choisir</option>
+              <option *ngFor="let b of bateauxFiltered" [value]="b.id">
+                {{ b.numero_immatriculation }}
+              </option>
+            </select>
+            <label>Bateau *</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="date_deb"
+              type="datetime-local"
+              [(ngModel)]="formData.date_debarquement"
+              name="date_deb"
+              required
+            />
+            <label for="date_deb" class="active">Date débarquement *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="heure_dep"
+              type="datetime-local"
+              [(ngModel)]="formData.heure_depart_peche"
+              name="heure_dep"
+            />
+            <label for="heure_dep" class="active">Heure départ pêche</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="heure_arr"
+              type="datetime-local"
+              [(ngModel)]="formData.heure_arrivee_debarcadere"
+              name="heure_arr"
+            />
+            <label for="heure_arr" class="active">Heure arrivée</label>
+          </div>
+        </div>
+
+        <h5 class="mt-3">Zone de pêche</h5>
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input
+              id="zone_nom"
+              type="text"
+              [(ngModel)]="formData.zone_peche_nom"
+              name="zone_nom"
+            />
+            <label for="zone_nom">Nom de la zone</label>
+          </div>
+          <div class="input-field col s12 m3">
+            <input
+              id="lat"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formData.zone_peche_latitude"
+              name="lat"
+            />
+            <label for="lat">Latitude</label>
+          </div>
+          <div class="input-field col s12 m3">
+            <input
+              id="lng"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formData.zone_peche_longitude"
+              name="lng"
+            />
+            <label for="lng">Longitude</label>
+          </div>
+        </div>
+
+        <h5 class="mt-3">Météo</h5>
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input
+              id="meteo"
+              type="text"
+              [(ngModel)]="formData.meteo_conditions"
+              name="meteo"
+            />
+            <label for="meteo">Conditions météo</label>
+          </div>
+          <div class="input-field col s12 m6">
+            <input
+              id="mer"
+              type="text"
+              [(ngModel)]="formData.meteo_etat_mer"
+              name="mer"
+            />
+            <label for="mer">État de la mer</label>
+          </div>
+        </div>
+
+        <h5 class="mt-3">Captures *</h5>
+        <div class="card blue-grey lighten-5">
+          <div class="card-content">
+            <div
+              *ngFor="let detail of formData.details; let i = index"
+              class="row capture-row"
+            >
+              <div class="col s12 m3">
+                <div class="input-field">
+                  <select
+                    [(ngModel)]="detail.espece_id"
+                    [name]="'espece_' + i"
+                    required
+                  >
+                    <option value="" disabled>Choisir espèce</option>
+                    <option *ngFor="let e of especes" [value]="e.id">
+                      {{ e.nom_commun_francais }}
+                    </option>
+                  </select>
+                  <label>Espèce *</label>
+                </div>
+              </div>
+              <div class="col s12 m2">
+                <div class="input-field">
+                  <input
+                    type="number"
+                    step="0.1"
+                    [(ngModel)]="detail.quantite_kg"
+                    [name]="'qte_' + i"
+                    required
+                  />
+                  <label class="active">Quantité (kg) *</label>
+                </div>
+              </div>
+              <div class="col s12 m2">
+                <div class="input-field">
+                  <input
+                    type="number"
+                    [(ngModel)]="detail.nombre_individus"
+                    [name]="'nb_' + i"
+                  />
+                  <label class="active">Nb individus</label>
+                </div>
+              </div>
+              <div class="col s12 m2">
+                <div class="input-field">
+                  <input
+                    type="number"
+                    step="0.1"
+                    [(ngModel)]="detail.prix_unitaire_kg"
+                    [name]="'prix_' + i"
+                  />
+                  <label class="active">Prix/kg (FCFA)</label>
+                </div>
+              </div>
+              <div class="col s12 m2">
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="detail.etat_fraicheur"
+                    [name]="'etat_' + i"
+                  />
+                  <label class="active">État</label>
+                </div>
+              </div>
+              <div class="col s12 m1">
+                <button
+                  type="button"
+                  class="btn-small red waves-effect"
+                  (click)="removeCapture(i)"
+                  *ngIf="formData.details.length > 1"
+                >
+                  <i class="material-icons">delete</i>
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn-small blue waves-effect"
+              (click)="addCapture()"
+            >
+              <i class="material-icons left">add</i>Ajouter une espèce
+            </button>
+          </div>
+        </div>
+
+        <h5 class="mt-3">Agent de contrôle</h5>
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input
+              id="agent_nom"
+              type="text"
+              [(ngModel)]="formData.agent_controle_nom"
+              name="agent_nom"
+            />
+            <label for="agent_nom">Nom de l'agent</label>
+          </div>
+          <div class="input-field col s12 m6">
+            <input
+              id="agent_mat"
+              type="text"
+              [(ngModel)]="formData.agent_controle_matricule"
+              name="agent_mat"
+            />
+            <label for="agent_mat">Matricule</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea
+              id="obs"
+              class="materialize-textarea"
+              [(ngModel)]="formData.observations"
+              name="obs"
+            ></textarea>
+            <label for="obs">Observations</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s12">
+            <button
+              type="submit"
+              class="btn btn-primary waves-effect waves-light"
+              [disabled]="!debarquementForm.form.valid || submitting"
+            >
+              <i class="material-icons left">save</i>
+              {{
+                submitting ? "Enregistrement..." : "Enregistrer le débarquement"
+              }}
+            </button>
+            <a
+              routerLink="/debarquements"
+              class="btn btn-flat waves-effect ml-2"
+            >
+              <i class="material-icons left">cancel</i>Annuler
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

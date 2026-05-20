@@ -1,0 +1,211 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">description</i> Génération de Rapports
+    </h1>
+    <p>
+      Générez des rapports détaillés sur les activités de pêche en sélectionnant
+      un type de rapport et un format de sortie.
+    </p>
+  </div>
+</div>
+<div class="container" style="margin-top: 2rem; margin-bottom: 3rem">
+  <!-- FILTRES -->
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">filter_list</i>
+            Filtres
+          </span>
+
+          <div class="row">
+            <div class="input-field col s12 m6 l3">
+              <input
+                id="date_debut"
+                type="date"
+                [(ngModel)]="filtres.date_debut"
+                class="datepicker"
+              />
+              <label for="date_debut" class="active">Date début</label>
+            </div>
+
+            <div class="input-field col s12 m6 l3">
+              <input
+                id="date_fin"
+                type="date"
+                [(ngModel)]="filtres.date_fin"
+                class="datepicker"
+              />
+              <label for="date_fin" class="active">Date fin</label>
+            </div>
+
+            <div class="input-field col s12 m6 l3">
+              <select id="debarcadere" [(ngModel)]="filtres.debarcadere_id">
+                <option value="" selected>Tous les débarcadères</option>
+                <option *ngFor="let d of debarcaderes" [value]="d.id">
+                  {{ d.nom }}
+                </option>
+              </select>
+              <label>Débarcadère</label>
+            </div>
+
+            <div class="input-field col s12 m6 l3">
+              <select id="espece" [(ngModel)]="filtres.espece_id">
+                <option value="" selected>Toutes les espèces</option>
+                <option *ngFor="let e of especes" [value]="e.id">
+                  {{ e.nom_commun }}
+                </option>
+              </select>
+              <label>Espèce</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col s12">
+              <button
+                class="btn waves-effect waves-light grey"
+                (click)="resetFiltres()"
+              >
+                <i class="material-icons left">refresh</i>
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORTS RAPIDES -->
+  <div class="row">
+    <div class="col s12">
+      <div class="card blue lighten-5">
+        <div class="card-content">
+          <span class="card-title blue-text text-darken-2">
+            <i class="material-icons left">flash_on</i>
+            Exports rapides
+          </span>
+          <p class="grey-text">
+            Téléchargez rapidement les rapports les plus courants
+          </p>
+          <br />
+
+          <div class="row">
+            <div class="col s12 m6 l3">
+              <button
+                class="btn-small waves-effect waves-light teal white-text full-width"
+                (click)="exporterRapide('debarquements', 'csv')"
+                [disabled]="loading"
+              >
+                <i class="material-icons left">file_download</i>
+                Débarquements CSV
+              </button>
+            </div>
+
+            <div class="col s12 m6 l3">
+              <button
+                class="btn-small waves-effect waves-light green white-text full-width"
+                (click)="exporterRapide('captures_espece', 'excel')"
+                [disabled]="loading"
+              >
+                <i class="material-icons left">file_download</i>
+                Captures Excel
+              </button>
+            </div>
+
+            <div class="col s12 m6 l3">
+              <button
+                class="btn-small waves-effect waves-light cyan white-text full-width"
+                (click)="exporterRapide('flotte', 'csv')"
+                [disabled]="loading"
+              >
+                <i class="material-icons left">file_download</i>
+                Flotte CSV
+              </button>
+            </div>
+
+            <div class="col s12 m6 l3">
+              <button
+                class="btn-small waves-effect waves-light purple white-text full-width"
+                (click)="exporterRapide('pecheurs', 'csv')"
+                [disabled]="loading"
+              >
+                <i class="material-icons left">file_download</i>
+                Pêcheurs CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPES DE RAPPORTS -->
+  <div class="row">
+    <div class="col s12">
+      <h5 class="blue-text text-darken-2">
+        <i class="material-icons tiny">library_books</i>
+        Types de rapports disponibles
+      </h5>
+      <div class="divider"></div>
+      <br />
+    </div>
+  </div>
+
+  <div class="row">
+    <div *ngFor="let rapport of rapportTypes" class="col s12 m6 l4">
+      <div class="card hoverable rapport-card">
+        <div class="card-content">
+          <div class="rapport-header">
+            <i
+              class="material-icons large {{
+                rapport.color
+              }}-text text-darken-2"
+              style="font-size: 3rem"
+            >
+              {{ rapport.icon }}
+            </i>
+          </div>
+
+          <span class="card-title">{{ rapport.titre }}</span>
+          <p class="grey-text">{{ rapport.description }}</p>
+
+          <div class="formats-container">
+            <p><strong>Formats disponibles:</strong></p>
+            <div class="chip-container">
+              <div
+                *ngFor="let format of rapport.formats"
+                class="chip {{ rapport.color }} white-text format-chip"
+                (click)="genererRapport(rapport.id, format)"
+                [class.disabled]="loading"
+              >
+                <i class="material-icons tiny">file_download</i>
+                {{ format.toUpperCase() }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="center-align" style="margin-top: 2rem">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+    <p class="grey-text">Génération du rapport en cours...</p>
+  </div>
+</div>

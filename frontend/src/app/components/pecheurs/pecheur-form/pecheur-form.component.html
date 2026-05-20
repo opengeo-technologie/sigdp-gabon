@@ -1,0 +1,286 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{
+        isEditMode ? "edit" : "person_add"
+      }}</i>
+      {{ isEditMode ? "Modifier" : "Nouveau" }} pêcheur
+    </h1>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-content">
+      <form (ngSubmit)="savePecheur()" #pecheurForm="ngForm">
+        <!-- Informations de base -->
+        <h5>Informations civiles</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="numero_carte"
+              type="text"
+              [(ngModel)]="formData.numero_carte"
+              name="numero_carte"
+              required
+            />
+            <label for="numero_carte">Numéro CNP *</label>
+            <span class="helper-text">Ex: CNP-2025-0001</span>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="nom"
+              type="text"
+              [(ngModel)]="formData.nom"
+              name="nom"
+              required
+            />
+            <label for="nom">Nom *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="prenom"
+              type="text"
+              [(ngModel)]="formData.prenom"
+              name="prenom"
+              required
+            />
+            <label for="prenom">Prénom *</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="date_naissance"
+              type="date"
+              [(ngModel)]="formData.date_naissance"
+              name="date_naissance"
+              required
+            />
+            <label for="date_naissance" class="active"
+              >Date de naissance *</label
+            >
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="lieu_naissance"
+              type="text"
+              [(ngModel)]="formData.lieu_naissance"
+              name="lieu_naissance"
+            />
+            <label for="lieu_naissance">Lieu de naissance</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="nationalite"
+              type="text"
+              [(ngModel)]="formData.nationalite"
+              name="nationalite"
+            />
+            <label for="nationalite">Nationalité</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input id="nif" type="text" [(ngModel)]="formData.nif" name="nif" />
+            <label for="nif">NIF (Numéro d'Identification Fiscale)</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="telephone"
+              type="tel"
+              [(ngModel)]="formData.telephone"
+              name="telephone"
+            />
+            <label for="telephone">Téléphone</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="formData.email"
+              name="email"
+            />
+            <label for="email">Email</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <input
+              id="adresse"
+              type="text"
+              [(ngModel)]="formData.adresse"
+              name="adresse"
+            />
+            <label for="adresse">Adresse</label>
+          </div>
+        </div>
+
+        <!-- Catégorisation -->
+        <h5 class="mt-3">Catégorisation professionnelle</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <select [(ngModel)]="formData.categorie" name="categorie" required>
+              <option value="" disabled>Choisir la catégorie</option>
+              <option value="Pêcheur artisanal">Pêcheur artisanal</option>
+              <option value="Pêcheur semi-industriel">
+                Pêcheur semi-industriel
+              </option>
+              <option value="Patron de pêche">Patron de pêche</option>
+              <option value="Aide-pêcheur">Aide-pêcheur</option>
+            </select>
+            <label>Catégorie *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <select
+              [(ngModel)]="formData.type_peche"
+              name="type_peche"
+              required
+            >
+              <option value="" disabled>Choisir le type</option>
+              <option value="Côtière">Côtière</option>
+              <option value="Fluviale">Fluviale</option>
+              <option value="Lagunaire">Lagunaire</option>
+              <option value="Hauturière">Hauturière</option>
+            </select>
+            <label>Type de pêche *</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <select [(ngModel)]="formData.statut" name="statut" required>
+              <option value="" disabled>Choisir le statut</option>
+              <option value="Actif">Actif</option>
+              <option value="Inactif">Inactif</option>
+              <option value="Suspendu">Suspendu</option>
+            </select>
+            <label>Statut *</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input
+              id="debarcadere"
+              type="text"
+              [(ngModel)]="formData.debarcadere_habituel_code"
+              name="debarcadere"
+            />
+            <label for="debarcadere">Code débarcadère habituel</label>
+            <span class="helper-text">Ex: GA-EST-DEB-001</span>
+          </div>
+        </div>
+
+        <!-- Licence de pêche -->
+        <h5 class="mt-3">Licence de pêche</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="licence_numero"
+              type="text"
+              [(ngModel)]="formData.licence_numero"
+              name="licence_numero"
+            />
+            <label for="licence_numero">Numéro de licence</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="licence_delivrance"
+              type="date"
+              [(ngModel)]="formData.licence_date_delivrance"
+              name="licence_delivrance"
+            />
+            <label for="licence_delivrance" class="active"
+              >Date de délivrance</label
+            >
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="licence_expiration"
+              type="date"
+              [(ngModel)]="formData.licence_date_expiration"
+              name="licence_expiration"
+            />
+            <label for="licence_expiration" class="active"
+              >Date d'expiration</label
+            >
+          </div>
+        </div>
+
+        <!-- Section Photo -->
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">
+                <i class="material-icons left">portrait</i>
+                Photo du pêcheur
+              </span>
+
+              <!-- Composant Photo Uploader -->
+              <app-photo-uploader
+                (photoSelected)="onPhotoSelected($event)"
+                (photoRemoved)="onPhotoRemoved()"
+              >
+              </app-photo-uploader>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacts d'urgence -->
+        <h5 class="mt-3">Contact d'urgence</h5>
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input
+              id="urgence_nom"
+              type="text"
+              [(ngModel)]="formData.contact_urgence_nom"
+              name="urgence_nom"
+            />
+            <label for="urgence_nom">Nom du contact</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="urgence_tel"
+              type="tel"
+              [(ngModel)]="formData.contact_urgence_telephone"
+              name="urgence_tel"
+            />
+            <label for="urgence_tel">Téléphone d'urgence</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="urgence_relation"
+              type="text"
+              [(ngModel)]="formData.contact_urgence_relation"
+              name="urgence_relation"
+            />
+            <label for="urgence_relation">Relation</label>
+            <span class="helper-text">Ex: Épouse, Frère, etc.</span>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="row">
+          <div class="col s12">
+            <button
+              type="submit"
+              class="btn btn-primary waves-effect waves-light"
+              [disabled]="!pecheurForm.form.valid"
+            >
+              <i class="material-icons left">save</i>
+              {{ isEditMode ? "Mettre à jour" : "Créer" }}
+            </button>
+            <a
+              routerLink="/pecheurs"
+              class="btn btn-flat waves-effect waves-light ml-2"
+            >
+              <i class="material-icons left">cancel</i>
+              Annuler
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

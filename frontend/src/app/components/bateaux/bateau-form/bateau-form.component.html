@@ -1,0 +1,830 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{
+        isEditMode ? "edit" : "person_add"
+      }}</i>
+      {{ isEditMode ? "Modifier" : "Nouveau" }} Bateau
+    </h1>
+  </div>
+</div>
+<div class="container" style="margin-top: 2rem; margin-bottom: 2rem">
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left blue-text">directions_boat</i>
+            {{ isEditMode ? "Modifier" : "Nouveau" }} Bateau
+          </span>
+
+          <form #bateauForm="ngForm" (ngSubmit)="onSubmit()">
+            <!-- SECTION 1: IDENTIFICATION -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">info</i> Identification
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">tag</i>
+                  <input
+                    id="numero_immatriculation"
+                    type="text"
+                    [(ngModel)]="bateau.numero_immatriculation"
+                    name="numero_immatriculation"
+                    placeholder="GA-PCH-2025-0001"
+                    required
+                  />
+                  <label for="numero_immatriculation" class="active"
+                    >N° Immatriculation *</label
+                  >
+                  <span class="helper-text">Format: GA-PCH-ANNÉE-NUMERO</span>
+                </div>
+
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">directions_boat</i>
+                  <input
+                    id="nom_bateau"
+                    type="text"
+                    [(ngModel)]="bateau.nom_bateau"
+                    name="nom_bateau"
+                    placeholder="L'Étoile des Mers"
+                  />
+                  <label for="nom_bateau" class="active">Nom du bateau</label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <select
+                    id="type_bateau"
+                    [(ngModel)]="bateau.type_bateau"
+                    name="type_bateau"
+                    required
+                  >
+                    <option value="" disabled selected>Choisir un type</option>
+                    <option value="Pirogue">Pirogue</option>
+                    <option value="Baleinière">Baleinière</option>
+                    <option value="Canot motorisé">Canot motorisé</option>
+                    <option value="Fileyeur">Fileyeur</option>
+                    <option value="Chalutier artisanal">
+                      Chalutier artisanal
+                    </option>
+                  </select>
+                  <label>Type de bateau *</label>
+                </div>
+
+                <div class="input-field col s12 m4">
+                  <select
+                    id="propulsion"
+                    [(ngModel)]="bateau.propulsion"
+                    name="propulsion"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      Choisir une propulsion
+                    </option>
+                    <option value="À rame">À rame</option>
+                    <option value="Voile">Voile</option>
+                    <option value="Moteur hors-bord">Moteur hors-bord</option>
+                    <option value="Moteur inboard">Moteur inboard</option>
+                  </select>
+                  <label>Propulsion *</label>
+                </div>
+
+                <div class="input-field col s12 m4">
+                  <select
+                    id="materiau_coque"
+                    [(ngModel)]="bateau.materiau_coque"
+                    name="materiau_coque"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      Choisir un matériau
+                    </option>
+                    <option value="Bois">Bois</option>
+                    <option value="Aluminium">Aluminium</option>
+                    <option value="Fibre de verre">Fibre de verre</option>
+                    <option value="Acier">Acier</option>
+                  </select>
+                  <label>Matériau de coque *</label>
+                </div>
+              </div>
+              <!-- Section Photo -->
+              <div class="col s12">
+                <div class="card">
+                  <div class="card-content">
+                    <span class="card-title">
+                      <i class="material-icons left">portrait</i>
+                      Photo du bateau
+                    </span>
+
+                    <!-- Composant Photo Uploader -->
+                    <app-photo-uploader
+                      (photoSelected)="onPhotoSelected($event)"
+                      (photoRemoved)="onPhotoRemoved()"
+                    >
+                    </app-photo-uploader>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: DIMENSIONS -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">straighten</i> Dimensions
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">straighten</i>
+                  <input
+                    id="longueur_hors_tout"
+                    type="number"
+                    step="0.01"
+                    [(ngModel)]="bateau.longueur_hors_tout"
+                    name="longueur_hors_tout"
+                    placeholder="8.50"
+                  />
+                  <label for="longueur_hors_tout" class="active"
+                    >Longueur (m)</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">straighten</i>
+                  <input
+                    id="largeur"
+                    type="number"
+                    step="0.01"
+                    [(ngModel)]="bateau.largeur"
+                    name="largeur"
+                    placeholder="2.80"
+                  />
+                  <label for="largeur" class="active">Largeur (m)</label>
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">straighten</i>
+                  <input
+                    id="tirant_eau"
+                    type="number"
+                    step="0.01"
+                    [(ngModel)]="bateau.tirant_eau"
+                    name="tirant_eau"
+                    placeholder="0.60"
+                  />
+                  <label for="tirant_eau" class="active"
+                    >Tirant d'eau (m)</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">fitness_center</i>
+                  <input
+                    id="jauge_brute"
+                    type="number"
+                    step="0.01"
+                    [(ngModel)]="bateau.jauge_brute"
+                    name="jauge_brute"
+                    placeholder="5.00"
+                  />
+                  <label for="jauge_brute" class="active"
+                    >Jauge brute (tonneaux)</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: MOTORISATION -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">build</i> Motorisation
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">settings</i>
+                  <input
+                    id="moteur_marque"
+                    type="text"
+                    [(ngModel)]="bateau.moteur_marque"
+                    name="moteur_marque"
+                    placeholder="Yamaha"
+                  />
+                  <label for="moteur_marque" class="active"
+                    >Marque moteur</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">speed</i>
+                  <input
+                    id="moteur_puissance_cv"
+                    type="number"
+                    [(ngModel)]="bateau.moteur_puissance_cv"
+                    name="moteur_puissance_cv"
+                    placeholder="40"
+                  />
+                  <label for="moteur_puissance_cv" class="active"
+                    >Puissance (CV)</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">local_gas_station</i>
+                  <input
+                    id="moteur_type_carburant"
+                    type="text"
+                    [(ngModel)]="bateau.moteur_type_carburant"
+                    name="moteur_type_carburant"
+                    placeholder="Essence"
+                  />
+                  <label for="moteur_type_carburant" class="active"
+                    >Type carburant</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m3">
+                  <i class="material-icons prefix">confirmation_number</i>
+                  <input
+                    id="moteur_numero_serie"
+                    type="text"
+                    [(ngModel)]="bateau.moteur_numero_serie"
+                    name="moteur_numero_serie"
+                    placeholder="YAM123456"
+                  />
+                  <label for="moteur_numero_serie" class="active"
+                    >N° série moteur</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: CONSTRUCTION -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">construction</i> Construction
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <i class="material-icons prefix">event</i>
+                  <input
+                    id="annee_construction"
+                    type="number"
+                    [(ngModel)]="bateau.annee_construction"
+                    name="annee_construction"
+                    placeholder="2020"
+                    min="1900"
+                    max="2026"
+                  />
+                  <label for="annee_construction" class="active"
+                    >Année construction</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m8">
+                  <i class="material-icons prefix">business</i>
+                  <input
+                    id="chantier_construction"
+                    type="text"
+                    [(ngModel)]="bateau.chantier_construction"
+                    name="chantier_construction"
+                    placeholder="Chantier Naval de Libreville"
+                  />
+                  <label for="chantier_construction" class="active"
+                    >Chantier de construction</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 5: ENGINS DE PÊCHE -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">settings_ethernet</i> Engins de
+                pêche embarqués
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.filet_maillant"
+                        name="engin_filet"
+                      />
+                      <span>Filet maillant</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.senne"
+                        name="engin_senne"
+                      />
+                      <span>Senne</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.ligne"
+                        name="engin_ligne"
+                      />
+                      <span>Ligne</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.casier"
+                        name="engin_casier"
+                      />
+                      <span>Casier</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.harpon"
+                        name="engin_harpon"
+                      />
+                      <span>Harpon</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="enginsPecheSelectionnes.palangre"
+                        name="engin_palangre"
+                      />
+                      <span>Palangre</span>
+                    </label>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 6: PROPRIÉTAIRE ET ÉQUIPAGE -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">people</i> Propriétaire et
+                Équipage <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <select
+                    id="proprietaire_pecheur_id"
+                    [(ngModel)]="bateau.proprietaire_pecheur_id"
+                    name="proprietaire_pecheur_id"
+                    (change)="onPecheurChange()"
+                  >
+                    <option value="" selected>Sélectionner un pêcheur</option>
+                    <option
+                      *ngFor="let pecheur of pecheurs"
+                      [value]="pecheur.id"
+                    >
+                      {{ pecheur.nom }} {{ pecheur.prenom }} -
+                      {{ pecheur.numero_carte }}
+                    </option>
+                  </select>
+                  <label>Propriétaire pêcheur</label>
+                </div>
+
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">person</i>
+                  <input
+                    id="proprietaire_nom"
+                    type="text"
+                    [(ngModel)]="bateau.proprietaire_nom"
+                    name="proprietaire_nom"
+                    placeholder="Nom du propriétaire"
+                  />
+                  <label for="proprietaire_nom" class="active"
+                    >Nom propriétaire (si différent)</label
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">groups</i>
+                  <input
+                    id="nombre_equipage"
+                    type="number"
+                    [(ngModel)]="bateau.nombre_equipage"
+                    name="nombre_equipage"
+                    placeholder="4"
+                    min="0"
+                    max="20"
+                    (input)="checkNbEquipage()"
+                  />
+                  <label for="nombre_equipage" class="active"
+                    >Nombre d'équipage</label
+                  >
+                </div>
+
+                <!-- <div class="col s12 m1">
+                  <button
+                    type="button"
+                    [disabled]="
+                      bateau.nombre_equipage < 1 ||
+                      bateau.nombre_equipage > 20 ||
+                      bateau.nombre_equipage === null
+                    "
+                    class="btn-small blue waves-effect"
+                    (click)="onNbEquipageChange()"
+                  >
+                    <i class="material-icons">add</i>
+                  </button>
+                </div> -->
+              </div>
+              <div class="row" *ngIf="showListEquipage">
+                <h5 class="mt-3">Equipage *</h5>
+                <div class="card blue-grey lighten-5">
+                  <div class="card-content">
+                    <div
+                      *ngFor="
+                        let detail of listSelectedEquipage;
+                        let i = index;
+                        trackBy: trackByIndex
+                      "
+                      class="row capture-row"
+                    >
+                      <div class="col s12 m6">
+                        <div class="input-field">
+                          <select
+                            [(ngModel)]="detail.pecheur_id"
+                            [name]="'pecheur_' + i"
+                            [id]="'pecheur_' + i"
+                          >
+                            <option value="" disabled>Choisir pecheur</option>
+                            <option
+                              *ngFor="let p of filteredPecheurs"
+                              [value]="p.id"
+                            >
+                              {{ p.nom }} {{ p.prenom }} - {{ p.numero_carte }}
+                            </option>
+                          </select>
+                          <label>Equipage {{ i + 1 }} *</label>
+                        </div>
+                      </div>
+                      <div class="col s12 m5">
+                        <div class="input-field">
+                          <select
+                            [(ngModel)]="detail.role"
+                            [name]="'role_' + i"
+                            [id]="'role_' + i"
+                          >
+                            <option value="" disabled>Choisir rôle</option>
+                            <option
+                              *ngFor="let p of equipageRoles"
+                              [value]="p.role"
+                            >
+                              {{ p.nom }}
+                            </option>
+                          </select>
+                          <label>Rôle {{ i + 1 }} *</label>
+                        </div>
+                      </div>
+                      <!-- <div class="col s12 m1">
+                        <button
+                          type="button"
+                          class="btn-small red waves-effect"
+                          (click)="removeEquipage(i)"
+                          *ngIf="listSelectedEquipage.length > 1"
+                        >
+                          <i class="material-icons">delete</i>
+                        </button>
+                      </div> -->
+                    </div>
+                    <!-- <button
+                      type="button"
+                      class="btn-small blue waves-effect"
+                      (click)="addEquipage()"
+                    >
+                      <i class="material-icons left">add</i>Ajouter un équipage
+                    </button> -->
+                  </div>
+                </div>
+              </div>
+              <!-- Message si aucun équipage -->
+              <div class="row" *ngIf="!showListEquipage">
+                <div class="col s12">
+                  <p class="grey-text center-align">
+                    <i class="material-icons tiny">info</i>
+                    Aucun membre d'équipage
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 7: ZONE DE PÊCHE -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">place</i> Zone de pêche
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12">
+                  <i class="material-icons prefix">map</i>
+                  <input
+                    id="zone_peche_habituelle"
+                    type="text"
+                    [(ngModel)]="bateau.zone_peche_habituelle"
+                    name="zone_peche_habituelle"
+                    placeholder="Zone côtière nord"
+                  />
+                  <label for="zone_peche_habituelle" class="active"
+                    >Zone de pêche habituelle</label
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12">
+                  <i class="material-icons prefix">pin_drop</i>
+                  <textarea
+                    id="zone_peche_coordonnees"
+                    class="materialize-textarea"
+                    [(ngModel)]="bateau.zone_peche_coordonnees"
+                    name="zone_peche_coordonnees"
+                    placeholder="0.3897, 9.4531"
+                  ></textarea>
+                  <label for="zone_peche_coordonnees" class="active"
+                    >Coordonnées GPS de la zone</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 8: CERTIFICAT DE NAVIGABILITÉ -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">card_membership</i> Certificat de
+                navigabilité
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <i class="material-icons prefix">confirmation_number</i>
+                  <input
+                    id="certificat_navigabilite_numero"
+                    type="text"
+                    [(ngModel)]="bateau.certificat_navigabilite_numero"
+                    name="certificat_navigabilite_numero"
+                    placeholder="NAV-2025-001"
+                  />
+                  <label for="certificat_navigabilite_numero" class="active"
+                    >N° certificat</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m4">
+                  <input
+                    id="certificat_navigabilite_date_delivrance"
+                    type="date"
+                    [(ngModel)]="bateau.certificat_navigabilite_date_delivrance"
+                    name="certificat_navigabilite_date_delivrance"
+                  />
+                  <label
+                    for="certificat_navigabilite_date_delivrance"
+                    class="active"
+                    >Date délivrance</label
+                  >
+                </div>
+
+                <div class="input-field col s12 m4">
+                  <input
+                    id="certificat_navigabilite_date_expiration"
+                    type="date"
+                    [(ngModel)]="bateau.certificat_navigabilite_date_expiration"
+                    name="certificat_navigabilite_date_expiration"
+                  />
+                  <label
+                    for="certificat_navigabilite_date_expiration"
+                    class="active"
+                    >Date expiration</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 9: ÉQUIPEMENTS DE SÉCURITÉ -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">security</i> Équipements de
+                sécurité
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.equipement_gilets_sauvetage"
+                        name="gilets"
+                      />
+                      <span>Gilets de sauvetage</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.equipement_extincteur"
+                        name="extincteur"
+                      />
+                      <span>Extincteur</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.equipement_radio_vhf"
+                        name="radio"
+                      />
+                      <span>Radio VHF</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.equipement_gps"
+                        name="gps"
+                      />
+                      <span>GPS</span>
+                    </label>
+                  </p>
+                </div>
+                <div class="col s12 m6 l4">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.equipement_balise_detresse"
+                        name="balise"
+                      />
+                      <span>Balise de détresse</span>
+                    </label>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 10: BALISE GPS (TRACKING) -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">gps_fixed</i> Balise GPS
+                (Tracking)
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="col s12 m6">
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [(ngModel)]="bateau.balise_gps_actif"
+                        name="balise_actif"
+                      />
+                      <span>Balise GPS active</span>
+                    </label>
+                  </p>
+                </div>
+              </div>
+
+              <div class="row" *ngIf="bateau.balise_gps_actif">
+                <div class="input-field col s12 m6">
+                  <i class="material-icons prefix">perm_device_information</i>
+                  <input
+                    id="balise_gps_imei"
+                    type="text"
+                    [(ngModel)]="bateau.balise_gps_imei"
+                    name="balise_gps_imei"
+                    placeholder="123456789012345"
+                  />
+                  <label for="balise_gps_imei" class="active"
+                    >IMEI balise GPS</label
+                  >
+                  <span class="helper-text">15 chiffres</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 11: STATUT -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                <i class="material-icons tiny">info</i> Statut
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <select id="statut" [(ngModel)]="bateau.statut" name="statut">
+                    <option value="Actif">Actif</option>
+                    <option value="Inactif">Inactif</option>
+                    <option value="En réparation">En réparation</option>
+                    <option value="Retiré">Retiré</option>
+                  </select>
+                  <label>Statut</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOUTONS D'ACTION -->
+            <div class="row" style="margin-top: 2rem">
+              <div class="col s12">
+                <button
+                  type="submit"
+                  class="btn waves-effect waves-light blue"
+                  [disabled]="!bateauForm.form.valid || loading"
+                >
+                  <i class="material-icons left">save</i>
+                  {{ loading ? "Enregistrement..." : "Enregistrer" }}
+                </button>
+
+                <a
+                  routerLink="/bateaux"
+                  class="btn waves-effect waves-light grey"
+                  style="margin-left: 10px"
+                >
+                  <i class="material-icons left">cancel</i>
+                  Annuler
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

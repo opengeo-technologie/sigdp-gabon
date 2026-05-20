@@ -1,0 +1,207 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">assignment</i> Licences et autorisations
+    </h1>
+    <p>Gestion des licences et autorisations de pêche</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Filtres et actions -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m3">
+          <div class="input-field">
+            <select [(ngModel)]="filters.type" (change)="applyFilters()">
+              <option value="">Tous les types</option>
+              <option value="licences">Licences de pêche</option>
+              <option value="autorisations">Autorisation de pêche</option>
+            </select>
+            <label>Type</label>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="input-field">
+            <select [(ngModel)]="filters.statut" (change)="applyFilters()">
+              <option value="">Tous les statuts</option>
+              <option value="Actif">Actif</option>
+              <option value="expire">Expiré</option>
+            </select>
+            <label>Statut</label>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="input-field">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="search()"
+              placeholder="Rechercher..."
+            />
+            <label>Immatriculation</label>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <a
+            routerLink="/bateaux/new"
+            class="btn btn-primary waves-effect waves-light"
+            style="margin-top: 1.5rem"
+            *appHasPermission="'bateau.create'"
+          >
+            <i class="material-icons left">add</i>
+            Nouvelle licence/autorisation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-content">
+      <span class="card-title">
+        {{ licences.length }} licence(s) et autorisation(s) trouvé(s)
+      </span>
+      <div class="table-responsive">
+        <table class="highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Immatriculation</th>
+              <th>Propriétaire</th>
+              <th>Type de licence</th>
+              <th>Espèce cible</th>
+              <th>Ports recommandés</th>
+              <th>Validité</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bateau of paginatedData">
+              <td>
+                <strong>{{ bateau.numero_immatriculation }}</strong>
+              </td>
+              <td>{{ bateau.nom_bateau || "Sans nom" }}</td>
+              <td>
+                <span class="badge blue lighten-4 blue-text text-darken-4">
+                  {{ bateau.type_bateau }}
+                </span>
+              </td>
+              <td>{{ bateau.propulsion }}</td>
+              <td>
+                <span *ngIf="bateau.proprietaire_info">
+                  {{ bateau.proprietaire_info.nom }}
+                  {{ bateau.proprietaire_info.prenom }}
+                  <br />
+                  <small class="grey-text">{{
+                    bateau.proprietaire_info.numero_carte
+                  }}</small>
+                </span>
+                <span
+                  *ngIf="!bateau.proprietaire_info && bateau.proprietaire_nom"
+                >
+                  {{ bateau.proprietaire_nom }}
+                </span>
+                <span
+                  *ngIf="!bateau.proprietaire_info && !bateau.proprietaire_nom"
+                  class="grey-text"
+                >
+                  Non renseigné
+                </span>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="
+                    bateau.certificat_valide
+                      ? 'green white-text'
+                      : 'red white-text'
+                  "
+                >
+                  {{ bateau.certificat_valide ? "Valide" : "Expiré" }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getStatutClass(bateau.statut)">
+                  {{ bateau.statut }}
+                </span>
+              </td>
+              <td>
+                <a
+                  [routerLink]="['/bateaux', bateau.id]"
+                  class="btn-small btn-flat waves-effect"
+                  title="Voir détails"
+                >
+                  <i class="material-icons">visibility</i>
+                </a>
+                <a
+                  [routerLink]="['/bateaux', bateau.id, 'edit']"
+                  class="btn-small btn-flat waves-effect"
+                  *appHasPermission="'bateau.update'"
+                  title="Modifier"
+                >
+                  <i class="material-icons">edit</i>
+                </a>
+                <a
+                  (click)="deleteLicence(bateau)"
+                  *appHasPermission="'bateau.delete'"
+                  class="btn-small btn-flat waves-effect red-text"
+                  title="Supprimer"
+                >
+                  <i class="material-icons">delete</i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="licences.length === 0">
+              <td colspan="8" class="center-align">
+                <p class="grey-text">
+                  Aucune licence trouvée avec ces critères
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center" style="padding-top: 20px">
+          <button
+            (click)="prevPage()"
+            class="btn waves-effect waves-light white darken-4 btn-small"
+            [disabled]="currentPage === 1"
+          >
+            <i class="material-icons" style="color: #000000">chevron_left</i>
+          </button>
+          <span
+            class="page-number"
+            style="margin-left: 10px; margin-right: 10px"
+            >page {{ currentPage }} / {{ totalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            class="btn waves-effect waves-light white btn-small"
+            [disabled]="currentPage === totalPages()"
+          >
+            <i class="material-icons" style="color: #000000">chevron_right</i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

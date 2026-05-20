@@ -1,0 +1,138 @@
+.full-width {
+  width: 100%;
+}
+
+.rapport-card {
+  min-height: 320px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.rapport-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 8px 17px 0 rgba(0, 0, 0, 0.2),
+    0 6px 20px 0 rgba(0, 0, 0, 0.19) !important;
+}
+
+.rapport-header {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding: 1rem 0;
+}
+
+.rapport-header i {
+  display: block;
+}
+
+.formats-container {
+  margin-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.format-chip {
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0 12px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.format-chip:hover:not(.disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.format-chip.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.format-chip i {
+  vertical-align: middle;
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Boutons exports rapides */
+.btn-small.full-width {
+  margin-bottom: 10px;
+}
+
+/* Animation du loader */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.rapport-card {
+  min-height: 320px;
+  transition: all 0.3s;
+}
+
+.rapport-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 8px 17px 0 rgba(0, 0, 0, 0.2),
+    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.rapport-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.formats-container {
+  margin-top: 1.5rem;
+}
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.format-chip {
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.format-chip:hover:not(.disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.format-chip.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.format-chip i {
+  vertical-align: middle;
+  margin-right: 4px;
+}

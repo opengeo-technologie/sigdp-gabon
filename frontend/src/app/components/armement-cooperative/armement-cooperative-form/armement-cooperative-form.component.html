@@ -1,0 +1,210 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{ isEditMode ? "edit" : "anchor" }}</i>
+      {{ isEditMode ? "Modifier" : "Nouveau" }} Armement / Coopérative
+    </h1>
+  </div>
+</div>
+
+<div class="container" style="margin-top: 2rem; margin-bottom: 2rem">
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <form #bateauForm="ngForm" (ngSubmit)="onSubmit()">
+            <!-- SECTION 1: IDENTIFICATION -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                Identification
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <input
+                    id="denomination"
+                    type="text"
+                    [(ngModel)]="data.denomination"
+                    name="denomination"
+                    placeholder="Denomination"
+                    required
+                  />
+                  <label for="denomination" class="active"
+                    >Denomination <i class="required_field">* </i></label
+                  >
+                  <span class="helper-text">Format: Vision d'avenir</span>
+                </div>
+
+                <div class="input-field col s12 m6">
+                  <input
+                    id="sigle"
+                    type="text"
+                    [(ngModel)]="data.sigle"
+                    name="sigle"
+                    placeholder="Sigle"
+                  />
+                  <label for="sigle" class="active"
+                    >Sigle <i class="required_field">* </i></label
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <select
+                    id="type_association"
+                    [(ngModel)]="data.type_association"
+                    name="type_association"
+                    required
+                  >
+                    <option value="" disabled selected>Choisir un type</option>
+                    <option value="Armement">Armement</option>
+                    <option value="Cooperative">Coopérative</option>
+                  </select>
+                  <label
+                    >Type d'affiliation <i class="required_field">* </i></label
+                  >
+                </div>
+                <div class="input-field col s12 m4">
+                  <input
+                    id="date_creation"
+                    type="date"
+                    [(ngModel)]="data.date_creation"
+                    name="date_creation"
+                  />
+                  <label for="date_creation" class="active"
+                    >Date de création <i class="required_field">* </i></label
+                  >
+                </div>
+                <div class="input-field col s12 m4">
+                  <input
+                    id="siege"
+                    type="text"
+                    [(ngModel)]="data.siege"
+                    placeholder="Siège"
+                    name="siege"
+                  />
+                  <label for="siege" class="active"
+                    >Siège <i class="required_field">* </i></label
+                  >
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <input
+                    id="adresse"
+                    type="text"
+                    [(ngModel)]="data.adresse"
+                    name="adresse"
+                    placeholder="Adresse"
+                  />
+                  <label for="adresse" class="active">Adresse</label>
+                  <!-- <span class="helper-text">Format: Vision d'avenir</span> -->
+                </div>
+
+                <div class="input-field col s12 m4">
+                  <input
+                    id="telephone"
+                    type="text"
+                    [(ngModel)]="data.telephone"
+                    name="telephone"
+                    placeholder="Téléphone"
+                  />
+                  <label for="telephone" class="active">Téléphone</label>
+                </div>
+                <div class="input-field col s12 m4">
+                  <input
+                    id="email"
+                    type="email"
+                    [(ngModel)]="data.email"
+                    name="email"
+                    placeholder="Email"
+                  />
+                  <label for="email" class="active">Email</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Localisation -->
+            <div class="section">
+              <h5 class="blue-text text-darken-2">
+                Localisation
+                <i class="required_field">(* Champs obligatoires)</i>
+              </h5>
+              <div class="divider blue"></div>
+              <br />
+
+              <div class="row">
+                <div class="input-field col s12 m4">
+                  <select [(ngModel)]="data.province" name="province" required>
+                    <option value="" disabled>Choisir la province</option>
+                    <option value="Estuaire">Estuaire</option>
+                    <option value="Ogooué-Maritime">Ogooué-Maritime</option>
+                    <option value="Nyanga">Nyanga</option>
+                    <option value="Moyen-Ogooué">Moyen-Ogooué</option>
+                    <option value="Woleu-Ntem">Woleu-Ntem</option>
+                    <option value="Ngounié">Ngounié</option>
+                    <option value="Haut-Ogooué">Haut-Ogooué</option>
+                    <option value="Ogooué-Ivindo">Ogooué-Ivindo</option>
+                    <option value="Ogooué-Lolo">Ogooué-Lolo</option>
+                  </select>
+                  <label>Province <i class="required_field">* </i></label>
+                </div>
+                <div class="input-field col s12 m4">
+                  <input
+                    id="departement"
+                    type="text"
+                    [(ngModel)]="data.departement"
+                    name="departement"
+                    placeholder="Département"
+                  />
+                  <label for="departement">Département</label>
+                </div>
+                <div class="input-field col s12 m4">
+                  <input
+                    id="localite"
+                    type="text"
+                    [(ngModel)]="data.localite"
+                    name="localite"
+                    placeholder="Localité"
+                    required
+                  />
+                  <label for="localite"
+                    >Localité <i class="required_field">* </i></label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- BOUTONS D'ACTION -->
+            <div class="row" style="margin-top: 2rem">
+              <div class="col s12">
+                <button
+                  type="submit"
+                  class="btn waves-effect waves-light blue"
+                  [disabled]="!bateauForm.form.valid || loading"
+                >
+                  <i class="material-icons left">save</i>
+                  {{ loading ? "Enregistrement..." : "Enregistrer" }}
+                </button>
+
+                <a
+                  routerLink="/bateaux"
+                  class="btn waves-effect waves-light grey"
+                  style="margin-left: 10px"
+                >
+                  <i class="material-icons left">cancel</i>
+                  Annuler
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,585 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">person</i> Gestion des utilisateurs</h1>
+    <p>
+      Gérez les utilisateurs de l'application, leurs rôles et permissions. Vous
+      pouvez ajouter, modifier ou supprimer des utilisateurs, ainsi que leur
+      attribuer des rôles spécifiques pour contrôler leur accès aux différentes
+      fonctionnalités de l'application.
+    </p>
+  </div>
+</div>
+<div class="container" style="margin-top: 20px">
+  <!-- Loader -->
+  <div class="row" *ngIf="loading">
+    <div class="col s12 center-align">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="margin-top: 20px">
+  <!-- Statistiques -->
+  <div class="row">
+    <div class="col s12 m6 l3">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text center-align">
+          <i class="material-icons large">people</i>
+          <h5>{{ stats.total }}</h5>
+          <p>Total Utilisateurs</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card green darken-1">
+        <div class="card-content white-text center-align">
+          <i class="material-icons large">check_circle</i>
+          <h5>{{ stats.actifs }}</h5>
+          <p>Actifs</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card orange darken-1">
+        <div class="card-content white-text center-align">
+          <i class="material-icons large">cancel</i>
+          <h5>{{ stats.inactifs }}</h5>
+          <p>Inactifs</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card red darken-1">
+        <div class="card-content white-text center-align">
+          <i class="material-icons large">admin_panel_settings</i>
+          <h5>{{ stats.admins }}</h5>
+          <p>Administrateurs</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres et actions -->
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <div class="row" style="margin-bottom: 0">
+            <!-- Recherche -->
+            <div class="input-field col s12 m4">
+              <i class="material-icons prefix">search</i>
+              <input
+                type="text"
+                id="search"
+                [(ngModel)]="searchTerm"
+                (input)="onSearch($event)"
+              />
+              <label for="search"
+                >Rechercher (username, email, nom, prénom)</label
+              >
+            </div>
+
+            <!-- Filtre rôle -->
+            <div class="input-field col s12 m3">
+              <select
+                [(ngModel)]="roleFilter"
+                (change)="onRoleFilterChange($event)"
+              >
+                <option value="">Tous les rôles</option>
+                <option value="admin">Administrateur</option>
+                <option value="gestionnaire">Gestionnaire</option>
+                <option value="operateur">Opérateur</option>
+                <option value="consultant">Consultant</option>
+              </select>
+              <label>Filtrer par rôle</label>
+            </div>
+
+            <!-- Filtre statut -->
+            <div class="input-field col s12 m3">
+              <select
+                [(ngModel)]="statutFilter"
+                (change)="onStatutFilterChange($event)"
+              >
+                <option value="">Tous les statuts</option>
+                <option value="actif">Actifs uniquement</option>
+                <option value="inactif">Inactifs uniquement</option>
+              </select>
+              <label>Filtrer par statut</label>
+            </div>
+
+            <!-- Boutons actions -->
+            <div class="col s12 m2">
+              <button
+                class="btn blue waves-effect waves-light"
+                (click)="createUser()"
+                style="margin-top: 20px; width: 100%"
+              >
+                <i class="material-icons left">add</i>
+                Nouveau
+              </button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col s12">
+              <button
+                class="btn-small grey waves-effect"
+                (click)="resetFilters()"
+              >
+                <i class="material-icons left">clear</i>
+                Réinitialiser
+              </button>
+              <span style="margin-left: 20px; color: #666">
+                {{ filteredUsers.length }} utilisateur(s) trouvé(s)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="row" *ngIf="loading">
+    <div class="col s12 center-align">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table utilisateurs -->
+  <div class="row" *ngIf="!loading">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <table class="striped responsive-table highlight">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Email</th>
+                <th>Nom & Prénom</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th class="center-align">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of paginatedUsers">
+                <td>
+                  <strong>{{ user.username }}</strong>
+                  <br />
+                  <small class="grey-text">ID: {{ user.id }}</small>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.nom }} {{ user.prenom }}</td>
+                <td>
+                  <span
+                    class="badge {{ getRoleBadgeClass(user.role) }} white-text"
+                  >
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="user.is_active" class="badge green white-text"
+                    >Actif</span
+                  >
+                  <span *ngIf="!user.is_active" class="badge red white-text"
+                    >Inactif</span
+                  >
+                </td>
+                <td class="center-align">
+                  <!-- Modifier -->
+                  <a
+                    class="btn-floating btn-small blue tooltipped"
+                    (click)="editUser(user)"
+                    data-position="top"
+                    data-tooltip="Modifier"
+                  >
+                    <i class="material-icons">edit</i>
+                  </a>
+
+                  <!-- Attribuer rôle -->
+                  <a
+                    class="btn-floating btn-small purple tooltipped"
+                    (click)="manageUserRole(user)"
+                    data-position="top"
+                    data-tooltip="Attribuer rôle"
+                  >
+                    <i class="material-icons">badge</i>
+                  </a>
+
+                  <!-- Gérer permissions -->
+                  <a
+                    class="btn-floating btn-small orange tooltipped"
+                    (click)="manageUserPermissions(user)"
+                    data-position="top"
+                    data-tooltip="Gérer permissions"
+                  >
+                    <i class="material-icons">lock</i>
+                  </a>
+
+                  <!-- Voir permissions -->
+                  <a
+                    class="btn-floating btn-small teal tooltipped"
+                    (click)="viewUserPermissions(user)"
+                    data-position="top"
+                    data-tooltip="Voir permissions"
+                  >
+                    <i class="material-icons">visibility</i>
+                  </a>
+
+                  <!-- Toggle statut -->
+                  <a
+                    class="btn-floating btn-small {{
+                      user.is_active ? 'red' : 'green'
+                    }} tooltipped"
+                    (click)="toggleUserStatus(user)"
+                    data-position="top"
+                    [attr.data-tooltip]="
+                      user.is_active ? 'Désactiver' : 'Activer'
+                    "
+                  >
+                    <i class="material-icons">{{
+                      user.is_active ? "block" : "check"
+                    }}</i>
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Message si aucun utilisateur -->
+              <tr *ngIf="paginatedUsers.length === 0">
+                <td colspan="6" class="center-align grey-text">
+                  <i
+                    class="material-icons large"
+                    style="font-size: 4rem; opacity: 0.3"
+                    >people_outline</i
+                  >
+                  <p>Aucun utilisateur trouvé</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="center" style="padding-top: 20px">
+            <button
+              (click)="previousPage()"
+              class="btn waves-effect waves-light white darken-4 btn-small"
+              [disabled]="currentPage === 1"
+            >
+              <i class="material-icons" style="color: #000000">chevron_left</i>
+            </button>
+            <span
+              class="page-number"
+              style="margin-left: 10px; margin-right: 10px"
+              >page {{ currentPage }} / {{ totalPages }}</span
+            >
+            <button
+              (click)="nextPage()"
+              class="btn waves-effect waves-light white btn-small"
+              [disabled]="currentPage === totalPages"
+            >
+              <i class="material-icons" style="color: #000000">chevron_right</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <!-- <div class="row" *ngIf="!loading && filteredUsers.length > itemsPerPage">
+    <div class="col s12 center-align">
+      <ul class="pagination">
+        <li [class.disabled]="currentPage === 1">
+          <a (click)="previousPage()">
+            <i class="material-icons">chevron_left</i>
+          </a>
+        </li>
+
+        <li
+          *ngFor="let page of pages"
+          [class.active]="page === currentPage"
+          [class.waves-effect]="page !== currentPage"
+        >
+          <a (click)="goToPage(page)">{{ page }}</a>
+        </li>
+
+        <li [class.disabled]="currentPage === totalPages">
+          <a (click)="nextPage()">
+            <i class="material-icons">chevron_right</i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div> -->
+</div>
+
+<!-- Modal: Attribuer un rôle -->
+<div id="modal-assign-role" class="modal">
+  <div class="modal-content" *ngIf="selectedUser">
+    <h5>Attribuer un rôle à {{ selectedUser.username }}</h5>
+
+    <div class="row">
+      <div class="col s12">
+        <p>
+          <strong>Rôle actuel:</strong>
+          <span
+            class="badge {{ getRoleBadgeClass(selectedUser.role) }} white-text"
+          >
+            {{ getRoleLabel(selectedUser.role) }}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input-field col s12">
+        <select [(ngModel)]="selectedRoleId" name="role">
+          <option value="" disabled>Choisir un rôle</option>
+          <option *ngFor="let role of roles" [value]="role.id">
+            {{ role.nom }} (Niveau {{ role.niveau }})
+          </option>
+        </select>
+        <label>Nouveau rôle</label>
+      </div>
+    </div>
+
+    <!-- Aperçu des permissions du rôle sélectionné -->
+    <div class="row" *ngIf="selectedRoleId">
+      <div class="col s12">
+        <div class="card grey lighten-4">
+          <div class="card-content">
+            <span class="card-title">Aperçu des permissions</span>
+            <p *ngIf="getSelectedRole()">
+              <strong
+                >{{
+                  getSelectedRole()?.permissions?.length || 0
+                }}
+                permission(s)</strong
+              >
+            </p>
+            <div *ngIf="getSelectedRole()">
+              <div
+                class="chip"
+                *ngFor="let perm of getSelectedRole()!.permissions.slice(0, 10)"
+              >
+                {{ perm.nom }}
+              </div>
+              <p
+                *ngIf="getSelectedRole()!.permissions.length > 10"
+                class="grey-text"
+              >
+                ... et {{ getSelectedRole()!.permissions.length - 10 }} autres
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      class="btn-flat waves-effect waves-red"
+      (click)="closeModal('modal-assign-role')"
+      [disabled]="saving"
+    >
+      Annuler
+    </button>
+    <button
+      class="btn blue waves-effect waves-light"
+      (click)="assignRole()"
+      [disabled]="saving || !selectedRoleId"
+    >
+      <i class="material-icons left">save</i>
+      {{ saving ? "Attribution..." : "Attribuer" }}
+    </button>
+  </div>
+</div>
+
+<!-- Modal: Gérer les permissions -->
+<div id="modal-assign-permissions" class="modal modal-fixed-footer">
+  <div class="modal-content" *ngIf="selectedUser">
+    <h5>Gérer les permissions de {{ selectedUser.username }}</h5>
+
+    <div class="row">
+      <div class="col s12">
+        <div class="card blue-grey lighten-5">
+          <div class="card-content">
+            <p>
+              <strong>Rôle:</strong>
+              <span
+                class="badge {{
+                  getRoleBadgeClass(selectedUser.role)
+                }} white-text"
+              >
+                {{ getRoleLabel(selectedUser.role) }}
+              </span>
+            </p>
+            <p class="grey-text">
+              <i class="material-icons tiny">info</i>
+              Les permissions ci-dessous s'ajoutent à celles du rôle
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des permissions par module -->
+    <div class="row">
+      <div class="col s12">
+        <ul class="collapsible">
+          <li *ngFor="let module of getUniqueModules()">
+            <div class="collapsible-header">
+              <i class="material-icons">folder</i>
+              {{ getModuleLabel(module) }}
+              <span class="badge">
+                {{ getPermissionsForModule(module).length }}
+              </span>
+            </div>
+            <div class="collapsible-body">
+              <div class="row">
+                <div
+                  class="col s12 m6"
+                  *ngFor="let perm of getPermissionsForModule(module)"
+                >
+                  <p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        class="filled-in"
+                        [checked]="isPermissionSelected(perm.id)"
+                        (change)="togglePermission(perm.id)"
+                      />
+                      <span>
+                        <strong>{{ perm.nom }}</strong>
+                        <br />
+                        <small class="grey-text">{{ perm.code }}</small>
+                      </span>
+                    </label>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      class="btn-flat waves-effect waves-red"
+      (click)="closeModal('modal-assign-permissions')"
+      [disabled]="saving"
+    >
+      Annuler
+    </button>
+    <button
+      class="btn blue waves-effect waves-light"
+      (click)="assignPermissions()"
+      [disabled]="saving"
+    >
+      <i class="material-icons left">save</i>
+      {{ saving ? "Attribution..." : "Attribuer" }}
+    </button>
+  </div>
+</div>
+
+<!-- Modal: Voir les permissions -->
+<div id="modal-view-permissions" class="modal">
+  <div class="modal-content" *ngIf="selectedUser">
+    <h5>Permissions de {{ selectedUser.username }}</h5>
+
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <p>
+              <strong>Rôle:</strong>
+              <span
+                class="badge {{
+                  getRoleBadgeClass(selectedUser.role)
+                }} white-text"
+              >
+                {{ getRoleLabel(selectedUser.role) }}
+              </span>
+            </p>
+            <p>
+              <strong>Total permissions:</strong>
+              {{ selectedUser.permissions?.length || 0 }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions groupées par module -->
+    <div
+      class="row"
+      *ngIf="selectedUser.permissions && selectedUser.permissions.length > 0"
+    >
+      <div class="col s12">
+        <div
+          *ngFor="
+            let module of Object.keys(
+              getPermissionsByModule(selectedUser.permissions || [])
+            )
+          "
+        >
+          <h6>
+            <i class="material-icons left tiny">folder</i>
+            {{ getModuleLabel(module) }}
+          </h6>
+          <div
+            class="chip"
+            *ngFor="
+              let perm of getPermissionsByModule(
+                selectedUser.permissions || []
+              )[module]
+            "
+          >
+            {{ perm }}
+          </div>
+          <div class="divider" style="margin: 15px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si aucune permission -->
+    <div
+      class="row"
+      *ngIf="!selectedUser.permissions || selectedUser.permissions.length === 0"
+    >
+      <div class="col s12 center-align grey-text">
+        <i class="material-icons large" style="font-size: 3rem; opacity: 0.3"
+          >lock_open</i
+        >
+        <p>Aucune permission attribuée</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      class="btn blue waves-effect waves-light"
+      (click)="closeModal('modal-view-permissions')"
+    >
+      Fermer
+    </button>
+  </div>
+</div>

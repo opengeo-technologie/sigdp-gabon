@@ -1,0 +1,59 @@
+<!-- app/pages/access-denied/access-denied.component.html -->
+
+<div class="access-denied-wrapper">
+  <div class="access-denied-card">
+    <!-- Icône -->
+    <div class="icon-container">
+      <i class="material-icons">block</i>
+    </div>
+
+    <!-- Titre -->
+    <h4 class="title">Accès Refusé</h4>
+
+    <!-- Message -->
+    <p class="message">
+      Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+    </p>
+
+    <!-- Info utilisateur -->
+    <div class="user-info" *ngIf="username">
+      <div class="info-item">
+        <span class="info-label">Utilisateur :</span>
+        <span class="info-value">{{ username }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Rôle :</span>
+        <span class="info-value">{{ userRole }}</span>
+      </div>
+    </div>
+
+    <!-- Note -->
+    <p class="note">
+      <i class="material-icons">info_outline</i>
+      Contactez votre administrateur si vous pensez qu'il s'agit d'une erreur.
+    </p>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn waves-effect waves-light blue" (click)="goBack()">
+        <i class="material-icons left">arrow_back</i>
+        Retour
+      </button>
+
+      <button class="btn waves-effect waves-light teal" (click)="goHome()">
+        <i class="material-icons left">home</i>
+        Accueil
+      </button>
+
+      <button class="btn waves-effect waves-light grey" (click)="logout()">
+        <i class="material-icons left">exit_to_app</i>
+        Déconnexion
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>SIGDP-GABON · Ministère des Eaux et Forêts</p>
+    </div>
+  </div>
+</div>
