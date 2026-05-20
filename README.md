@@ -2,7 +2,7 @@
 
 ## 📋 Description
 
-Application complète de gestion des débarcadères de pêche au Gabon, développée pour le Ministère des Eaux et Forêts - Direction des Pêches et de l'Aquaculture (DPA).
+Application complète de gestion des débarcadères de pêche au Gabon, développée pour le Ministère de la Mer, de la Pêche et l'Economie Bleue - Direction des Pêches et de l'Aquaculture (DPA).
 
 ### Technologies utilisées
 
@@ -130,12 +130,15 @@ Le frontend sera accessible sur `http://localhost:4200`
 ## 🎨 Captures d'écran
 
 ### Tableau de bord
+
 Vue d'ensemble des statistiques clés du système.
 
 ### Liste des débarcadères
+
 Gestion complète avec filtres par province, type et statut.
 
 ### Carte interactive
+
 Visualisation géographique avec marqueurs colorés par milieu (maritime, fluvial, lagunaire).
 
 ## 🔒 Sécurité
@@ -167,11 +170,12 @@ Propriétaire - Ministère des Eaux et Forêts, République Gabonaise
 ## 👥 Équipe
 
 - **Maître d'ouvrage**: Direction des Pêches et de l'Aquaculture (DPA)
-- **Développement**: [Votre nom/équipe]
+- **Développement**: DJATIO TCHOTEZO Stephane
 
 ## 📞 Support
 
 Pour toute question ou assistance technique:
+
 - Email: support@sigdp-gabon.ga
 - Téléphone: +241 XX XX XX XX
 
@@ -180,4 +184,5 @@ Pour toute question ou assistance technique:
 **Version**: 1.0.0  
 **Date**: Avril 2025  
 **Statut**: En développement
+
 # sigdp-gabon
