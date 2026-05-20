@@ -17,13 +17,13 @@ from app.database import Base
 class CategoriePecheur(str, enum.Enum):
     ARTISANAL = "Pêcheur artisanal"
     SEMI_INDUSTRIEL = "Pêcheur semi-industriel"
-    PATRON = "Patron de pêche"
+    PATRON = "Propriétaire de bateau"
     AIDE_PECHEUR = "Aide-pêcheur"
 
 
 class TypePeche(str, enum.Enum):
     COTIERE = "Côtière"
-    FLUVIALE = "Fluviale"
+    CONTINENTALE = "Continentale"
     LAGUNAIRE = "Lagunaire"
     HAUTURIERE = "Hauturière"
 
@@ -46,10 +46,10 @@ class Pecheur(Base):
     # Informations civiles
     nom = Column(String(100), nullable=False)
     prenom = Column(String(100), nullable=False)
-    date_naissance = Column(Date, nullable=False)
-    lieu_naissance = Column(String(100))
+    date_naissance = Column(Date, nullable=True)
+    lieu_naissance = Column(String(100), nullable=True)
     nationalite = Column(String(50), nullable=False, default="Gabonaise")
-    nif = Column(String(20))  # Numéro d'Identification Fiscale
+    nif = Column(String(20), nullable=True)  # Numéro d'Identification Fiscale
 
     # Photo et biométrie
     photo = Column(LargeBinary)  # Photo stockée en binaire
@@ -58,27 +58,30 @@ class Pecheur(Base):
     empreinte_digitale = Column(LargeBinary)  # Empreinte stockée en binaire
 
     # Contact
-    telephone = Column(String(20))
-    email = Column(String(100))
-    adresse = Column(String(200))
+    telephone = Column(String(20), nullable=True)
+    email = Column(String(100), nullable=True)
+    adresse = Column(String(200), nullable=True)
 
     # Catégorisation
     categorie = Column(Enum(CategoriePecheur), nullable=False)
-    type_peche = Column(Enum(TypePeche), nullable=False)
+    # type_peche = Column(Enum(TypePeche), nullable=False)
 
     # Débarcadère habituel
-    debarcadere_habituel_code = Column(String(50))
+    debarcadere_habituel_code = Column(
+        String(50), nullable=True
+    )  # Code du débarcadère habituel
+    debarcadere_habituel_nom = Column(String(200), nullable=True)
 
     # Licence de pêche
-    licence_numero = Column(String(50))
-    licence_date_delivrance = Column(Date)
-    licence_date_expiration = Column(Date)
+    licence_numero = Column(String(50), nullable=True)
+    licence_date_delivrance = Column(Date, nullable=True)
+    licence_date_expiration = Column(Date, nullable=True)
     licence_qr_code = Column(LargeBinary)  # QR code de la licence
 
     # Contacts d'urgence
-    contact_urgence_nom = Column(String(100))
-    contact_urgence_telephone = Column(String(20))
-    contact_urgence_relation = Column(String(50))
+    contact_urgence_nom = Column(String(100), nullable=True)
+    contact_urgence_telephone = Column(String(20), nullable=True)
+    contact_urgence_relation = Column(String(50), nullable=True)
 
     # Statut
     statut = Column(Enum(StatutPecheur), nullable=False, default=StatutPecheur.ACTIF)
