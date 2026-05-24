@@ -38,6 +38,8 @@ class BateauBase(BaseModel):
     proprietaire_nom: Optional[str] = Field(None, max_length=200)
     nombre_equipage: Optional[int] = Field(None, ge=1)
 
+    cooperative_armement_id: Optional[int] = None
+
     # Zone de pêche
     zone_peche_habituelle: Optional[str] = Field(None, max_length=200)
     zone_peche_coordonnees: Optional[str] = None
@@ -116,6 +118,7 @@ class BateauResponse(BateauInDB):
 
     certificat_valide: bool = False
     proprietaire_info: Optional[dict] = None
+    cooperative_armement_info: Optional[dict] = None
 
 
 class EquipageCreate(BaseModel):

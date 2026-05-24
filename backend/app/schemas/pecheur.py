@@ -9,13 +9,17 @@ class PecheurBase(BaseModel):
         ..., min_length=5, max_length=50, description="Numéro de carte CNP-XXXX-XXXX"
     )
     nom: str = Field(..., min_length=2, max_length=100)
-    prenom: str = Field(..., min_length=2, max_length=100)
+    prenom: str = Field(None, min_length=0, max_length=100)
     date_naissance: date
     lieu_naissance: Optional[str] = Field(None, max_length=100)
     nationalite: str = Field(default="Gabonaise", max_length=50)
-    nif: Optional[str] = Field(
-        None, max_length=20, description="Numéro d'Identification Fiscale"
+    type_carte: Optional[str] = Field(None, max_length=100)
+    numero_piece_identite: str = Field(
+        None, max_length=100, description="Numéro de pièce d'identité"
     )
+    # nif: Optional[str] = Field(
+    #     None, max_length=20, description="Numéro d'Identification Fiscale"
+    # )
 
     # Contact
     telephone: Optional[str] = Field(None, max_length=20)
@@ -24,15 +28,15 @@ class PecheurBase(BaseModel):
 
     # Catégorisation
     categorie: CategoriePecheur
-    type_peche: TypePeche
+    # type_peche: TypePeche
 
     # Débarcadère habituel
     debarcadere_habituel_code: Optional[str] = Field(None, max_length=50)
 
     # Licence
-    licence_numero: Optional[str] = Field(None, max_length=50)
-    licence_date_delivrance: Optional[date] = None
-    licence_date_expiration: Optional[date] = None
+    # licence_numero: Optional[str] = Field(None, max_length=50)
+    # licence_date_delivrance: Optional[date] = None
+    # licence_date_expiration: Optional[date] = None
 
     # Contacts d'urgence
     contact_urgence_nom: Optional[str] = Field(None, max_length=100)
@@ -52,12 +56,13 @@ class PecheurUpdate(BaseModel):
     date_naissance: Optional[date] = None
     lieu_naissance: Optional[str] = None
     nationalite: Optional[str] = None
-    nif: Optional[str] = None
+    type_carte: Optional[str] = None
+    numero_piece_identite: Optional[str] = None
     telephone: Optional[str] = None
     email: Optional[str] = None
     adresse: Optional[str] = None
     categorie: Optional[CategoriePecheur] = None
-    type_peche: Optional[TypePeche] = None
+    # type_peche: Optional[TypePeche] = None
     debarcadere_habituel_code: Optional[str] = None
     licence_numero: Optional[str] = None
     licence_date_delivrance: Optional[date] = None
@@ -81,7 +86,7 @@ class PecheurResponse(PecheurInDB):
     """Response model with computed fields"""
 
     age: Optional[int] = None
-    licence_active: bool = False
+    # licence_active: bool = False
     photo_url: Optional[str] = None
     qr_code_url: Optional[str] = None
 

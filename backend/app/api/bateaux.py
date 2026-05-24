@@ -1,3 +1,4 @@
+import io
 import json
 from pathlib import Path
 import shutil
@@ -14,12 +15,14 @@ from fastapi import (
     status,
     Query,
 )
+import pandas as pd
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import date
 
 from app.database import get_db
 from app.models.bateau import Bateau, Equipage
+from app.models.armement_coorperative import ArmementCooperative
 from app.models.pecheur import Pecheur
 from app.schemas.bateau import (
     BateauCreate,
@@ -113,6 +116,151 @@ def is_certificat_valide(date_expiration: Optional[date]) -> bool:
     return date_expiration >= date.today()
 
 
+@router.post("/upload-excel")
+async def upload_bateau_excel(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Télécharge un fichier Excel contenant les données des bateaux et les insère dans la base de données.
+
+    Format attendu du fichier Excel:
+    - numero_immatriculation: Numéro d'immatriculation du bateau
+    - nom_bateau: Nom du bateau
+    - type_bateau: Type du bateau
+    - propulsion: Propulsion du bateau
+    - longueur_hors_tout: Longueur hors tout du bateau
+    - largeur: Largeur du bateau
+    - tirant_eau: Tirant d'eau du bateau
+    - jauge_brute: Jauge brute du bateau
+    - moteur_marque: Marque du moteur du bateau
+    - moteur_puissance_cv: Puissance du moteur du bateau
+    - moteur_type_carburant: Type de carburant du moteur du bateau
+    - moteur_numero_serie: Numéro de série du moteur du bateau
+    - materiau_coque: Matériau de la coque du bateau
+    - annee_construction: Année de construction du bateau
+    - chantier_construction: Chantier de construction du bateau
+    - proprietaire_pecheur_id: ID du propriétaire du bateau
+    - proprietaire_nom: Nom du propriétaire du bateau
+    - nombre_equipage: Nombre de membres d'équipage du bateau
+    - Cooperative/Armement: Coopérative/Armement du bateau
+    """
+
+    # Vérifier l'extension du fichier
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+        )
+
+    try:
+        # Lire le fichier Excel avec pandas
+        contents = await file.read()
+        excel_file = io.BytesIO(contents)
+        engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+        df = pd.read_excel(excel_file, engine=engine)
+
+        # Valider les colonnes requises
+        required_columns = {
+            "pirogue",
+            "annee_construction",
+            "materiau_coque",
+            "site_attache",
+            "puissance_cv",
+            "nombre_equipage",
+            "nom_proprietaire",
+            "prenom_propriétaire",
+            "type_bateau",
+            "propulseur",
+            "cooperative_armement",
+            # "longueur_hors_tout",
+            # "largeur",
+            # "tirant_eau",
+            # "jauge_brute",
+            # "moteur_marque",
+            # "moteur_type_carburant",
+            # "moteur_numero_serie",
+            # "chantier_construction",
+            # "proprietaire_pecheur_id",
+        }
+        if not required_columns.issubset(df.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+            )
+
+        # Nettoyer les données
+        df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+        # Statistiques d'import
+        total_rows = len(df)
+        inserted_count = 0
+        updated_count = 0
+        errors = []
+
+        # Insérer les données dans la base de données
+        for _, row in df.iterrows():
+
+            cooperative_armement = (
+                db.query(ArmementCooperative)
+                .filter(
+                    ArmementCooperative.sigle.ilike(
+                        f"%{row['cooperative_armement'].strip().lower()}%"
+                    ),
+                )
+                .first()
+            )
+
+            proprietaire = (
+                db.query(Pecheur)
+                .filter(
+                    Pecheur.nom.ilike(f"%{row['nom_proprietaire'].strip().lower()}%"),
+                    Pecheur.prenom.ilike(
+                        f"%{row['prenom_propriétaire'].strip().lower()}%"
+                    ),
+                )
+                .first()
+            )
+
+            bateau_data = BateauCreate(
+                numero_immatriculation=row["pirogue"],
+                nom_bateau=row["pirogue"],
+                type_bateau=row["type_bateau"],
+                propulsion=row["propulseur"],
+                longueur_hors_tout=0,
+                largeur=0,
+                tirant_eau=0,
+                jauge_brute=0,
+                moteur_marque=None,
+                moteur_puissance_cv=row["puissance_cv"],
+                moteur_type_carburant=None,
+                moteur_numero_serie=None,
+                materiau_coque=row["materiau_coque"].strip(),
+                annee_construction=row["annee_construction"],
+                chantier_construction=None,
+                proprietaire_pecheur_id=proprietaire.id if proprietaire else None,
+                cooperative_armement_id=(
+                    cooperative_armement.id if cooperative_armement else None
+                ),
+                proprietaire_nom=row["nom_proprietaire"],
+                nombre_equipage=row["nombre_equipage"],
+            )
+
+            bateau = Bateau(**bateau_data.model_dump())
+            db.add(bateau)
+            db.commit()
+
+        return {"message": "Fichier Excel traité avec succès"}
+
+    except pd.errors.EmptyDataError:
+        raise HTTPException(
+            status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+        )
+
+
 @router.get("", response_model=List[BateauResponse])
 def get_bateaux(
     skip: int = Query(0, ge=0),
@@ -134,7 +282,7 @@ def get_bateaux(
     if proprietaire_id:
         query = query.filter(Bateau.proprietaire_pecheur_id == proprietaire_id)
 
-    bateaux = query.offset(skip).limit(limit).all()
+    bateaux = query.offset(skip).all()
 
     # Enrichir avec les données calculées
     result = []
@@ -157,6 +305,19 @@ def get_bateaux(
                     "nom": proprietaire.nom,
                     "prenom": proprietaire.prenom,
                     "numero_carte": proprietaire.numero_carte,
+                }
+
+        if bateau.cooperative_armement_id:
+            cooperative_armement = (
+                db.query(ArmementCooperative)
+                .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
+                .first()
+            )
+            if cooperative_armement:
+                bateau_dict["cooperative_armement_info"] = {
+                    "id": cooperative_armement.id,
+                    "denomination": cooperative_armement.denomination,
+                    "code": cooperative_armement.code,
                 }
 
         result.append(BateauResponse(**bateau_dict))
@@ -203,6 +364,20 @@ def get_bateau(bateau_id: int, db: Session = Depends(get_db)):
                 "telephone": proprietaire.telephone,
             }
 
+    # Ajouter les infos de la coopérative/armement
+    if bateau.cooperative_armement_id:
+        cooperative_armement = (
+            db.query(ArmementCooperative)
+            .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
+            .first()
+        )
+        if cooperative_armement:
+            bateau_dict["cooperative_armement_info"] = {
+                "id": cooperative_armement.id,
+                "denomination": cooperative_armement.denomination,
+                "code": cooperative_armement.code,
+            }
+
     return BateauResponse(**bateau_dict)
 
 
@@ -236,6 +411,19 @@ def get_bateau_by_immatriculation(numero: str, db: Session = Depends(get_db)):
                 "nom": proprietaire.nom,
                 "prenom": proprietaire.prenom,
                 "numero_carte": proprietaire.numero_carte,
+            }
+
+    if bateau.cooperative_armement_id:
+        cooperative_armement = (
+            db.query(ArmementCooperative)
+            .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
+            .first()
+        )
+        if cooperative_armement:
+            bateau_dict["cooperative_armement_info"] = {
+                "id": cooperative_armement.id,
+                "denomination": cooperative_armement.denomination,
+                "code": cooperative_armement.code,
             }
 
     return BateauResponse(**bateau_dict)

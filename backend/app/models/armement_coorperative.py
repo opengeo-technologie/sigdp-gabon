@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Enum, 
 from sqlalchemy.sql import func
 from geoalchemy2 import Geometry
 import enum
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -35,3 +36,6 @@ class ArmementCooperative(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # RelationShip
+    bateau = relationship("Bateau", back_populates="cooperative_armement")

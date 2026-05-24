@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     # DATABASE_URL: str = (
     #     "postgresql://sigdp_user:sigdp_password@localhost:5432/sigdp_gabon"
     # )
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/sigdp_gabon"
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/sigdp_gabon2"
     # DATABASE_URL: str = "postgresql://app_user:SigdpConnect2026!@localhost:5432/app_db"
 
     # JWT

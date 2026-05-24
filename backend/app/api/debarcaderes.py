@@ -152,7 +152,7 @@ def delete_photo(photo_filename: str):
 
 
 @router.post("/upload-excel")
-async def upload_pecheurs_excel(
+async def upload_site_peche_excel(
     file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
     """
@@ -192,6 +192,7 @@ async def upload_pecheurs_excel(
             "longitude",
             "province",
             "localite",
+            "est_localise",
             "statut",
         }
         if not required_columns.issubset(df.columns):
@@ -215,6 +216,11 @@ async def upload_pecheurs_excel(
                 row["latitude"] = "0"
                 row["longitude"] = "0"
 
+            localiser = False
+
+            if row["est_localise"] in [True, "True", "true", "1", 1]:
+                localiser = True
+
             debarcadere_data = DebarcadereCreate(
                 code=get_next_reference(db, province=row["province"]),
                 denomination=row["nom_local"],
@@ -226,6 +232,7 @@ async def upload_pecheurs_excel(
                 province=row["province"],
                 localite=row["localite"],
                 statut_operationnel=row["statut"],
+                est_localise=localiser,
             )
             debarcadere = Debarcadere(**debarcadere_data.model_dump())
             db.add(debarcadere)

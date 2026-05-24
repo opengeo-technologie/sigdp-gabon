@@ -22,6 +22,7 @@ class DebarcadereBase(BaseModel):
     province: str = Field(..., max_length=100)
     departement: Optional[str] = Field(None, max_length=100)
     localite: Optional[str] = Field(None, max_length=100)
+    est_localise: bool = False  # Indique si la géolocalisation est confirmée
 
     # Infrastructures
     infrastructure_quai: bool = False

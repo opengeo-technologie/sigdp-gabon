@@ -36,6 +36,7 @@ class MateriauCoque(str, enum.Enum):
     ALUMINIUM = "Aluminium"
     FIBRE_VERRE = "Fibre de verre"
     ACIER = "Acier"
+    PLASTIQUE = "Plastique"
 
 
 class EnginPeche(str, enum.Enum):
@@ -105,6 +106,11 @@ class Bateau(Base):
     balise_gps_imei = Column(String(50))
     balise_gps_actif = Column(Boolean, default=False)
 
+    # Cooperative ou armement
+    cooperative_armement_id = Column(
+        Integer, ForeignKey("armement_cooperatives.id"), nullable=True
+    )
+
     # Photo et biométrie
     photo_url = Column(String(200))  # URL de la photo
 
@@ -118,6 +124,7 @@ class Bateau(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # RelationShips
+    cooperative_armement = relationship("ArmementCooperative", back_populates="bateau")
     equipage = relationship("Equipage", back_populates="bateau")
 
     def __repr__(self):

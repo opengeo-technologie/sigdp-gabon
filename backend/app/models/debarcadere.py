@@ -38,6 +38,9 @@ class Debarcadere(Base):
     geom = Column(Geometry("POINT", srid=4326), nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    est_localise = Column(
+        Boolean, default=False
+    )  # Indique si la géolocalisation est confirmée
 
     # Localisation administrative
     province = Column(String(100), nullable=False)

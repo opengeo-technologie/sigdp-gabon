@@ -14,6 +14,7 @@ from fastapi import (
 )
 from PIL import Image, ImageDraw, ImageFont
 from fastapi.responses import StreamingResponse
+import pandas as pd
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import io
@@ -96,6 +97,125 @@ def delete_photo(photo_filename: str):
     if photo_filename:
         photo_path = UPLOAD_DIR / photo_filename
         photo_path.unlink(missing_ok=True)
+
+
+def get_next_reference(db: Session = Depends(get_db)) -> str:
+
+    # Récupérer la dernière commande de l'année courante
+    last_data = db.query(Espece).order_by(Espece.id.desc()).first()
+
+    if not last_data:
+        # Première commande de l'année
+        next_ref = f"GAB-ESP-001"
+    else:
+        parts = last_data.code_espece.split("-")
+        if len(parts) == 3 and parts[2].isdigit():
+            next_number = int(parts[2]) + 1
+            next_ref = f"GAB-ESP-{next_number:03d}"
+        else:
+            # Fallback si le format n’est pas reconnu
+            next_ref = f"GAB-ESP-001"
+
+    return next_ref
+
+
+@router.post("/upload-excel")
+async def upload_especes_excel(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Télécharge un fichier Excel contenant les données des espèces et les insère dans la base de données.
+
+    Format attendu du fichier Excel:
+    - code_espece: Code de l'espèce
+    - nom_scientifique: Nom scientifique de l'espèce
+    - nom_commun_francais: Nom commun en français de l'espèce
+    - categorie: Catégorie de l'espèce
+    - famille: Famille de l'espèce
+    - habitat: Habitat de l'espèce
+    """
+
+    # Vérifier l'extension du fichier
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+        )
+
+    try:
+        # Lire le fichier Excel avec pandas
+        contents = await file.read()
+        excel_file = io.BytesIO(contents)
+        engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+        df = pd.read_excel(excel_file, engine=engine)
+
+        # Valider les colonnes requises
+        required_columns = {
+            # "code_espece", --- IGNORE (généré automatiquement) ---
+            "nom_scientifique",
+            "nom_commun_francais",
+            "categorie",
+            "famille",
+            "habitat",
+            # "ordre", --- IGNORE ---
+            # "classe", --- IGNORE ---
+            # "statut_reglementaire", --- IGNORE ---
+            # "taille_minimale_legale_cm", --- IGNORE ---
+            # "quota_annuel_tonnes", --- IGNORE ---
+            # "quota_mensuel_tonnes", --- IGNORE ---
+            # "quota_hebdomadaire_tonnes", --- IGNORE ---
+            # "saison_peche_debut", --- IGNORE ---
+            # "saison_peche_fin", --- IGNORE ---
+            # "saison_reproduction_debut", --- IGNORE ---
+            # "saison_reproduction_fin", --- IGNORE ---
+            # "prix_reference_kg_min", --- IGNORE ---
+            # "prix_reference_kg_max", --- IGNORE ---
+            # "alimentation", --- IGNORE ---
+            # "taille_maximale_cm", --- IGNORE ---
+            # "poids_maximal_kg", --- IGNORE ---
+            # "esperance_vie_annees", --- IGNORE ---
+        }
+        if not required_columns.issubset(df.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+            )
+
+        # Nettoyer les données
+        df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+        # Statistiques d'import
+        total_rows = len(df)
+        inserted_count = 0
+        updated_count = 0
+        errors = []
+
+        # Insérer les données dans la base de données
+        for _, row in df.iterrows():
+
+            espece_data = EspeceCreate(
+                code_espece=get_next_reference(db),
+                nom_scientifique=row["nom_scientifique"],
+                nom_commun_francais=row["nom_commun_francais"],
+                categorie=row["categorie"].strip(),
+                famille=row["famille"],
+                habitat=row["habitat"],
+            )
+
+            espece = Espece(**espece_data.model_dump())
+            db.add(espece)
+            db.commit()
+
+        return {"message": "Fichier Excel traité avec succès"}
+
+    except pd.errors.EmptyDataError:
+        raise HTTPException(
+            status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+        )
 
 
 @router.get("", response_model=List[EspeceResponse])

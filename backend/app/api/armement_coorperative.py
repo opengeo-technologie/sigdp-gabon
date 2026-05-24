@@ -1,3 +1,4 @@
+import io
 import json
 from pathlib import Path
 import shutil
@@ -14,6 +15,7 @@ from fastapi import (
     status,
     Query,
 )
+import pandas as pd
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import date
@@ -85,6 +87,111 @@ def get_next_reference(
             next_ref = f"GAB-{current_province_code}-{type_affiliation}-001"
 
     return next_ref
+
+
+@router.post("/upload-excel")
+async def upload_armement_cooperative_excel(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Télécharge un fichier Excel contenant les données des armements et coopératives et les insère dans la base de données.
+
+    Format attendu du fichier Excel:
+    - denomination: Dénomination de l'armement ou de la coopérative
+    - sigle: Sigle de l'armement ou de la coopérative
+    - localite: Localité de l'armement ou de la coopérative
+    - province: Province de l'armement ou de la coopérative
+    - date_creation: Date de création de l'armement ou de la coopérative
+    - siege: Siège de l'armement ou de la coopérative
+    - adresse: Adresse de l'armement ou de la coopérative
+    - telephone: Numéro de téléphone de l'armement ou de la coopérative
+    - email: Adresse email de l'armement ou de la coopérative
+    - type: Type de l'armement ou de la coopérative
+    """
+
+    # Vérifier l'extension du fichier
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+        )
+
+    try:
+        # Lire le fichier Excel avec pandas
+        contents = await file.read()
+        excel_file = io.BytesIO(contents)
+        engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+        df = pd.read_excel(excel_file, engine=engine)
+
+        # Valider les colonnes requises
+        required_columns = {
+            "denomination",
+            "sigle",
+            "localite",
+            "province",
+            "date_creation",
+            "siege",
+            "adresse",
+            "telephone",
+            "email",
+            "type",
+        }
+        if not required_columns.issubset(df.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+            )
+
+        # Nettoyer les données
+        df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+        # Statistiques d'import
+        total_rows = len(df)
+        inserted_count = 0
+        updated_count = 0
+        errors = []
+
+        # Insérer les données dans la base de données
+        for _, row in df.iterrows():
+
+            print(
+                f"Traitement de l'armement ou de la coopérative: {row['denomination']} - {row['province']}"
+            )
+            print(f"Date de création: {row['date_creation']}, Siège: {row['siege']}")
+            print(f"Type: {row['type']}, Adresse: {row['adresse']}")
+
+            armement_data = ArmementCooperativeCreate(
+                code=get_next_reference(
+                    db,
+                    province=row["province"],
+                    affiliation_type=row["type"],
+                ),
+                denomination=row["denomination"],
+                sigle=row["sigle"],
+                localite=row["localite"],
+                province=row["province"],
+                date_creation=row["date_creation"],
+                siege=row["siege"],
+                adresse=row["adresse"],
+                telephone=row["telephone"],
+                email=row["email"],
+                type_association=row["type"],
+            )
+
+            armement = ArmementCooperative(**armement_data.model_dump())
+            db.add(armement)
+            db.commit()
+
+        return {"message": "Fichier Excel traité avec succès"}
+
+    except pd.errors.EmptyDataError:
+        raise HTTPException(
+            status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+        )
 
 
 @router.get("/", response_model=List[ArmementCooperativeResponse])

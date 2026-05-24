@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime
 from pathlib import Path
+import pandas as pd
 import io
 import time
 import qrcode
@@ -41,6 +42,121 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_PHOTO_SIZE = 5 * 1024 * 1024
 
 
+def get_next_reference(db: Session = Depends(get_db)) -> str:
+
+    # Récupérer la dernière commande de l'année courante
+    last_data = db.query(Pecheur).order_by(Pecheur.id.desc()).first()
+
+    if not last_data:
+        # Première commande de l'année
+        next_ref = f"GAB-PECH-001"
+    else:
+        parts = last_data.numero_carte.split("-")
+        if len(parts) == 3 and parts[2].isdigit():
+            next_number = int(parts[2]) + 1
+            next_ref = f"GAB-PECH-{next_number:03d}"
+        else:
+            # Fallback si le format n’est pas reconnu
+            next_ref = f"GAB-PECH-001"
+
+    return next_ref
+
+
+@router.post("/upload-excel")
+async def upload_pecheurs_excel(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Télécharge un fichier Excel contenant les données des sites de peche et les insère dans la base de données.
+
+    Format attendu du fichier Excel:
+    - nom: Nom du pecheur
+    - prenom: Prénom du pecheur
+    - nationalite: Nationalité du pecheur
+    - type_carte: Type de carte du pecheur
+    - numero_piece_identite: Numéro de la pièce d'identité du pecheur
+    - telephone: Numero telephone
+    - adresse: Adresse du pecheur
+    - categorie: Categorie de pecheur (Artisanal, Semi-industriel, Patron, Aide-pêcheur)
+    - statut: Statut (actif, inactif)
+    """
+
+    # Vérifier l'extension du fichier
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+        )
+
+    try:
+        # Lire le fichier Excel avec pandas
+        contents = await file.read()
+        excel_file = io.BytesIO(contents)
+        engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+        df = pd.read_excel(excel_file, engine=engine)
+
+        # Valider les colonnes requises
+        required_columns = {
+            "nom",
+            "prenom",
+            "nationalite",
+            "type_carte",
+            "numero_piece_identite",
+            "telephone",
+            "adresse",
+            "categorie",
+            "statut",
+        }
+
+        if not required_columns.issubset(df.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+            )
+
+        # Nettoyer les données
+        df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+        # Statistiques d'import
+        total_rows = len(df)
+        inserted_count = 0
+        updated_count = 0
+        errors = []
+
+        # Insérer les données dans la base de données
+        for _, row in df.iterrows():
+
+            pecheur_data = PecheurCreate(
+                numero_carte=get_next_reference(db),
+                nom=str(row["nom"]),
+                prenom=str(row["prenom"]),
+                date_naissance="1900-01-01",  # Valeur par défaut, à ajuster selon les besoins
+                lieu_naissance="",
+                email="",
+                nationalite=str(row["nationalite"]),
+                type_carte=str(row["type_carte"]),
+                numero_piece_identite=str(row["numero_piece_identite"]),
+                telephone=str(row["telephone"]),
+                adresse=str(row["adresse"]),
+                categorie=str(row["categorie"]),
+                statut=str(row["statut"]),
+            )
+            pecheur = Pecheur(**pecheur_data.model_dump())
+            db.add(pecheur)
+            db.commit()
+
+        return {"message": "Fichier Excel traité avec succès"}
+
+    except pd.errors.EmptyDataError:
+        raise HTTPException(
+            status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+        )
+
+
 def calculate_age(date_naissance: date) -> int:
     """Calculer l'âge à partir de la date de naissance"""
     today = date.today()
@@ -61,7 +177,7 @@ def is_licence_active(date_expiration: Optional[date]) -> bool:
 @router.get("", response_model=List[PecheurResponse])
 def get_pecheurs(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=1000),
     province: Optional[str] = None,
     categorie: Optional[str] = None,
     statut: Optional[str] = None,
@@ -80,16 +196,16 @@ def get_pecheurs(
     if type_peche:
         query = query.filter(Pecheur.type_peche == type_peche)
 
-    pecheurs = query.offset(skip).limit(limit).all()
+    pecheurs = query.offset(skip).all()
 
     # Enrichir avec les données calculées
     result = []
     for pecheur in pecheurs:
         pecheur_dict = PecheurInDB.from_orm(pecheur).model_dump()
         pecheur_dict["age"] = calculate_age(pecheur.date_naissance)
-        pecheur_dict["licence_active"] = is_licence_active(
-            pecheur.licence_date_expiration
-        )
+        # pecheur_dict["licence_active"] = is_licence_active(
+        #     pecheur.licence_date_expiration
+        # )
         result.append(PecheurResponse(**pecheur_dict))
 
     return result
@@ -110,7 +226,6 @@ def get_pecheur(pecheur_id: int, db: Session = Depends(get_db)):
 
     pecheur_dict = PecheurInDB.from_orm(pecheur).model_dump()
     pecheur_dict["age"] = calculate_age(pecheur.date_naissance)
-    pecheur_dict["licence_active"] = is_licence_active(pecheur.licence_date_expiration)
 
     return PecheurResponse(**pecheur_dict)
 
@@ -488,10 +603,11 @@ async def create_pecheur_with_photo(
     telephone: Optional[str] = Form(None),
     adresse: Optional[str] = Form(None),
     categorie: Optional[str] = Form(None),
-    type_peche: Optional[str] = Form(None),
-    licence_numero: Optional[str] = Form(None),
-    licence_date_delivrance: Optional[str] = Form(None),
-    licence_date_expiration: Optional[str] = Form(None),
+    nationalite: Optional[str] = Form(None),
+    lieu_naissance: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    type_carte: Optional[str] = Form(None),
+    numero_piece_identite: Optional[str] = Form(None),
     debarcadere_habituel_code: Optional[str] = Form(None),
     contact_urgence_nom: Optional[str] = Form(None),
     contact_urgence_telephone: Optional[str] = Form(None),
@@ -503,34 +619,38 @@ async def create_pecheur_with_photo(
     Créer un nouveau pêcheur avec photo (multipart/form-data)
     """
     # Vérifier si le numéro de carte existe déjà
-    existing = db.query(Pecheur).filter(Pecheur.numero_carte == numero_carte).first()
-    if existing:
+    # existing = db.query(Pecheur).filter(Pecheur.numero_carte == numero_carte).first()
+    # if existing:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Un pêcheur avec le numéro de carte {numero_carte} existe déjà",
+    #     )
+
+    existing_numero_piece = (
+        db.query(Pecheur)
+        .filter(Pecheur.numero_piece_identite == numero_piece_identite)
+        .first()
+    )
+    if existing_numero_piece:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Un pêcheur avec le numéro de carte {numero_carte} existe déjà",
+            detail=f"Un pêcheur avec le numéro de pièce d'identité {numero_piece_identite} existe déjà",
         )
 
     # Créer le pêcheur (sans photo d'abord)
     pecheur_data = {
         "nom": nom,
         "prenom": prenom,
-        "numero_carte": numero_carte,
+        "numero_carte": get_next_reference(db),
         "date_naissance": date.fromisoformat(date_naissance),
         "telephone": telephone,
         "adresse": adresse,
         "categorie": categorie,
-        "type_peche": type_peche,
-        "licence_numero": licence_numero,
-        "licence_date_delivrance": (
-            date.fromisoformat(licence_date_delivrance)
-            if licence_date_delivrance
-            else None
-        ),
-        "licence_date_expiration": (
-            date.fromisoformat(licence_date_expiration)
-            if licence_date_expiration
-            else None
-        ),
+        "nationalite": nationalite,
+        "lieu_naissance": lieu_naissance,
+        "email": email,
+        "type_carte": type_carte,
+        "numero_piece_identite": numero_piece_identite,
         "debarcadere_habituel_code": debarcadere_habituel_code,
         "contact_urgence_nom": contact_urgence_nom,
         "contact_urgence_telephone": contact_urgence_telephone,
@@ -559,7 +679,6 @@ async def create_pecheur_with_photo(
     # Préparer la réponse
     pecheur_dict = PecheurInDB.from_orm(pecheur).model_dump()
     pecheur_dict["age"] = calculate_age(pecheur.date_naissance)
-    pecheur_dict["licence_active"] = is_licence_active(pecheur.licence_date_expiration)
 
     return PecheurResponse(**pecheur_dict)
 
@@ -569,15 +688,15 @@ async def update_pecheur_with_photo(
     pecheur_id: int,
     nom: str = Form(...),
     prenom: str = Form(...),
-    numero_carte: str = Form(...),
     date_naissance: str = Form(...),
     telephone: Optional[str] = Form(None),
     adresse: Optional[str] = Form(None),
     categorie: Optional[str] = Form(None),
-    type_peche: Optional[str] = Form(None),
-    licence_numero: Optional[str] = Form(None),
-    licence_date_delivrance: Optional[str] = Form(None),
-    licence_date_expiration: Optional[str] = Form(None),
+    nationalite: Optional[str] = Form(None),
+    lieu_naissance: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    type_carte: Optional[str] = Form(None),
+    numero_piece_identite: Optional[str] = Form(None),
     debarcadere_habituel_code: Optional[str] = Form(None),
     contact_urgence_nom: Optional[str] = Form(None),
     contact_urgence_telephone: Optional[str] = Form(None),
@@ -602,22 +721,24 @@ async def update_pecheur_with_photo(
         pecheur.nom = nom
     if prenom is not None:
         pecheur.prenom = prenom
-    if numero_carte is not None:
-        pecheur.numero_carte = numero_carte
     if date_naissance is not None:
         pecheur.date_naissance = date.fromisoformat(date_naissance)
     if telephone is not None:
         pecheur.telephone = telephone
     if adresse is not None:
         pecheur.adresse = adresse
-    if type_peche is not None:
-        pecheur.type_peche = type_peche
-    if licence_numero is not None:
-        pecheur.licence_numero = licence_numero
-    if licence_date_delivrance is not None:
-        pecheur.licence_date_delivrance = date.fromisoformat(licence_date_delivrance)
-    if licence_date_expiration is not None:
-        pecheur.licence_date_expiration = date.fromisoformat(licence_date_expiration)
+    if categorie is not None:
+        pecheur.categorie = categorie
+    if nationalite is not None:
+        pecheur.nationalite = nationalite
+    if lieu_naissance is not None:
+        pecheur.lieu_naissance = lieu_naissance
+    if email is not None:
+        pecheur.email = email
+    if type_carte is not None:
+        pecheur.type_carte = type_carte
+    if numero_piece_identite is not None:
+        pecheur.numero_piece_identite = numero_piece_identite
     if debarcadere_habituel_code is not None:
         pecheur.debarcadere_habituel_code = debarcadere_habituel_code
     if contact_urgence_nom is not None:
@@ -628,12 +749,7 @@ async def update_pecheur_with_photo(
         pecheur.contact_urgence_relation = contact_urgence_relation
 
     # Gérer la photo
-    old_photo = pecheur.photo
-
-    if remove_photo and old_photo:
-        # Supprimer la photo
-        delete_photo(old_photo)
-        pecheur.photo = None
+    old_photo = pecheur.photo_url
 
     if photo:
         # Supprimer l'ancienne photo
@@ -650,7 +766,7 @@ async def update_pecheur_with_photo(
     # Préparer la réponse
     pecheur_dict = PecheurInDB.from_orm(pecheur).model_dump()
     pecheur_dict["age"] = calculate_age(pecheur.date_naissance)
-    pecheur_dict["licence_active"] = is_licence_active(pecheur.licence_date_expiration)
+    # pecheur_dict["licence_active"] = is_licence_active(pecheur.licence_date_expiration)
 
     return PecheurResponse(**pecheur_dict)
 
