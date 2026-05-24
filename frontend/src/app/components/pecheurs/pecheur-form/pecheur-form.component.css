@@ -13,3 +13,9 @@ h5 {
 .mt-3 {
   margin-top: 2rem;
 }
+
+.required_field {
+  color: red;
+  font-size: 0.8rem;
+  margin-left: 5px;
+}

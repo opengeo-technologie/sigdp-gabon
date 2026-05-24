@@ -103,8 +103,6 @@ declare var M: any;
                   <th>Nom et Prénom</th>
                   <th>Âge</th>
                   <th>Catégorie</th>
-                  <th>Type de pêche</th>
-                  <th>Licence</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
@@ -126,19 +124,6 @@ declare var M: any;
                   <td>
                     <span class="badge blue lighten-4 blue-text text-darken-4">
                       {{ pecheur.categorie }}
-                    </span>
-                  </td>
-                  <td>{{ pecheur.type_peche }}</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [ngClass]="
-                        pecheur.licence_active
-                          ? 'green white-text'
-                          : 'red white-text'
-                      "
-                    >
-                      {{ pecheur.licence_active ? "Valide" : "Expirée" }}
                     </span>
                   </td>
                   <td>

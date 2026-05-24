@@ -45,8 +45,8 @@ export class CardGeneratorService {
     photoUrl?: string,
   ): string {
     const age = pecheur.age || this.calculateAge(pecheur.date_naissance);
-    const licenceStatus = pecheur.licence_active ? "VALIDE" : "EXPIRÉE";
-    const licenceColor = pecheur.licence_active ? "#4caf50" : "#f44336";
+    // const licenceStatus = pecheur.licence_active ? "VALIDE" : "EXPIRÉE";
+    // const licenceColor = pecheur.licence_active ? "#4caf50" : "#f44336";
 
     return `
       <div id="pecheur-card" style="
@@ -161,40 +161,10 @@ export class CardGeneratorService {
                 <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">
                   ${pecheur.categorie}
                 </div>
-                <div style="font-size: 14px; margin-top: 5px;">
-                  ${pecheur.type_peche}
-                </div>
               </div>
             </div>
 
-            <div style="
-              background: rgba(255,255,255,0.15);
-              padding: 12px 20px;
-              border-radius: 8px;
-              border-left: 4px solid ${licenceColor};
-            ">
-              <div style="font-size: 14px; opacity: 0.9;">Licence de pêche</div>
-              <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
-                ${pecheur.licence_numero || "N/A"}
-              </div>
-              <div style="font-size: 14px; margin-top: 5px;">
-                Expire le: ${
-                  pecheur.licence_date_expiration
-                    ? new Date(
-                        pecheur.licence_date_expiration,
-                      ).toLocaleDateString("fr-FR")
-                    : "N/A"
-                }
-                <span style="
-                  background: ${licenceColor};
-                  padding: 2px 8px;
-                  border-radius: 4px;
-                  margin-left: 10px;
-                  font-size: 12px;
-                  font-weight: bold;
-                ">${licenceStatus}</span>
-              </div>
-            </div>
+            
           </div>
 
           <!-- QR Code -->

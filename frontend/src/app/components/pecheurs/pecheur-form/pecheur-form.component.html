@@ -14,20 +14,13 @@
     <div class="card-content">
       <form (ngSubmit)="savePecheur()" #pecheurForm="ngForm">
         <!-- Informations de base -->
-        <h5>Informations civiles</h5>
+        <h5>
+          Informations civiles
+          <i class="required_field">(* Champs obligatoires)</i>
+        </h5>
+
         <div class="row">
-          <div class="input-field col s12 m4">
-            <input
-              id="numero_carte"
-              type="text"
-              [(ngModel)]="formData.numero_carte"
-              name="numero_carte"
-              required
-            />
-            <label for="numero_carte">Numéro CNP *</label>
-            <span class="helper-text">Ex: CNP-2025-0001</span>
-          </div>
-          <div class="input-field col s12 m4">
+          <div class="input-field col s12 m6">
             <input
               id="nom"
               type="text"
@@ -35,17 +28,16 @@
               name="nom"
               required
             />
-            <label for="nom">Nom *</label>
+            <label for="nom">Nom <i class="required_field">* </i></label>
           </div>
-          <div class="input-field col s12 m4">
+          <div class="input-field col s12 m6">
             <input
               id="prenom"
               type="text"
               [(ngModel)]="formData.prenom"
               name="prenom"
-              required
             />
-            <label for="prenom">Prénom *</label>
+            <label for="prenom">Prénom</label>
           </div>
         </div>
 
@@ -59,7 +51,7 @@
               required
             />
             <label for="date_naissance" class="active"
-              >Date de naissance *</label
+              >Date de naissance <i class="required_field">* </i></label
             >
           </div>
           <div class="input-field col s12 m4">
@@ -72,21 +64,25 @@
             <label for="lieu_naissance">Lieu de naissance</label>
           </div>
           <div class="input-field col s12 m4">
-            <input
-              id="nationalite"
-              type="text"
+            <select
               [(ngModel)]="formData.nationalite"
               name="nationalite"
-            />
-            <label for="nationalite">Nationalité</label>
+              required
+            >
+              <option value="" disabled>Choisir la nationalié</option>
+              <option value="Gabonaise">Gabonaise</option>
+              <option value="Nigériane">Nigériane</option>
+              <option value="Béninoise">Béninoise</option>
+              <option value="Ghanéenne">Ghanéenne</option>
+              <option value="Malienne">Malienne</option>
+              <option value="Togolaise">Togolaise</option>
+              <option value="Camerounaise">Camerounaise</option>
+            </select>
+            <label>Nationalité <i class="required_field">* </i></label>
           </div>
         </div>
 
         <div class="row">
-          <div class="input-field col s12 m4">
-            <input id="nif" type="text" [(ngModel)]="formData.nif" name="nif" />
-            <label for="nif">NIF (Numéro d'Identification Fiscale)</label>
-          </div>
           <div class="input-field col s12 m4">
             <input
               id="telephone"
@@ -105,10 +101,7 @@
             />
             <label for="email">Email</label>
           </div>
-        </div>
-
-        <div class="row">
-          <div class="input-field col s12">
+          <div class="input-field col s4">
             <input
               id="adresse"
               type="text"
@@ -119,8 +112,46 @@
           </div>
         </div>
 
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <select
+              [(ngModel)]="formData.type_carte"
+              name="type_carte"
+              required
+            >
+              <option value="" disabled>
+                Choisir le type de pièce d'identité
+              </option>
+              <option value="Carte Nationale d'Identité">
+                Carte Nationale d'Identité
+              </option>
+              <option value="Carte de séjour">Carte de séjour</option>
+              <option value="Passeport">Passeport</option>
+            </select>
+            <label
+              >Type de pièce d'identité <i class="required_field">* </i></label
+            >
+          </div>
+          <div class="input-field col s12 m4">
+            <input
+              id="numero_piece_identite"
+              type="text"
+              [(ngModel)]="formData.numero_piece_identite"
+              name="numero_piece_identite"
+              placeholder="Numero de la pièce"
+              required
+            />
+            <label for="numero_piece_identite"
+              >Numéro de la pièce <i class="required_field">* </i></label
+            >
+          </div>
+        </div>
+
         <!-- Catégorisation -->
-        <h5 class="mt-3">Catégorisation professionnelle</h5>
+        <h5 class="mt-3">
+          Catégorisation professionnelle
+          <i class="required_field">(* Champs obligatoires)</i>
+        </h5>
         <div class="row">
           <div class="input-field col s12 m4">
             <select [(ngModel)]="formData.categorie" name="categorie" required>
@@ -129,25 +160,14 @@
               <option value="Pêcheur semi-industriel">
                 Pêcheur semi-industriel
               </option>
-              <option value="Patron de pêche">Patron de pêche</option>
+              <option value="Propriétaire de bateau">
+                Propriétaire de bateau
+              </option>
               <option value="Aide-pêcheur">Aide-pêcheur</option>
             </select>
-            <label>Catégorie *</label>
+            <label>Catégorie <i class="required_field">* </i></label>
           </div>
-          <div class="input-field col s12 m4">
-            <select
-              [(ngModel)]="formData.type_peche"
-              name="type_peche"
-              required
-            >
-              <option value="" disabled>Choisir le type</option>
-              <option value="Côtière">Côtière</option>
-              <option value="Fluviale">Fluviale</option>
-              <option value="Lagunaire">Lagunaire</option>
-              <option value="Hauturière">Hauturière</option>
-            </select>
-            <label>Type de pêche *</label>
-          </div>
+
           <div class="input-field col s12 m4">
             <select [(ngModel)]="formData.statut" name="statut" required>
               <option value="" disabled>Choisir le statut</option>
@@ -155,12 +175,9 @@
               <option value="Inactif">Inactif</option>
               <option value="Suspendu">Suspendu</option>
             </select>
-            <label>Statut *</label>
+            <label>Statut <i class="required_field">* </i></label>
           </div>
-        </div>
-
-        <div class="row">
-          <div class="input-field col s12 m6">
+          <div class="input-field col s12 m4">
             <input
               id="debarcadere"
               type="text"
@@ -169,42 +186,6 @@
             />
             <label for="debarcadere">Code débarcadère habituel</label>
             <span class="helper-text">Ex: GA-EST-DEB-001</span>
-          </div>
-        </div>
-
-        <!-- Licence de pêche -->
-        <h5 class="mt-3">Licence de pêche</h5>
-        <div class="row">
-          <div class="input-field col s12 m4">
-            <input
-              id="licence_numero"
-              type="text"
-              [(ngModel)]="formData.licence_numero"
-              name="licence_numero"
-            />
-            <label for="licence_numero">Numéro de licence</label>
-          </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="licence_delivrance"
-              type="date"
-              [(ngModel)]="formData.licence_date_delivrance"
-              name="licence_delivrance"
-            />
-            <label for="licence_delivrance" class="active"
-              >Date de délivrance</label
-            >
-          </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="licence_expiration"
-              type="date"
-              [(ngModel)]="formData.licence_date_expiration"
-              name="licence_expiration"
-            />
-            <label for="licence_expiration" class="active"
-              >Date d'expiration</label
-            >
           </div>
         </div>
 

@@ -86,6 +86,12 @@ export interface Bateau {
     telephone?: string;
   };
 
+  cooperative_armement_info?: {
+    id: number;
+    denomination: string;
+    code: string;
+  };
+
   created_at: string;
   updated_at?: string;
 }

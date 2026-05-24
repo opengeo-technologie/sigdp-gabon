@@ -98,7 +98,7 @@ declare var M: any;
                   <th>Type</th>
                   <th>Propulsion</th>
                   <th>Propriétaire</th>
-                  <th>Certificat</th>
+                  <th>Cooperative / Armement</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
@@ -144,12 +144,15 @@ declare var M: any;
                     <span
                       class="badge"
                       [ngClass]="
-                        bateau.certificat_valide
-                          ? 'green white-text'
-                          : 'red white-text'
+                        bateau.cooperative_armement_info
+                          ? 'blue white-text'
+                          : 'grey white-text'
                       "
                     >
-                      {{ bateau.certificat_valide ? "Valide" : "Expiré" }}
+                      {{
+                        bateau.cooperative_armement_info?.denomination ||
+                          "Non renseigné"
+                      }}
                     </span>
                   </td>
                   <td>

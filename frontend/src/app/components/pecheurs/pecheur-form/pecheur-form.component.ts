@@ -40,7 +40,6 @@ export class PecheurFormComponent implements OnInit {
   // };
 
   formData: PecheurCreate = {
-    numero_carte: "",
     nom: "",
     prenom: "",
     date_naissance: "",
@@ -48,16 +47,14 @@ export class PecheurFormComponent implements OnInit {
     nationalite: "Gabonaise",
     email: "",
     adresse: "",
-    nif: "",
+    type_carte: "",
+    numero_piece_identite: "",
     lieu_naissance: "",
-    licence_date_delivrance: "",
-    licence_date_expiration: "",
     debarcadere_habituel_code: "",
     contact_urgence_nom: "",
     contact_urgence_telephone: "",
     contact_urgence_relation: "",
     categorie: CategoriePecheur.ARTISANAL,
-    type_peche: TypePeche.COTIERE,
     statut: StatutPecheur.ACTIF,
     photo: null,
   };
@@ -137,30 +134,28 @@ export class PecheurFormComponent implements OnInit {
   async savePecheur() {
     // Créer FormData pour l'upload
     const formData = new FormData();
-    formData.append("numero_carte", this.formData.numero_carte);
+    formData.append("numero_carte", "");
     formData.append("nom", this.formData.nom);
     formData.append("prenom", this.formData.prenom);
-    formData.append("date_naissance", this.formData.date_naissance);
+    formData.append(
+      "date_naissance",
+      this.formData.date_naissance || "2026-05-20",
+    );
     formData.append("nationalite", this.formData.nationalite || "Gabonaise");
     formData.append("categorie", this.formData.categorie);
-    formData.append("type_peche", this.formData.type_peche);
     formData.append("statut", this.formData.statut || "Actif");
     formData.append("lieu_naissance", this.formData.lieu_naissance || "");
-    formData.append("nif", this.formData.nif || "");
     formData.append("telephone", this.formData.telephone || "");
     formData.append("email", this.formData.email || "");
     formData.append("adresse", this.formData.adresse || "");
+    formData.append("type_carte", this.formData.type_carte || "");
+    formData.append(
+      "numero_piece_identite",
+      this.formData.numero_piece_identite || "",
+    );
     formData.append(
       "debarcadere_habituel_code",
       this.formData.debarcadere_habituel_code || "",
-    );
-    formData.append(
-      "licence_date_delivrance",
-      this.formData.licence_date_delivrance || "",
-    );
-    formData.append(
-      "licence_date_expiration",
-      this.formData.licence_date_expiration || "",
     );
     formData.append(
       "contact_urgence_nom",

@@ -28,6 +28,7 @@ export interface Debarcadere {
   province: string;
   departement?: string;
   localite?: string;
+  est_localise: boolean;
 
   // Infrastructures
   infrastructure_quai: boolean;
@@ -70,6 +71,7 @@ export interface DebarcadereCreate {
   province: string;
   departement?: string;
   localite?: string;
+  est_localise?: boolean;
   infrastructure_quai?: boolean;
   infrastructure_chambre_froide?: boolean;
   infrastructure_glace?: boolean;

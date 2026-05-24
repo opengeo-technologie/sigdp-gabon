@@ -210,7 +210,7 @@ export class EspeceListComponent implements OnInit {
   filters = { categorie: "", statut: "" };
 
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = 12;
 
   url: any = `${environment.apiUrl}/uploads/especes/`;
 

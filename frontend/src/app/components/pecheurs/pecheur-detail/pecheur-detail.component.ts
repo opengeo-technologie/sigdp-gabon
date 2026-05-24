@@ -89,9 +89,6 @@ declare var M: any;
                     {{ pecheur.lieu_naissance }}
                   </p>
                   <p><strong>Nationalité:</strong> {{ pecheur.nationalite }}</p>
-                  <p *ngIf="pecheur.nif">
-                    <strong>NIF:</strong> {{ pecheur.nif }}
-                  </p>
                 </div>
                 <div class="col s12 m6">
                   <p>
@@ -99,9 +96,6 @@ declare var M: any;
                     <span class="badge blue lighten-4 blue-text text-darken-4">
                       {{ pecheur.categorie }}
                     </span>
-                  </p>
-                  <p>
-                    <strong>Type de pêche:</strong> {{ pecheur.type_peche }}
                   </p>
                   <p *ngIf="pecheur.debarcadere_habituel_code">
                     <strong>Débarcadère habituel:</strong>
@@ -127,35 +121,6 @@ declare var M: any;
                   <p *ngIf="pecheur.adresse">
                     <i class="material-icons tiny">home</i>
                     {{ pecheur.adresse }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="divider"></div>
-
-              <h6 class="mt-2">Licence de pêche</h6>
-              <div class="row">
-                <div class="col s12">
-                  <p *ngIf="pecheur.licence_numero">
-                    <strong>Numéro:</strong> {{ pecheur.licence_numero }}
-                  </p>
-                  <p *ngIf="pecheur.licence_date_delivrance">
-                    <strong>Date de délivrance:</strong>
-                    {{ pecheur.licence_date_delivrance | date: "dd/MM/yyyy" }}
-                  </p>
-                  <p *ngIf="pecheur.licence_date_expiration">
-                    <strong>Date d'expiration:</strong>
-                    {{ pecheur.licence_date_expiration | date: "dd/MM/yyyy" }}
-                    <span
-                      class="badge"
-                      [ngClass]="
-                        pecheur.licence_active
-                          ? 'green white-text'
-                          : 'red white-text'
-                      "
-                    >
-                      {{ pecheur.licence_active ? "Valide" : "Expirée" }}
-                    </span>
                   </p>
                 </div>
               </div>

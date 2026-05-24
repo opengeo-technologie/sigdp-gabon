@@ -210,14 +210,17 @@ import {
     `
       .badge.Maritime {
         background-color: #2196f3;
+        color: #ffffff;
       }
 
-      .badge.Fluvial {
+      .badge.Continental {
         background-color: #4caf50;
+        color: #ffffff;
       }
 
       .badge.Lagunaire {
         background-color: #00bcd4;
+        color: #ffffff;
       }
     `,
   ],

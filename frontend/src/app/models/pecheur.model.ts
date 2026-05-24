@@ -27,7 +27,8 @@ export interface Pecheur {
   date_naissance: string;
   lieu_naissance?: string;
   nationalite: string;
-  nif?: string;
+  type_carte: string;
+  numero_piece_identite: string;
 
   // Contact
   telephone?: string;
@@ -36,15 +37,9 @@ export interface Pecheur {
 
   // Catégorisation
   categorie: CategoriePecheur;
-  type_peche: TypePeche;
 
   // Débarcadère habituel
   debarcadere_habituel_code?: string;
-
-  // Licence
-  licence_numero?: string;
-  licence_date_delivrance?: string;
-  licence_date_expiration?: string;
 
   // Contacts d'urgence
   contact_urgence_nom?: string;
@@ -55,7 +50,6 @@ export interface Pecheur {
 
   // Champs calculés
   age?: number;
-  licence_active?: boolean;
   photo_url?: string;
   qr_code_url?: string;
 
@@ -64,22 +58,18 @@ export interface Pecheur {
 }
 
 export interface PecheurCreate {
-  numero_carte: string;
   nom: string;
   prenom: string;
   date_naissance: string;
   lieu_naissance?: string;
   nationalite?: string;
-  nif?: string;
   telephone?: string;
   email?: string;
   adresse?: string;
   categorie: CategoriePecheur;
-  type_peche: TypePeche;
+  type_carte: string;
+  numero_piece_identite: string;
   debarcadere_habituel_code?: string;
-  licence_numero?: string;
-  licence_date_delivrance?: string;
-  licence_date_expiration?: string;
   contact_urgence_nom?: string;
   contact_urgence_telephone?: string;
   contact_urgence_relation?: string;
