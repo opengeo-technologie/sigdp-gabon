@@ -283,6 +283,10 @@ export class PecheurListComponent implements OnInit {
       next: (data) => {
         // console.log("Pêcheurs chargés:", data);
         this.pecheurs = data;
+        this.pecheurs.sort((a, b) => {
+          const compare = a.numero_carte.localeCompare(b.numero_carte);
+          return compare;
+        });
         this.loading = false;
       },
       error: (error) => {

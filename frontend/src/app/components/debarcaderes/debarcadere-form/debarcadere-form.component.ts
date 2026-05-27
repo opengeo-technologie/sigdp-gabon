@@ -185,12 +185,12 @@ export class DebarcadereFormComponent implements OnInit {
       return this.debarcadereService
         .updateDebarcadereWithPhoto(this.debarcadereId, formData)
         .subscribe({
-          next: () => {
+          next: (response) => {
             M.toast({
               html: "Débarcadère mis à jour avec succès",
               classes: "green",
             });
-            this.router.navigate(["/debarcaderes"]);
+            this.router.navigate(["/debarcaderes", response.id]);
           },
           error: (error) => {
             console.error("Erreur lors de la mise à jour:", error);
@@ -201,12 +201,12 @@ export class DebarcadereFormComponent implements OnInit {
       return this.debarcadereService
         .createDebarcadereWithPhoto(formData)
         .subscribe({
-          next: () => {
+          next: (response) => {
             M.toast({
               html: "Débarcadère créé avec succès",
               classes: "green",
             });
-            this.router.navigate(["/debarcaderes"]);
+            this.router.navigate(["/debarcaderes", response.id]);
           },
           error: (error) => {
             console.error("Erreur lors de la création:", error);

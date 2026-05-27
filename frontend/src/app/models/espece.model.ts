@@ -78,6 +78,8 @@ export interface EspeceCreate {
   quota_mensuel_tonnes?: number;
   prix_reference_kg_min?: number;
   prix_reference_kg_max?: number;
+  famille?: string;
+  habitat?: string;
   actif?: boolean;
   photo?: File | null;
 }

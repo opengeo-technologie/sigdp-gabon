@@ -162,6 +162,8 @@ async def upload_bateau_excel(
         # Valider les colonnes requises
         required_columns = {
             "pirogue",
+            "nom",
+            "immatriculation",
             "annee_construction",
             "materiau_coque",
             "site_attache",
@@ -222,8 +224,8 @@ async def upload_bateau_excel(
             )
 
             bateau_data = BateauCreate(
-                numero_immatriculation=row["pirogue"],
-                nom_bateau=row["pirogue"],
+                numero_immatriculation=row["immatriculation"].strip(),
+                nom_bateau=row["nom"].strip(),
                 type_bateau=row["type_bateau"],
                 propulsion=row["propulseur"],
                 longueur_hors_tout=0,

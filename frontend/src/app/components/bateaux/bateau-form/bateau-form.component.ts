@@ -299,7 +299,7 @@ export class BateauFormComponent implements OnInit {
             html: `Bateau ${this.isEditMode ? "modifié" : "créé"} avec succès`,
             classes: "green",
           });
-          this.router.navigate(["/bateaux"]);
+          this.router.navigate(["/bateaux", response.id]);
         },
         error: (error) => {
           console.error("Erreur:", error.error.detail || error);

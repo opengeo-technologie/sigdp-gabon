@@ -1,0 +1,355 @@
+<div class="license-container">
+  <div class="header">
+    <h1>🐟 Générateur de Licence de Pêche</h1>
+    <p class="subtitle">
+      République Gabonaise - Ministère de la Mer, de la Pêche Bleue et de
+      l'Économie Maritime
+    </p>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="info-banner">
+      <div class="info-icon">ℹ️</div>
+      <div class="info-text">
+        <strong>Information :</strong> Remplissez le formulaire ci-dessous pour
+        générer votre licence de pêche au format PDF conforme aux normes
+        gabonaises.
+      </div>
+    </div>
+
+    <form
+      [formGroup]="licenseForm"
+      (ngSubmit)="generatePDF()"
+      class="license-form"
+    >
+      <!-- Section: Informations de la Licence -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <h2>Informations de la Licence</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="licenseNumber">
+              Numéro de Licence <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="licenseNumber"
+              formControlName="licenseNumber"
+              placeholder="Ex: 014"
+              [class.error]="
+                licenseForm.get('licenseNumber')?.invalid &&
+                licenseForm.get('licenseNumber')?.touched
+              "
+            />
+            <div
+              class="error-message"
+              *ngIf="
+                licenseForm.get('licenseNumber')?.invalid &&
+                licenseForm.get('licenseNumber')?.touched
+              "
+            >
+              Ce champ est requis
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="year">
+              Année de Validité <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="year"
+              formControlName="year"
+              placeholder="Ex: 2026"
+              [class.error]="
+                licenseForm.get('year')?.invalid &&
+                licenseForm.get('year')?.touched
+              "
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="armement">
+              Type d'Armement <span class="required">*</span>
+            </label>
+            <select id="armement" formControlName="armement">
+              <option value="national">NATIONAL</option>
+              <option value="etranger">ÉTRANGER</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Caractéristiques du Navire -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">🚢</div>
+          <h2>Caractéristiques du Navire</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="navName">
+              Nom du Navire <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="navName"
+              formControlName="navName"
+              placeholder="Ex: MONTERAIOLA"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="nationality">
+              Nationalité <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="nationality"
+              formControlName="nationality"
+              placeholder="Ex: Espagnole"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="immatriculation">
+              N° Immatriculation <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="immatriculation"
+              formControlName="immatriculation"
+              placeholder="Ex: 3CO-2-1-20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="tjb">
+              TJB (Tonnage) <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="tjb"
+              formControlName="tjb"
+              placeholder="Ex: 1976"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="portAttache">
+              Port d'Attache <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="portAttache"
+              formControlName="portAttache"
+              placeholder="Ex: ACORUNA"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="puissance">
+              Puissance <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="puissance"
+              formControlName="puissance"
+              placeholder="Ex: 3392"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Caractéristiques de l'Armement -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">🏢</div>
+          <h2>Caractéristiques de l'Armement</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="proprietaire">
+              Propriétaire <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="proprietaire"
+              formControlName="proprietaire"
+              placeholder="Ex: CANTABRICA DE TUNIDOS, S.A.U"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="armateur">
+              Armateur <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="armateur"
+              formControlName="armateur"
+              placeholder="Ex: OPAGAC"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Types de Pêches -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">🎣</div>
+          <h2>Types de Pêches et Espèces Ciblées</h2>
+        </div>
+
+        <div class="checkbox-grid">
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="poissonsFond"
+              formControlName="poissonsFond"
+            />
+            <label for="poissonsFond">Poissons de fond</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input type="checkbox" id="crustaces" formControlName="crustaces" />
+            <label for="crustaces">Crustacés</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="petitsPelagiques"
+              formControlName="petitsPelagiques"
+            />
+            <label for="petitsPelagiques">Petits pélagiques</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input type="checkbox" id="thons" formControlName="thons" />
+            <label for="thons">Thons</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input type="checkbox" id="autres" formControlName="autres" />
+            <label for="autres">Autres (à détailler)</label>
+          </div>
+        </div>
+
+        <div class="form-group full-width" style="margin-top: 20px">
+          <label for="materiel"> Caractéristiques Matériel de Pêche </label>
+          <input
+            type="text"
+            id="materiel"
+            formControlName="materiel"
+            placeholder="Ex: Thonier senneur, Chalutier..."
+          />
+        </div>
+      </div>
+
+      <!-- Section: Période de Validité -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">📅</div>
+          <h2>Période de Validité</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="dateDebut">
+              Date de Début <span class="required">*</span>
+            </label>
+            <input type="date" id="dateDebut" formControlName="dateDebut" />
+          </div>
+
+          <div class="form-group">
+            <label for="dateFin">
+              Date de Fin <span class="required">*</span>
+            </label>
+            <input type="date" id="dateFin" formControlName="dateFin" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Administration -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">📝</div>
+          <h2>Informations Administratives</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="ordreRecette">
+              Ordre de Recette <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="ordreRecette"
+              formControlName="ordreRecette"
+              placeholder="Ex: Swift N° 00491893632BCKHNQC"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="dateEmission">
+              Date d'Émission <span class="required">*</span>
+            </label>
+            <input
+              type="date"
+              id="dateEmission"
+              formControlName="dateEmission"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ministre">
+              Nom du Ministre <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="ministre"
+              formControlName="ministre"
+              placeholder="Ex: Aimé Martial MASSAMBA"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="action-buttons">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="licenseForm.invalid || isGenerating"
+        >
+          <span class="btn-icon">📄</span>
+          <span *ngIf="!isGenerating">Télécharger le PDF</span>
+          <span *ngIf="isGenerating">Génération en cours...</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="licenseForm.invalid || isGenerating"
+          (click)="openPDF()"
+        >
+          <span class="btn-icon">👁️</span>
+          Prévisualiser
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>
+          Les champs marqués d'un <span class="required">*</span> sont
+          obligatoires
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

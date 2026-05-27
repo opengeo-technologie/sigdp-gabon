@@ -22,6 +22,7 @@ from app.schemas.debarquement import (
     DebarquementInDB,
     DetailDebarquementInDB,
 )
+from app.services.numeric_cleaner import clean_numeric_string, safe_float, safe_int
 
 router = APIRouter(prefix="/api/debarquements", tags=["Débarquements"])
 
@@ -42,6 +43,8 @@ async def upload_captures_excel(
 
     Format attendu du fichier Excel:
     - code_pirogue_bd:Code unique du bateau (ex: Pirogue-001)
+    - nom: Nom du bateau (ex: La Belle Pirogue)
+    - immatriculation: Numéro d'immatriculation du bateau (ex: GA-1234-AB)
     - depart: Date de départ en mer
     - retour: Date de retour au débarcadère
     - zone_de_peche: Zone de pêche habituelle (ex: Zone A, Zone B)
@@ -69,6 +72,7 @@ async def upload_captures_excel(
             "retour",
             "zone_de_peche",
             "sitedebarquement",
+            "immatriculation_pirogue",
         }
         if not required_columns.issubset(df.columns):
             raise HTTPException(
@@ -97,7 +101,7 @@ async def upload_captures_excel(
                 db.query(Bateau)
                 .filter(
                     Bateau.numero_immatriculation.ilike(
-                        f"%{row['code_pirogue_bd'].strip()}%"
+                        f"%{row['immatriculation_pirogue'].strip()}%"
                     )
                 )
                 .first()
@@ -124,7 +128,7 @@ async def upload_captures_excel(
                     espece_chosen = {
                         "espece_id": espece.id,
                         "quantite_kg": (
-                            int(row[espece.nom_commun_francais])
+                            safe_int(row[espece.nom_commun_francais])
                             if row[espece.nom_commun_francais] != ""
                             else 0
                         ),
@@ -237,10 +241,10 @@ def check_alertes(debarquement: Debarquement, details: list, db: Session):
         debarquement.alerte_details = " | ".join(alertes)
 
 
-@router.get("", response_model=List[DebarquementResponse])
+@router.get("")
 def get_debarquements(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=10000),
     debarcadere_id: Optional[int] = None,
     pecheur_id: Optional[int] = None,
     bateau_id: Optional[int] = None,
@@ -272,8 +276,11 @@ def get_debarquements(
             | (Debarquement.alerte_bateau_non_conforme == True)
         )
 
-    query = query.order_by(Debarquement.date_debarquement.desc())
-    debarquements = query.offset(skip).all()
+    # ✅ COMPTER LE TOTAL (AVANT PAGINATION)
+    total = query.count()
+
+    # query = query.order_by(Debarquement.date_debarquement.desc())
+    debarquements = query.offset(skip).limit(limit).all()
 
     result = []
     for deb in debarquements:
@@ -331,7 +338,7 @@ def get_debarquements(
 
         result.append(DebarquementResponse(**deb_dict))
 
-    return result
+    return {"result": result, "total": total}
 
 
 @router.get("/{debarquement_id}", response_model=DebarquementResponse)

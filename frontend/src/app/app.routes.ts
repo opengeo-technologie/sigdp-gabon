@@ -303,6 +303,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "licences/add",
+    loadComponent: () =>
+      import("./components/licences/licence-form/licence-form.component").then(
+        (m) => m.LicenceFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "armements-cooperatives",
     loadComponent: () =>
       import("./components/armement-cooperative/armement-cooperative.component").then(

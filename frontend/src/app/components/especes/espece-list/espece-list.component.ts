@@ -232,6 +232,10 @@ export class EspeceListComponent implements OnInit {
       next: (data) => {
         // console.log("Espèces chargées:", data);
         this.especes = data;
+        this.especes.sort((a, b) => {
+          const compare = a.code_espece.localeCompare(b.code_espece);
+          return compare;
+        });
         this.loading = false;
       },
       error: (err) => {

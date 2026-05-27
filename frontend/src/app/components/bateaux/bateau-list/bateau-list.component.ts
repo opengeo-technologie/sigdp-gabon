@@ -305,6 +305,12 @@ export class BateauListComponent implements OnInit {
     this.bateauService.getBateaux(filterParams).subscribe({
       next: (data) => {
         this.bateaux = data;
+        this.bateaux.sort((a, b) => {
+          const compare = a.numero_immatriculation.localeCompare(
+            b.numero_immatriculation,
+          );
+          return compare;
+        });
         this.loading = false;
       },
       error: (error) => {

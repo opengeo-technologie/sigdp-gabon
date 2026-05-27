@@ -197,7 +197,7 @@ export class PecheurFormComponent implements OnInit {
         next: (response) => {
           console.log("Pêcheur créé:", response);
           M.toast({ html: "Pêcheur créé avec succès", classes: "green" });
-          this.router.navigate(["/pecheurs"]);
+          this.router.navigate(["/pecheurs", response.id]);
         },
         error: (error) => {
           console.error("Erreur lors de la création:", error);

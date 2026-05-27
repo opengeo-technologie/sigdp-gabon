@@ -256,6 +256,10 @@ export class DebarcadereListComponent implements OnInit {
     this.debarcadereService.getDebarcaderes(filterParams).subscribe({
       next: (data) => {
         this.debarcaderes = data;
+        this.debarcaderes.sort((a, b) => {
+          const compare = a.code.localeCompare(b.code);
+          return compare;
+        });
         this.loading = false;
       },
       error: (error) => {

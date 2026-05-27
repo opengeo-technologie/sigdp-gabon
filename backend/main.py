@@ -18,6 +18,7 @@ from app.api import (
     permissions,
     # licence,
     armement_coorperative,
+    engin_peche,
 )
 
 # Créer les tables
@@ -56,7 +57,7 @@ app.include_router(debarcaderes.router)
 app.include_router(pecheurs.router)
 app.include_router(bateaux.router)
 app.include_router(especes.router)
-# app.include_router(licence.router)
+app.include_router(engin_peche.router)
 app.include_router(debarquements.router)
 app.include_router(statistiques.router)
 app.include_router(rapports.router)

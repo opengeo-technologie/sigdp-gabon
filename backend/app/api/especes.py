@@ -247,7 +247,7 @@ def get_especes(
             | (Espece.code_espece.ilike(search_term))
         )
 
-    especes = query.offset(skip).limit(limit).all()
+    especes = query.offset(skip).all()
 
     result = []
     for espece in especes:
@@ -482,15 +482,15 @@ async def create_espece_with_photo(
     Créer une nouvelle espèce avec une photo optionnelle
     """
     # Vérifier si le code existe déjà
-    existing = db.query(Espece).filter(Espece.code_espece == code_espece).first()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Une espèce avec le code {code_espece} existe déjà",
-        )
+    # existing = db.query(Espece).filter(Espece.code_espece == code_espece).first()
+    # if existing:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Une espèce avec le code {code_espece} existe déjà",
+    #     )
 
     espece_data = {
-        "code_espece": code_espece,
+        "code_espece": get_next_reference(db),
         "nom_scientifique": nom_scientifique,
         "nom_commun_francais": nom_commun_francais,
         "nom_commun_fang": nom_commun_fang,
@@ -525,23 +525,25 @@ async def create_espece_with_photo(
     db.commit()
     db.refresh(espece)
 
-    try:
-        # Sauvegarder la photo
-        filename = save_photo(photo, espece.id)
+    if photo:
 
-        # Mettre à jour l'espèce avec le nom de la photo
-        espece.photo_url = filename
-        db.commit()
-        db.refresh(espece)
+        try:
+            # Sauvegarder la photo
+            filename = save_photo(photo, espece.id)
 
-    except HTTPException as e:
-        # En cas d'erreur, supprimer le bateau créé
-        db.delete(espece)
-        db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Erreur de sauvegarde de photo: {str(e)}",
-        )
+            # Mettre à jour l'espèce avec le nom de la photo
+            espece.photo_url = filename
+            db.commit()
+            db.refresh(espece)
+
+        except HTTPException as e:
+            # En cas d'erreur, supprimer le bateau créé
+            db.delete(espece)
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Erreur de sauvegarde de photo: {str(e)}",
+            )
 
     espece_dict = EspeceInDB.from_orm(espece).model_dump()
     return EspeceResponse(**espece_dict)

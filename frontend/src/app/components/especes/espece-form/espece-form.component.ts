@@ -32,17 +32,7 @@ declare var M: any;
         <div class="card-content">
           <form (ngSubmit)="onSubmit()" #especeForm="ngForm">
             <div class="row">
-              <div class="input-field col s12 m6">
-                <input
-                  id="code"
-                  type="text"
-                  [(ngModel)]="formData.code_espece"
-                  name="code"
-                  required
-                />
-                <label for="code">Code espèce *</label>
-              </div>
-              <div class="input-field col s12 m6">
+              <div class="input-field col s12 m4">
                 <input
                   id="nom_sci"
                   type="text"
@@ -52,9 +42,7 @@ declare var M: any;
                 />
                 <label for="nom_sci">Nom scientifique *</label>
               </div>
-            </div>
-            <div class="row">
-              <div class="input-field col s12 m6">
+              <div class="input-field col s12 m4">
                 <input
                   id="nom_fr"
                   type="text"
@@ -64,7 +52,7 @@ declare var M: any;
                 />
                 <label for="nom_fr">Nom français *</label>
               </div>
-              <div class="input-field col s12 m6">
+              <div class="input-field col s12 m4">
                 <select
                   [(ngModel)]="formData.categorie"
                   name="categorie"
@@ -85,6 +73,26 @@ declare var M: any;
               </div>
             </div>
             <div class="row">
+              <div class="input-field col s12 m6">
+                <input
+                  id="famille"
+                  type="text"
+                  [(ngModel)]="formData.famille"
+                  name="famille"
+                />
+                <label for="famille">Famille</label>
+              </div>
+              <div class="input-field col s12 m6">
+                <input
+                  id="habitat"
+                  type="text"
+                  [(ngModel)]="formData.habitat"
+                  name="habitat"
+                />
+                <label for="habitat">Habitat </label>
+              </div>
+            </div>
+            <div class="row">
               <div class="input-field col s12 m4">
                 <select
                   [(ngModel)]="formData.statut_reglementaire"
@@ -101,6 +109,7 @@ declare var M: any;
                 <input
                   id="tml"
                   type="number"
+                  min="0"
                   step="0.1"
                   [(ngModel)]="formData.taille_minimale_legale_cm"
                   name="tml"
@@ -111,6 +120,7 @@ declare var M: any;
                 <input
                   id="quota"
                   type="number"
+                  min="0"
                   step="0.1"
                   [(ngModel)]="formData.quota_mensuel_tonnes"
                   name="quota"
@@ -173,6 +183,10 @@ export class EspeceFormComponent implements OnInit {
     nom_commun_francais: "",
     categorie: "" as CategorieEspece,
     statut_reglementaire: "Libre" as StatutReglementaire,
+    quota_mensuel_tonnes: 0,
+    taille_minimale_legale_cm: 0,
+    famille: "",
+    habitat: "",
     photo: null,
   };
 
@@ -197,7 +211,33 @@ export class EspeceFormComponent implements OnInit {
     if (this.especeId) {
       this.especeService.getEspece(this.especeId).subscribe({
         next: (d) => {
+          // console.log("Données de l'espèce chargées:", d);
           this.formData = { ...d };
+          if (
+            this.formData.quota_mensuel_tonnes === null ||
+            this.formData.quota_mensuel_tonnes === undefined
+          ) {
+            this.formData.quota_mensuel_tonnes = 0;
+          }
+          if (
+            this.formData.habitat === null ||
+            this.formData.habitat === undefined
+          ) {
+            this.formData.habitat = "";
+          }
+          if (
+            this.formData.famille === null ||
+            this.formData.famille === undefined
+          ) {
+            this.formData.famille = "";
+          }
+          if (
+            this.formData.taille_minimale_legale_cm === null ||
+            this.formData.taille_minimale_legale_cm === undefined
+          ) {
+            this.formData.taille_minimale_legale_cm = 0;
+          }
+
           setTimeout(() => {
             this.initMaterialize();
             M.updateTextFields();
@@ -217,6 +257,8 @@ export class EspeceFormComponent implements OnInit {
     formData.append("nom_scientifique", this.formData.nom_scientifique);
     formData.append("nom_commun_francais", this.formData.nom_commun_francais);
     formData.append("categorie", this.formData.categorie);
+    formData.append("famille", this.formData.famille || "");
+    formData.append("habitat", this.formData.habitat || "");
     if (this.formData.statut_reglementaire)
       formData.append(
         "statut_reglementaire",
@@ -240,9 +282,9 @@ export class EspeceFormComponent implements OnInit {
         : this.especeService.createEspeceWithPhoto(formData);
 
     obs.subscribe({
-      next: () => {
+      next: (response) => {
         M.toast({ html: "Succès", classes: "green" });
-        this.router.navigate(["/especes"]);
+        this.router.navigate(["/especes", response.id]);
       },
       error: (e) => {
         console.error(e);

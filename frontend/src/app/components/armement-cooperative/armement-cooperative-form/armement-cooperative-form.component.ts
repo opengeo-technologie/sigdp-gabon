@@ -101,12 +101,12 @@ export class ArmementCooperativeFormComponent {
       this.armementCooperativeService
         .updateArmementCooperative(this.dataId, this.data)
         .subscribe({
-          next: () => {
+          next: (response) => {
             M.toast({
               html: "Armement/coopérative mis à jour avec succès",
               classes: "green",
             });
-            this.router.navigate(["/armements-cooperatives"]);
+            this.router.navigate(["/armements-cooperatives", response.id]);
           },
           error: (error) => {
             console.error("Erreur lors de la mise à jour:", error);
@@ -123,7 +123,7 @@ export class ArmementCooperativeFormComponent {
               html: "Armement/coopérative créé avec succès",
               classes: "green",
             });
-            this.router.navigate(["/armements-cooperatives"]);
+            this.router.navigate(["/armements-cooperatives", result.id]);
           },
           error: (error) => {
             console.error("Erreur lors de la création:", error);

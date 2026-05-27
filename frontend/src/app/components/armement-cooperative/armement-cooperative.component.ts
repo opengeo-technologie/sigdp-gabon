@@ -55,6 +55,10 @@ export class ArmementCooperativeComponent {
       .subscribe({
         next: (data) => {
           this.armements = data;
+          this.armements.sort((a, b) => {
+            const compare = a.code.localeCompare(b.code);
+            return compare;
+          });
           this.loading = false;
         },
         error: (error) => {

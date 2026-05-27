@@ -14,7 +14,7 @@ declare var M: any;
   template: `
     <div class="page-header">
       <div class="container-fluid">
-        <h1><i class="material-icons left">inventory</i> Débarquements</h1>
+        <h1><i class="material-icons left">inventory</i> Captures</h1>
         <p>Enregistrements des captures de pêche</p>
       </div>
     </div>
@@ -74,9 +74,7 @@ declare var M: any;
       <!-- Résultats -->
       <div class="card" *ngIf="!loading">
         <div class="card-content">
-          <span class="card-title"
-            >{{ debarquements.length }} débarquement(s)</span
-          >
+          <span class="card-title">{{ totalData }} Capture(s)</span>
           <div class="table-responsive">
             <table class="highlight responsive-table">
               <thead>
@@ -93,7 +91,7 @@ declare var M: any;
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let deb of paginatedData">
+                <tr *ngFor="let deb of debarquements">
                   <td>
                     <strong>{{ deb.numero_debarquement }}</strong>
                   </td>
@@ -190,28 +188,36 @@ export class DebarquementListComponent implements OnInit {
     date_debut: "",
     date_fin: "",
     avec_alertes: false,
+    limit: 10,
   };
+
+  filterParams: any = {};
 
   currentPage = 1;
   rowsPerPage = 10;
+  totalData = 1;
 
   constructor(private debarquementService: DebarquementService) {}
 
   ngOnInit() {
+    this.filterParams.limit = this.filters.limit;
     this.loadDebarquements();
   }
 
   loadDebarquements() {
     this.loading = true;
-    const filterParams: any = {};
+    // const filterParams: any = {};
     if (this.filters.date_debut)
-      filterParams.date_debut = this.filters.date_debut;
-    if (this.filters.date_fin) filterParams.date_fin = this.filters.date_fin;
-    if (this.filters.avec_alertes) filterParams.avec_alertes = true;
+      this.filterParams.date_debut = this.filters.date_debut;
+    if (this.filters.date_fin)
+      this.filterParams.date_fin = this.filters.date_fin;
+    if (this.filters.avec_alertes) this.filterParams.avec_alertes = true;
 
-    this.debarquementService.getDebarquements(filterParams).subscribe({
+    this.debarquementService.getDebarquements(this.filterParams).subscribe({
       next: (data) => {
-        this.debarquements = data;
+        // console.log(data);
+        this.debarquements = data.result;
+        this.totalData = data.total;
         this.loading = false;
       },
       error: (err) => {
@@ -222,24 +228,28 @@ export class DebarquementListComponent implements OnInit {
     });
   }
 
-  get paginatedData() {
-    const start = (this.currentPage - 1) * this.rowsPerPage;
-    return this.debarquements.slice(start, start + this.rowsPerPage);
-  }
+  // get paginatedData() {
+  //   const start = (this.currentPage - 1) * this.rowsPerPage;
+  //   return this.debarquements.slice(start, start + this.rowsPerPage);
+  // }
 
   totalPages() {
-    return Math.ceil(this.debarquements.length / this.rowsPerPage);
+    return Math.ceil(this.totalData / this.rowsPerPage);
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadDebarquements();
     }
   }
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadDebarquements();
     }
   }
 
