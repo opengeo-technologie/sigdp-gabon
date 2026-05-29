@@ -110,7 +110,7 @@ export const routes: Routes = [
       import("./components/debarcaderes/debarcadere-detail/debarcadere-detail.component").then(
         (m) => m.DebarcadereDetailComponent,
       ),
-    canActivate: [authGuard, PermissionGuard],
+    canActivate: [authGuard],
   },
   {
     path: "debarcaderes/:id/edit",

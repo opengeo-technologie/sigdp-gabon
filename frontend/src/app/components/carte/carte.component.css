@@ -1,0 +1,120 @@
+.map-container {
+  height: 600px;
+  border-radius: 8px;
+}
+
+.legend-items {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marker-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.marker-icon.maritime {
+  background-color: #2196f3;
+}
+
+.marker-icon.fluvial {
+  background-color: #4caf50;
+}
+
+.marker-icon.lagunaire {
+  background-color: #00bcd4;
+}
+
+:host ::ng-deep .leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+:host ::ng-deep .leaflet-popup-content h6 {
+  margin: 0 0 0.5rem 0;
+  color: #0d47a1;
+  font-weight: 500;
+}
+
+:host ::ng-deep .leaflet-popup-content p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Small clusters */
+.marker-cluster-small {
+  background-color: rgba(0, 128, 255, 0.3);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(0, 128, 255, 0.8);
+  color: white;
+}
+
+/* Medium clusters */
+.marker-cluster-medium {
+  background-color: rgba(255, 165, 0, 0.3);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(255, 165, 0, 0.8);
+  color: white;
+}
+
+/* Large clusters */
+.marker-cluster-large {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.marker-cluster-large div {
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+}
+
+/* Shared cluster style */
+.marker-cluster {
+  border-radius: 50%;
+}
+
+.marker-cluster div {
+  width: 40px;
+  height: 40px;
+  margin-left: 5px;
+  margin-top: 5px;
+
+  text-align: center;
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 40px;
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Hover animation */
+.marker-cluster:hover div {
+  transform: scale(1.1);
+}
+.modal {
+  width: 400px;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  left: 50% !important;
+  margin: 0 !important;
+}
+
+.modal-content h4 {
+  font-size: 15px;
+}

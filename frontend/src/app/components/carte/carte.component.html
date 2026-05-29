@@ -1,0 +1,73 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">map</i> Carte des débarcadères</h1>
+    <p>Visualisation géographique des débarcadères du Gabon</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Légende et filtres -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m8">
+          <span class="card-title">Légende</span>
+          <div class="legend-items">
+            <span class="legend-item">
+              <span class="marker-icon maritime"></span>
+              Maritime
+            </span>
+            <span class="legend-item">
+              <span class="marker-icon fluvial"></span>
+              Continental
+            </span>
+            <span class="legend-item">
+              <span class="marker-icon lagunaire"></span>
+              Lagunaire
+            </span>
+          </div>
+        </div>
+        <div class="col s12 m4 right-align">
+          <p>
+            <strong>Total:</strong> {{ debarcaderes.length }} débarcadère(s)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carte -->
+  <div class="card">
+    <div class="card-content">
+      <div id="map" class="map-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="changeLocalisation" class="modal">
+  <div class="modal-content">
+    <h4 class="center black-text">
+      Confirmez la modification de la localisation du site
+    </h4>
+    <p *ngIf="positionToUpdate" class="center teal-text darken-4">
+      {{ positionToUpdate.code }} | {{ positionToUpdate.denomination }} |
+      {{ positionToUpdate.milieu }}
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="modal-close waves-effect waves-green btn-flat red left white-text"
+    >
+      Fermer
+    </button>
+    <button
+      type="button"
+      class="modal-close waves-effect waves-green btn-flat right green white-text"
+      (click)="validateChange()"
+    >
+      Confirmer
+    </button>
+  </div>
+</div>

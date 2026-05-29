@@ -2,122 +2,32 @@ import { Component, OnInit, AfterViewInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import * as L from "leaflet";
+import "leaflet.markercluster";
 import { DebarcadereService } from "../../services/debarcadere.service";
 import { Debarcadere } from "../../models/debarcadere.model";
 import { environment } from "../../../environments/environment";
+declare var M: any;
+
+interface CustomMarker extends L.Marker {
+  myData: any;
+}
 
 @Component({
   selector: "app-carte",
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: `
-    <div class="page-header">
-      <div class="container-fluid">
-        <h1><i class="material-icons left">map</i> Carte des débarcadères</h1>
-        <p>Visualisation géographique des débarcadères du Gabon</p>
-      </div>
-    </div>
-
-    <div class="container-fluid">
-      <!-- Légende et filtres -->
-      <div class="card">
-        <div class="card-content">
-          <div class="row">
-            <div class="col s12 m8">
-              <span class="card-title">Légende</span>
-              <div class="legend-items">
-                <span class="legend-item">
-                  <span class="marker-icon maritime"></span>
-                  Maritime
-                </span>
-                <span class="legend-item">
-                  <span class="marker-icon fluvial"></span>
-                  Fluvial
-                </span>
-                <span class="legend-item">
-                  <span class="marker-icon lagunaire"></span>
-                  Lagunaire
-                </span>
-              </div>
-            </div>
-            <div class="col s12 m4 right-align">
-              <p>
-                <strong>Total:</strong> {{ debarcaderes.length }} débarcadère(s)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Carte -->
-      <div class="card">
-        <div class="card-content">
-          <div id="map" class="map-container"></div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [
-    `
-      .map-container {
-        height: 600px;
-        border-radius: 8px;
-      }
-
-      .legend-items {
-        display: flex;
-        gap: 2rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
-      }
-
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .marker-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-
-      .marker-icon.maritime {
-        background-color: #2196f3;
-      }
-
-      .marker-icon.fluvial {
-        background-color: #4caf50;
-      }
-
-      .marker-icon.lagunaire {
-        background-color: #00bcd4;
-      }
-
-      :host ::ng-deep .leaflet-popup-content-wrapper {
-        border-radius: 8px;
-      }
-
-      :host ::ng-deep .leaflet-popup-content h6 {
-        margin: 0 0 0.5rem 0;
-        color: #0d47a1;
-        font-weight: 500;
-      }
-
-      :host ::ng-deep .leaflet-popup-content p {
-        margin: 0.25rem 0;
-        font-size: 0.9rem;
-      }
-    `,
-  ],
+  templateUrl: "./carte.component.html",
+  styleUrl: "./carte.component.css",
 })
 export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
   private map?: L.Map;
   debarcaderes: Debarcadere[] = [];
-  private markers: L.Marker[] = [];
+  instanceModal: any;
+  positionToUpdate: any;
+  payload: any = {};
+  // markerClusterGroup is provided by the leaflet.markercluster plugin and may not
+  // be present in the @types/leaflet definitions. Cast L to any to access it.
+  private markers: any = (L as any).markerClusterGroup();
 
   url: any = `${environment.apiUrl}/uploads/debarcaderes/`;
 
@@ -129,12 +39,22 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.initializeMap();
+    this.initModals();
   }
 
   ngOnDestroy() {
     if (this.map) {
       this.map.remove();
     }
+  }
+
+  initModals() {
+    const elem = document.getElementById("changeLocalisation");
+    // console.log(elem);
+    const options = {
+      dismissible: false,
+    };
+    this.instanceModal = M.Modal.init(elem, options);
   }
 
   private initializeMap() {
@@ -144,11 +64,65 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
     // Initialiser la carte
     this.map = L.map("map").setView(gabonCenter, 6);
 
-    // Ajouter le layer OpenStreetMap
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-      maxZoom: 18,
-    }).addTo(this.map);
+    /*
+     * OpenStreetMap
+     */
+    const osm = L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 18,
+      },
+    );
+
+    /*
+     * Satellite ESRI
+     */
+    const esriSatellite = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/" +
+        "World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution: "Tiles © Esri",
+        maxZoom: 21,
+      },
+    );
+
+    /*
+     * Carto Dark
+     */
+    const cartoDark = L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution: "&copy; CARTO",
+      },
+    );
+
+    /*
+     * OpenTopoMap
+     */
+    const topo = L.tileLayer(
+      "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      {
+        attribution: "&copy; OpenTopoMap",
+      },
+    );
+
+    /*
+     * Fond par défaut
+     */
+    osm.addTo(this.map);
+
+    /*
+     * Contrôle des couches
+     */
+    const baseMaps = {
+      OpenStreetMap: osm,
+      Satellite: esriSatellite,
+      Dark: cartoDark,
+      Topo: topo,
+    };
+
+    L.control.layers(baseMaps).addTo(this.map);
 
     // Ajouter les marqueurs si les débarcadères sont déjà chargés
     if (this.debarcaderes.length > 0) {
@@ -159,7 +133,7 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadDebarcaderes() {
     this.debarcadereService.getDebarcaderes().subscribe({
       next: (data) => {
-        console.log("Débarcadères chargés:", data);
+        // console.log("Débarcadères chargés:", data);
         this.debarcaderes = data;
         if (this.map) {
           this.addMarkers();
@@ -175,19 +149,52 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.map) return;
 
     // Nettoyer les marqueurs existants
-    this.markers.forEach((marker) => marker.remove());
-    this.markers = [];
+    this.markers.clearLayers();
+    // this.markers = [];
 
     // Ajouter un marqueur pour chaque débarcadère
     this.debarcaderes.forEach((deb) => {
       const icon = this.getMarkerIcon(deb.milieu);
 
-      const marker = L.marker([deb.latitude, deb.longitude], { icon })
-        .addTo(this.map!)
-        .bindPopup(this.createPopupContent(deb));
+      const marker = L.marker([deb.latitude, deb.longitude], {
+        icon,
+        draggable: true,
+      }).bindPopup(this.createPopupContent(deb)) as CustomMarker;
 
-      this.markers.push(marker);
+      marker.myData = deb;
+
+      marker.on("dragend", (event: any) => {
+        const position = event.target.getLatLng();
+
+        // console.log(event.target);
+
+        this.payload = {
+          latitude: position.lat,
+          longitude: position.lng,
+        };
+
+        console.log(event.target.myData);
+
+        this.positionToUpdate = event.target.myData;
+
+        this.instanceModal.open();
+
+        // this.http
+        //   .put(`http://localhost:8000/points/${data.id}`, payload)
+        //   .subscribe({
+        //     next: () => {
+        //       console.log("Coordinates updated");
+        //     },
+        //     error: (err) => {
+        //       console.error(err);
+        //     },
+        //   });
+      });
+
+      this.markers.addLayer(marker);
     });
+
+    this.map.addLayer(this.markers);
 
     // Ajuster la vue pour inclure tous les marqueurs
     if (this.markers.length > 0) {
@@ -199,7 +206,7 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
   private getMarkerIcon(milieu: string): L.DivIcon {
     let color = "#2196f3"; // Maritime par défaut
 
-    if (milieu === "Fluvial") {
+    if (milieu === "Continental") {
       color = "#4caf50";
     } else if (milieu === "Lagunaire") {
       color = "#00bcd4";
@@ -255,5 +262,25 @@ export class CarteComponent implements OnInit, AfterViewInit, OnDestroy {
     if (deb.infrastructure_electricite) infras.push("Électricité");
 
     return infras.join(", ");
+  }
+
+  validateChange() {
+    const formData = new FormData();
+    formData.append("latitude", this.payload.latitude);
+    formData.append("longitude", this.payload.longitude);
+    this.debarcadereService
+      .updateDebarcadere(this.positionToUpdate.id, this.payload)
+      .subscribe({
+        next: (response) => {
+          M.toast({
+            html: `Localisation du site modifiée`,
+            classes: "green",
+          });
+        },
+        error: (error) => {
+          // console.error("Erreur lors de la création:", error);
+          M.toast({ html: "Erreur lors de la modification", classes: "red" });
+        },
+      });
   }
 }

@@ -229,55 +229,59 @@ tbody tr td {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-// .form-input {
-//   margin-top: 10px;
-// }
+/* Small clusters */
+.marker-cluster-small {
+  background-color: rgba(0, 128, 255, 0.3);
+}
 
-// .input-field label {
-//   font-size: 13px;
-//   margin-left: 4px;
-//   color: #757575;
-// }
+.marker-cluster-small div {
+  background-color: rgba(0, 128, 255, 0.8);
+  color: white;
+}
 
-// .form-input select {
-//   height: 30px; /* fixed height */
-//   border-radius: 5px;
-//   margin-top: 2px;
-//   padding-left: 10px;
-// }
-// /* Remove Materialize underline style and add rounded border */
-// .input-field {
-//   margin-top: 2px;
-//   margin-bottom: 0 !important;
-// }
-// .input-field input[type="text"],
-// .input-field input[type="password"],
-// .input-field input[type="number"],
-// .input-field input[type="email"] {
-//   border: 1px solid #ccc; /* regular border */
-//   border-radius: 5px; /* rounded edges */
-//   padding: 0; /* spacing inside */
-//   padding-left: 10px;
-//   height: 30px; /* fixed height */
-//   width: 98%;
-//   box-shadow: none; /* remove default focus shadow */
-//   color: #000000;
-// }
+/* Medium clusters */
+.marker-cluster-medium {
+  background-color: rgba(255, 165, 0, 0.3);
+}
 
-// /* Focus effect */
-// .input-field input[type="text"]:focus,
-// .input-field input[type="password"]:focus,
-// .input-field input[type="number"]:focus,
-// .input-field input[type="email"]:focus {
-//   border-color: #0288d1; /* highlight color */
-//   box-shadow: 0 0 5px rgba(0, 121, 107, 0.4);
-// }
+.marker-cluster-medium div {
+  background-color: rgba(255, 165, 0, 0.8);
+  color: white;
+}
 
-// input:invalid {
-//   border: 2px solid red;
-//   background-color: #ffe5e5;
-// }
+/* Large clusters */
+.marker-cluster-large {
+  background-color: rgba(255, 0, 0, 0.3);
+}
 
-// input:valid {
-//   border: 2px solid green;
-// }
+.marker-cluster-large div {
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+}
+
+/* Shared cluster style */
+.marker-cluster {
+  border-radius: 50%;
+}
+
+.marker-cluster div {
+  width: 40px;
+  height: 40px;
+  margin-left: 5px;
+  margin-top: 5px;
+
+  text-align: center;
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 40px;
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Hover animation */
+.marker-cluster:hover div {
+  transform: scale(1.1);
+}
