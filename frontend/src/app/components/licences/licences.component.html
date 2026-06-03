@@ -68,76 +68,62 @@
         <table class="highlight responsive-table">
           <thead>
             <tr>
-              <th>Immatriculation</th>
+              <th>Numéro</th>
+              <th>Embarcation</th>
               <th>Propriétaire</th>
-              <th>Type de licence</th>
-              <th>Espèce cible</th>
-              <th>Ports recommandés</th>
+              <th>Type de pêche</th>
+              <th>Site / Port d'attache</th>
+              <th>Année</th>
               <th>Validité</th>
-              <th>Statut</th>
+              <!-- <th>Statut</th> -->
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let bateau of paginatedData">
+            <tr *ngFor="let licence of paginatedData">
               <td>
-                <strong>{{ bateau.numero_immatriculation }}</strong>
+                <strong>{{ licence.numero_licence }}</strong>
               </td>
-              <td>{{ bateau.nom_bateau || "Sans nom" }}</td>
+              <td>
+                <strong
+                  >{{ licence.bateau_info?.nom }}_{{
+                    licence.bateau_info?.immatriculation
+                  }}</strong
+                >
+              </td>
+              <td>{{ licence.nom_titulaire || "Sans nom" }}</td>
               <td>
                 <span class="badge blue lighten-4 blue-text text-darken-4">
-                  {{ bateau.type_bateau }}
+                  {{ licence.type_licence }}
                 </span>
               </td>
-              <td>{{ bateau.propulsion }}</td>
-              <td>
-                <span *ngIf="bateau.proprietaire_info">
-                  {{ bateau.proprietaire_info.nom }}
-                  {{ bateau.proprietaire_info.prenom }}
-                  <br />
-                  <small class="grey-text">{{
-                    bateau.proprietaire_info.numero_carte
-                  }}</small>
-                </span>
-                <span
-                  *ngIf="!bateau.proprietaire_info && bateau.proprietaire_nom"
-                >
-                  {{ bateau.proprietaire_nom }}
-                </span>
-                <span
-                  *ngIf="!bateau.proprietaire_info && !bateau.proprietaire_nom"
-                  class="grey-text"
-                >
-                  Non renseigné
-                </span>
-              </td>
+              <td>{{ licence.bateau_info?.site_port_attache?.nom }}</td>
+              <td>{{ licence.annee_validite }}</td>
               <td>
                 <span
                   class="badge"
                   [ngClass]="
-                    bateau.certificat_valide
-                      ? 'green white-text'
-                      : 'red white-text'
+                    licence.est_active ? 'green white-text' : 'red white-text'
                   "
                 >
-                  {{ bateau.certificat_valide ? "Valide" : "Expiré" }}
+                  {{ licence.est_active ? "Valide" : "Expiré" }}
                 </span>
               </td>
-              <td>
-                <span class="badge" [ngClass]="getStatutClass(bateau.statut)">
-                  {{ bateau.statut }}
+              <!-- <td>
+                <span class="badge" [ngClass]="getStatutClass(licence.statut)">
+                  {{ licence.statut }}
                 </span>
-              </td>
+              </td> -->
               <td>
                 <a
-                  [routerLink]="['/bateaux', bateau.id]"
+                  (click)="generatePDf(licence.id)"
                   class="btn-small btn-flat waves-effect"
                   title="Voir détails"
                 >
                   <i class="material-icons">visibility</i>
                 </a>
                 <a
-                  [routerLink]="['/bateaux', bateau.id, 'edit']"
+                  [routerLink]="['/bateaux', licence.id, 'edit']"
                   class="btn-small btn-flat waves-effect"
                   *appHasPermission="'bateau.update'"
                   title="Modifier"
@@ -145,7 +131,7 @@
                   <i class="material-icons">edit</i>
                 </a>
                 <a
-                  (click)="deleteLicence(bateau)"
+                  (click)="deleteLicence(licence)"
                   *appHasPermission="'bateau.delete'"
                   class="btn-small btn-flat waves-effect red-text"
                   title="Supprimer"

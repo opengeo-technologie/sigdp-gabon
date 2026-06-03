@@ -1,0 +1,121 @@
+/* Variables CSS */
+:host {
+  --primary-color: #2c5282;
+  --primary-dark: #1a365d;
+  --secondary-color: #48bb78;
+  --secondary-dark: #38a169;
+  --accent-color: #4299e1;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --border-focus: #4299e1;
+  --bg-light: #f7fafc;
+  --bg-banner: #ebf8ff;
+  --error-color: #f56565;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Container principal */
+.license-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  padding: 20px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+/* Header */
+.header {
+  //   max-width: 1000px;
+  margin: 0 auto 30px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  padding: 20px 10px;
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  color: white;
+}
+
+.header h1 {
+  font-size: clamp(18px, 5vw, 18px);
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: clamp(13px, 3vw, 15px);
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+/* Bannière d'information */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  background: var(--bg-banner);
+  border-left: 4px solid var(--accent-color);
+  padding: 20px 25px;
+  margin: 0;
+}
+
+.info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.info-text {
+  flex: 1;
+  color: var(--primary-color);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.info-text strong {
+  font-weight: 600;
+}
+
+/* Formulaire */
+.license-form {
+  padding: 40px 30px;
+}
+
+.form-input {
+  margin-top: 10px;
+}
+
+.form-input label {
+  font-size: 13px;
+  margin-left: 4px;
+  color: #757575;
+}
+
+.form-input select {
+  height: 30px; /* fixed height */
+  border-radius: 5px;
+  margin-top: 2px;
+  padding-left: 10px;
+}

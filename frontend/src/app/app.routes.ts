@@ -305,8 +305,8 @@ export const routes: Routes = [
   {
     path: "licences/add",
     loadComponent: () =>
-      import("./components/licences/licence-form/licence-form.component").then(
-        (m) => m.LicenceFormComponent,
+      import("./components/licences/licence-autorisation-form/licence-autorisation-form.component").then(
+        (m) => m.LicenceAutorisationFormComponent,
       ),
     canActivate: [authGuard],
   },

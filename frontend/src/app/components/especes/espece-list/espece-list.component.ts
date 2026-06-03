@@ -93,10 +93,17 @@ declare var M: any;
           >
           <div class="row">
             <div class="col s12 m6 l4" *ngFor="let espece of paginatedData">
-              <div class="card hoverable">
+              <div class="card hoverable espece-card">
                 <div class="card-image" *ngIf="espece.photo_url">
                   <img
                     [src]="url + espece.photo_url"
+                    alt="{{ espece.nom_commun_francais }}"
+                    onerror="this.style.display='none'"
+                  />
+                </div>
+                <div class="card-image" *ngIf="!espece.photo_url">
+                  <img
+                    [src]="'../../../../assets/fish.png'"
                     alt="{{ espece.nom_commun_francais }}"
                     onerror="this.style.display='none'"
                   />
@@ -180,9 +187,12 @@ declare var M: any;
   `,
   styles: [
     `
+      .espece-card {
+        height: 400px;
+      }
       .card-image img {
         max-height: 200px;
-        object-fit: cover;
+        object-fit: contain;
       }
       .badge.Libre {
         background-color: #4caf50;

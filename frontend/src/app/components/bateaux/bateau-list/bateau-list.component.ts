@@ -98,7 +98,7 @@ declare var M: any;
                   <th>Type</th>
                   <th>Propulsion</th>
                   <th>Propriétaire</th>
-                  <th>Cooperative / Armement</th>
+                  <th>Site d'attache / port d'attache</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
@@ -141,17 +141,9 @@ declare var M: any;
                     </span>
                   </td>
                   <td>
-                    <span
-                      class="badge"
-                      [ngClass]="
-                        bateau.cooperative_armement_info
-                          ? 'blue white-text'
-                          : 'grey white-text'
-                      "
-                    >
+                    <span>
                       {{
-                        bateau.cooperative_armement_info?.denomination ||
-                          "Non renseigné"
+                        bateau.site_port_attache_info?.nom || "Non renseigné"
                       }}
                     </span>
                   </td>
@@ -304,6 +296,7 @@ export class BateauListComponent implements OnInit {
 
     this.bateauService.getBateaux(filterParams).subscribe({
       next: (data) => {
+        // console.log("Bateaux chargés:", data);
         this.bateaux = data;
         this.bateaux.sort((a, b) => {
           const compare = a.numero_immatriculation.localeCompare(

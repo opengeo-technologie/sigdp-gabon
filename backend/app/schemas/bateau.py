@@ -19,6 +19,20 @@ class BateauBase(BaseModel):
     tirant_eau: Optional[float] = Field(None, ge=0)
     jauge_brute: Optional[float] = Field(None, ge=0)
 
+    # Autres
+    site_port_attache: Optional[int] = None  # Reference à un site portuaire
+    site_obligatoire: Optional[str] = Field(None, max_length=200)
+    regime: Optional[str] = Field(None, max_length=200)
+    pavillon: Optional[str] = Field(None, max_length=200)
+    statut_bateau: Optional[str] = Field(None, max_length=200)
+    balise_vms_imei: Optional[str] = Field(None, max_length=50)
+    balise_vms_actif: Optional[bool] = None
+    balise_ais_imei: Optional[str] = Field(None, max_length=50)
+    balise_ais_actif: Optional[bool] = None
+    balise_immo_imei: Optional[str] = Field(None, max_length=50)
+    balise_immo_actif: Optional[bool] = None
+    code_vhf: Optional[str] = Field(None, max_length=100)
+
     # Motorisation
     moteur_marque: Optional[str] = Field(None, max_length=50)
     moteur_puissance_cv: Optional[int] = Field(None, ge=0)
@@ -31,7 +45,13 @@ class BateauBase(BaseModel):
     chantier_construction: Optional[str] = Field(None, max_length=100)
 
     # Engins de pêche
-    engins_peche: Optional[str] = Field(None, max_length=200)
+    engins_peche_principal: Optional[int] = (
+        None  # Reference à un type d'engin de pêche principal
+    )
+    engins_peche_secondaires: Optional[str] = Field(
+        None, max_length=200
+    )  # Liste séparée par virgules
+    # engins_peche: Optional[str] = Field(None, max_length=200)
 
     # Propriétaire
     proprietaire_pecheur_id: Optional[int] = None
@@ -77,6 +97,18 @@ class BateauUpdate(BaseModel):
     largeur: Optional[float] = None
     tirant_eau: Optional[float] = None
     jauge_brute: Optional[float] = None
+    site_port_attache: Optional[int] = None  # Reference à un site portuaire
+    site_obligatoire: Optional[str] = Field(None, max_length=200)
+    regime: Optional[str] = Field(None, max_length=200)
+    pavillon: Optional[str] = Field(None, max_length=200)
+    statut_bateau: Optional[str] = Field(None, max_length=200)
+    balise_vms_imei: Optional[str] = Field(None, max_length=50)
+    balise_vms_actif: Optional[bool] = None
+    balise_ais_imei: Optional[str] = Field(None, max_length=50)
+    balise_ais_actif: Optional[bool] = None
+    balise_immo_imei: Optional[str] = Field(None, max_length=50)
+    balise_immo_actif: Optional[bool] = None
+    code_vhf: Optional[str] = Field(None, max_length=100)
     moteur_marque: Optional[str] = None
     moteur_puissance_cv: Optional[int] = None
     moteur_type_carburant: Optional[str] = None
@@ -119,6 +151,8 @@ class BateauResponse(BateauInDB):
     certificat_valide: bool = False
     proprietaire_info: Optional[dict] = None
     cooperative_armement_info: Optional[dict] = None
+    site_port_attache_info: Optional[dict] = None
+    site_obligatoire_info: Optional[list[dict]] = None
 
 
 class EquipageCreate(BaseModel):

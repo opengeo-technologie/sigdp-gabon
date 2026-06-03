@@ -1,6 +1,11 @@
-from app.models.debarcadere import Debarcadere, DebarcadereType, Milieu, StatutOperationnel
+from app.models.debarcadere import (
+    Debarcadere,
+    DebarcadereType,
+    Milieu,
+    StatutOperationnel,
+)
 from app.models.pecheur import Pecheur, CategoriePecheur, TypePeche, StatutPecheur
-from app.models.bateau import Bateau, TypeBateau, Propulsion, MateriauCoque, EnginPeche
+from app.models.bateau import Bateau, TypeBateau, Propulsion, MateriauCoque
 from app.models.espece import Espece, CategorieEspece, StatutReglementaire
 from app.models.debarquement import Debarquement, DetailDebarquement
 
@@ -17,7 +22,6 @@ __all__ = [
     "TypeBateau",
     "Propulsion",
     "MateriauCoque",
-    "EnginPeche",
     "Espece",
     "CategorieEspece",
     "StatutReglementaire",

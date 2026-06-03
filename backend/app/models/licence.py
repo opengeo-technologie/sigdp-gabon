@@ -4,10 +4,10 @@ from datetime import date, timedelta
 from app.database import Base
 
 
-class LicencePeche(Base):
-    """Modèle pour les licences de pêche"""
+class LicenceAutorisationPeche(Base):
+    """Modèle pour les licences et autorisations de pêche"""
 
-    __tablename__ = "licences_peche"
+    __tablename__ = "licences_autorisation_peche"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -17,7 +17,7 @@ class LicencePeche(Base):
         String(50), nullable=False
     )  # artisanale, industrielle, semi-industrielle
     categorie = Column(
-        String(50)
+        String(50), nullable=True
     )  # peche_cotiere, peche_hauturiere, peche_continentale
 
     # Titulaire (pêcheur ou entreprise)
@@ -25,7 +25,8 @@ class LicencePeche(Base):
     # entreprise_id = Column(Integer, ForeignKey("entreprises.id"), nullable=True)
 
     # Dates
-    date_emission = Column(Date, nullable=False)
+    annee_validite = Column(Integer, nullable=False)  # ex: 2024
+    date_emission = Column(Date, nullable=True)
     date_debut = Column(Date, nullable=False)
     date_expiration = Column(Date, nullable=False)
 
@@ -65,7 +66,9 @@ class LicencePeche(Base):
 
     # Renouvellement
     est_renouvellement = Column(Boolean, default=False)
-    licence_precedente_id = Column(Integer, ForeignKey("licences_peche.id"))
+    licence_precedente_id = Column(
+        Integer, ForeignKey("licences_autorisation_peche.id")
+    )
 
     # Autorité émettrice
     autorite_emission = Column(String(100))  # Ministère des Eaux et Forêts
@@ -82,15 +85,15 @@ class LicencePeche(Base):
     actif = Column(Boolean, default=True)
 
     # Relations
-    pecheur = relationship("Pecheur", back_populates="licences")
-    bateau = relationship("Bateau", back_populates="licences")
+    # pecheur = relationship("Pecheur", back_populates="licences")
+    # bateau = relationship("Bateau", back_populates="licences")
     # entreprise = relationship("Entreprise", back_populates="licences")
 
     # Historique des inspections
-    inspections = relationship("InspectionLicence", back_populates="licence")
+    # inspections = relationship("InspectionLicence", back_populates="licence")
 
     # Violations associées
-    violations = relationship("ViolationLicence", back_populates="licence")
+    # violations = relationship("ViolationLicence", back_populates="licence")
 
     def est_active(self) -> bool:
         """Vérifier si la licence est active"""
@@ -116,89 +119,93 @@ class LicencePeche(Base):
         return delta.days // 30
 
 
-class InspectionLicence(Base):
-    """Inspections et contrôles des licences"""
+# class InspectionLicence(Base):
+#     """Inspections et contrôles des licences"""
 
-    __tablename__ = "inspections_licences"
+#     __tablename__ = "inspections_licences"
 
-    id = Column(Integer, primary_key=True, index=True)
+#     id = Column(Integer, primary_key=True, index=True)
 
-    licence_id = Column(Integer, ForeignKey("licences_peche.id"), nullable=False)
+#     licence_id = Column(
+#         Integer, ForeignKey("licences_autorisation_peche.id"), nullable=False
+#     )
 
-    date_inspection = Column(Date, nullable=False)
-    lieu_inspection = Column(String(100))
+#     date_inspection = Column(Date, nullable=False)
+#     lieu_inspection = Column(String(100))
 
-    type_inspection = Column(String(50))  # terrain, bureau, aleatoire
-    inspecteur = Column(String(100))
-    organisme = Column(String(100))
+#     type_inspection = Column(String(50))  # terrain, bureau, aleatoire
+#     inspecteur = Column(String(100))
+#     organisme = Column(String(100))
 
-    # Résultat
-    conforme = Column(Boolean)
-    remarques = Column(Text)
-    mesures_correctives = Column(Text)
+#     # Résultat
+#     conforme = Column(Boolean)
+#     remarques = Column(Text)
+#     mesures_correctives = Column(Text)
 
-    # Documents
-    rapport_scan = Column(String(255))
+#     # Documents
+#     rapport_scan = Column(String(255))
 
-    # Relation
-    licence = relationship("LicencePeche", back_populates="inspections")
-
-
-class ViolationLicence(Base):
-    """Violations et infractions liées aux licences"""
-
-    __tablename__ = "violations_licences"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    licence_id = Column(Integer, ForeignKey("licences_peche.id"), nullable=False)
-
-    date_violation = Column(Date, nullable=False)
-    type_violation = Column(
-        String(100)
-    )  # peche_zone_interdite, quota_depasse, espece_interdite
-
-    description = Column(Text)
-    lieu = Column(String(100))
-
-    # Sanction
-    type_sanction = Column(String(50))  # avertissement, amende, suspension
-    montant_amende = Column(Numeric(10, 2))
-    duree_suspension_jours = Column(Integer)
-
-    # Statut
-    statut = Column(String(20), default="en_cours")  # en_cours, reglee, contestee
-    date_reglement = Column(Date)
-
-    # Agent verbalisateur
-    agent = Column(String(100))
-
-    # Relation
-    licence = relationship("LicencePeche", back_populates="violations")
+#     # Relation
+#     licence = relationship("LicencePeche", back_populates="inspections")
 
 
-class RenouvellementLicence(Base):
-    """Demandes de renouvellement de licences"""
+# class ViolationLicence(Base):
+#     """Violations et infractions liées aux licences"""
 
-    __tablename__ = "renouvellements_licences"
+#     __tablename__ = "violations_licences"
 
-    id = Column(Integer, primary_key=True, index=True)
+#     id = Column(Integer, primary_key=True, index=True)
 
-    licence_actuelle_id = Column(
-        Integer, ForeignKey("licences_peche.id"), nullable=False
-    )
+#     licence_id = Column(
+#         Integer, ForeignKey("licences_autorisation_peche.id"), nullable=False
+#     )
 
-    date_demande = Column(Date, nullable=False)
-    date_traitement = Column(Date)
+#     date_violation = Column(Date, nullable=False)
+#     type_violation = Column(
+#         String(100)
+#     )  # peche_zone_interdite, quota_depasse, espece_interdite
 
-    # Statut demande
-    statut = Column(String(20), default="en_attente")  # en_attente, approuve, rejete
-    motif_rejet = Column(Text)
+#     description = Column(Text)
+#     lieu = Column(String(100))
 
-    # Nouvelle licence générée
-    nouvelle_licence_id = Column(Integer, ForeignKey("licences_peche.id"))
+#     # Sanction
+#     type_sanction = Column(String(50))  # avertissement, amende, suspension
+#     montant_amende = Column(Numeric(10, 2))
+#     duree_suspension_jours = Column(Integer)
 
-    # Agent traitant
-    agent_traitement = Column(String(100))
+#     # Statut
+#     statut = Column(String(20), default="en_cours")  # en_cours, reglee, contestee
+#     date_reglement = Column(Date)
 
-    remarques = Column(Text)
+#     # Agent verbalisateur
+#     agent = Column(String(100))
+
+#     # Relation
+#     licence = relationship("LicencePeche", back_populates="violations")
+
+
+# class RenouvellementLicence(Base):
+#     """Demandes de renouvellement de licences"""
+
+#     __tablename__ = "renouvellements_licences"
+
+#     id = Column(Integer, primary_key=True, index=True)
+
+#     licence_actuelle_id = Column(
+#         Integer, ForeignKey("licences_peche.id"), nullable=False
+#     )
+
+#     date_demande = Column(Date, nullable=False)
+#     date_traitement = Column(Date)
+
+#     # Statut demande
+#     statut = Column(String(20), default="en_attente")  # en_attente, approuve, rejete
+#     motif_rejet = Column(Text)
+
+#     # Nouvelle licence générée
+#     nouvelle_licence_id = Column(Integer, ForeignKey("licences_peche.id"))
+
+#     # Agent traitant
+#     agent_traitement = Column(String(100))
+
+#     remarques = Column(Text)

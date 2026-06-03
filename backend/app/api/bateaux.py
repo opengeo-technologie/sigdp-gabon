@@ -22,6 +22,7 @@ from datetime import date
 
 from app.database import get_db
 from app.models.bateau import Bateau, Equipage
+from app.models.debarcadere import Debarcadere
 from app.models.armement_coorperative import ArmementCooperative
 from app.models.pecheur import Pecheur
 from app.schemas.bateau import (
@@ -32,6 +33,7 @@ from app.schemas.bateau import (
     BateauInDB,
     EquipageCreate,
 )
+from app.models.engin_peche import EnginPeche
 
 router = APIRouter(prefix="/api/bateaux", tags=["Bateaux"])
 
@@ -167,6 +169,7 @@ async def upload_bateau_excel(
             "annee_construction",
             "materiau_coque",
             "site_attache",
+            "site_obligatoire",
             "puissance_cv",
             "nombre_equipage",
             "nom_proprietaire",
@@ -223,6 +226,39 @@ async def upload_bateau_excel(
                 .first()
             )
 
+            site_attache = (
+                db.query(Debarcadere)
+                .filter(
+                    Debarcadere.denomination.ilike(f"%{row['site_attache'].strip()}%")
+                )
+                .first()
+            )
+            liste_sites_obligatoires = [
+                s.strip() for s in row["site_obligatoire"].split("/") if s.strip()
+            ]
+
+            site_obligatoires = []
+            for site in liste_sites_obligatoires:
+                site_obligatoire = (
+                    db.query(Debarcadere)
+                    .filter(Debarcadere.denomination.ilike(f"%{site.strip()}%"))
+                    .first()
+                )
+                if site_obligatoire:
+                    site_obligatoires.append(site_obligatoire.id)
+
+            engin_peche_principal = (
+                db.query(EnginPeche)
+                .filter(EnginPeche.libelle == row["engin_peche1"].strip())
+                .first()
+            )
+
+            engin_peche_secondaire = (
+                db.query(EnginPeche)
+                .filter(EnginPeche.libelle == row["engin_peche2"].strip())
+                .first()
+            )
+
             bateau_data = BateauCreate(
                 numero_immatriculation=row["immatriculation"].strip(),
                 nom_bateau=row["nom"].strip(),
@@ -245,6 +281,14 @@ async def upload_bateau_excel(
                 ),
                 proprietaire_nom=row["nom_proprietaire"],
                 nombre_equipage=row["nombre_equipage"],
+                site_port_attache=site_attache.id if site_attache else None,
+                site_obligatoire=",".join(str(s) for s in site_obligatoires),
+                engins_peche_principal=(
+                    engin_peche_principal.id if engin_peche_principal else None
+                ),
+                engins_peche_secondaires=(
+                    str(engin_peche_secondaire.id) if engin_peche_secondaire else None
+                ),
             )
 
             bateau = Bateau(**bateau_data.model_dump())
@@ -309,6 +353,7 @@ def get_bateaux(
                     "numero_carte": proprietaire.numero_carte,
                 }
 
+        # Ajouter les infos de la coopérative/armement si disponible
         if bateau.cooperative_armement_id:
             cooperative_armement = (
                 db.query(ArmementCooperative)
@@ -321,6 +366,37 @@ def get_bateaux(
                     "denomination": cooperative_armement.denomination,
                     "code": cooperative_armement.code,
                 }
+
+        # Ajouter les infos du site de port d'attache si disponible
+        if bateau.site_port_attache:
+            site_port = (
+                db.query(Debarcadere)
+                .filter(Debarcadere.id == bateau.site_port_attache)
+                .first()
+            )
+            if site_port:
+                bateau_dict["site_port_attache_info"] = {
+                    "id": site_port.id,
+                    "nom": site_port.denomination,
+                    "localisation": site_port.localite,
+                }
+
+        # Ajouter les infos du site obligatoire si disponible
+        if bateau.site_obligatoire:
+            site_obligatoires = []
+            for site_id in bateau.site_obligatoire.split(","):
+                site = (
+                    db.query(Debarcadere).filter(Debarcadere.id == int(site_id)).first()
+                )
+                if site:
+                    site_obligatoires.append(
+                        {
+                            "id": site.id,
+                            "nom": site.denomination,
+                            "localisation": site.localite,
+                        }
+                    )
+            bateau_dict["site_obligatoire_info"] = site_obligatoires
 
         result.append(BateauResponse(**bateau_dict))
 
@@ -379,6 +455,37 @@ def get_bateau(bateau_id: int, db: Session = Depends(get_db)):
                 "denomination": cooperative_armement.denomination,
                 "code": cooperative_armement.code,
             }
+
+        # Ajouter les infos du site de port d'attache si disponible
+        if bateau.site_port_attache:
+            site_port = (
+                db.query(Debarcadere)
+                .filter(Debarcadere.id == bateau.site_port_attache)
+                .first()
+            )
+            if site_port:
+                bateau_dict["site_port_attache_info"] = {
+                    "id": site_port.id,
+                    "nom": site_port.denomination,
+                    "localisation": site_port.localite,
+                }
+
+        # Ajouter les infos du site obligatoire si disponible
+        if bateau.site_obligatoire:
+            site_obligatoires = []
+            for site_id in bateau.site_obligatoire.split(","):
+                site = (
+                    db.query(Debarcadere).filter(Debarcadere.id == int(site_id)).first()
+                )
+                if site:
+                    site_obligatoires.append(
+                        {
+                            "id": site.id,
+                            "nom": site.denomination,
+                            "localisation": site.localite,
+                        }
+                    )
+            bateau_dict["site_obligatoire_info"] = site_obligatoires
 
     return BateauResponse(**bateau_dict)
 

@@ -154,7 +154,7 @@ import { environment } from "../../../environments/environment";
                       <th>Espèce</th>
                       <th>Code</th>
                       <th>Quantité</th>
-                      <th>Valeur (FCFA)</th>
+                      <th>Année</th>
                     </tr>
                   </thead>
                   <tbody>

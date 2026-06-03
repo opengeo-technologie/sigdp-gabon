@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, validator
 from typing import Optional, List
 from datetime import date
 from decimal import Decimal
-
 
 # ==========================================
 # Schémas Licence de Pêche
@@ -10,7 +9,7 @@ from decimal import Decimal
 
 
 class LicencePecheBase(BaseModel):
-    numero_licence: str = Field(..., min_length=3, max_length=50)
+    numero_licence: str = Field(..., min_length=0, max_length=50)
     type_licence: str = Field(
         ..., description="artisanale, industrielle, semi-industrielle"
     )
@@ -21,6 +20,7 @@ class LicencePecheBase(BaseModel):
     pecheur_id: Optional[int] = None
     entreprise_id: Optional[int] = None
 
+    annee_validite: int
     date_emission: date
     date_debut: date
     date_expiration: date
@@ -43,7 +43,7 @@ class LicencePecheBase(BaseModel):
     mode_paiement: Optional[str] = None
     reference_paiement: Optional[str] = None
 
-    autorite_emission: str = "Ministère des Eaux et Forêts"
+    autorite_emission: str = "Ministère de la Mer, de la Pêche et de l'Économie Bleue"
     agent_emission: Optional[str] = None
     bureau_emission: Optional[str] = None
 
@@ -95,10 +95,10 @@ class LicencePecheInDB(LicencePecheBase):
     """Licence depuis la base de données"""
 
     id: int
-    statut: str
+    statut: Optional[str] = None
     raison_suspension: Optional[str] = None
     date_suspension: Optional[date] = None
-    est_renouvellement: bool
+    est_renouvellement: Optional[bool] = False
     licence_precedente_id: Optional[int] = None
     document_scan: Optional[str] = None
 
@@ -117,6 +117,14 @@ class LicencePecheResponse(LicencePecheInDB):
     # Informations titulaire
     nom_titulaire: Optional[str] = None
     type_titulaire: Optional[str] = None  # pecheur ou entreprise
+
+    # Informations bateau
+    bateau_info: Optional[dict] = None
+
+    # Info proprietaire
+    proprietaire_info: Optional[dict] = None
+
+    model_config = ConfigDict(from_attributes=True, frozen=False)
 
 
 # ==========================================

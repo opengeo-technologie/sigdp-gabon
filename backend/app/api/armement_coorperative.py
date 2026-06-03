@@ -39,15 +39,15 @@ def get_next_reference(
     affiliation_type: Optional[str] = None,
 ) -> str:
     list_province_with_code_prov = [
-        ("Estuaire", "EST"),
-        ("Haut-Ogooué", "HOG"),
-        ("Moyen-Ogooué", "MOG"),
-        ("Ngounié", "NGO"),
-        ("Nyanga", "NYA"),
-        ("Ogooué-Ivindo", "OIV"),
-        ("Ogooué-Lolo", "OL"),
-        ("Ogooué-Maritime", "OM"),
-        ("Woleu-Ntem", "WN"),
+        ("ESTUAIRE", "EST"),
+        ("HAUT OGOOUE", "HOG"),
+        ("MOYEN OGOOUE", "MOG"),
+        ("NGOUNIE", "NGO"),
+        ("NYANGA", "NYA"),
+        ("OGOOUE IVINDO", "OIV"),
+        ("OGOOUE LOLO", "OL"),
+        ("OGOOUE MARITIME", "OM"),
+        ("WOLEU-NTEM", "WN"),
     ]
 
     # Récupérer la dernière commande de l'année courante
@@ -160,29 +160,56 @@ async def upload_armement_cooperative_excel(
             print(f"Date de création: {row['date_creation']}, Siège: {row['siege']}")
             print(f"Type: {row['type']}, Adresse: {row['adresse']}")
 
-            armement_data = ArmementCooperativeCreate(
-                code=get_next_reference(
-                    db,
-                    province=row["province"],
-                    affiliation_type=row["type"],
-                ),
-                denomination=row["denomination"],
-                sigle=row["sigle"],
-                localite=row["localite"],
-                province=row["province"],
-                date_creation=row["date_creation"],
-                siege=row["siege"],
-                adresse=row["adresse"],
-                telephone=row["telephone"],
-                email=row["email"],
-                type_association=row["type"],
-            )
+            try:
+                # Vérifier si l'armement ou la coopérative existe déjà (par sigle et province)
+                existing = (
+                    db.query(ArmementCooperative)
+                    .filter(ArmementCooperative.sigle == row["sigle"])
+                    .filter(ArmementCooperative.province == row["province"])
+                    .first()
+                )
 
-            armement = ArmementCooperative(**armement_data.model_dump())
-            db.add(armement)
-            db.commit()
+                if existing:
+                    # Mettre à jour les champs existants
+                    existing.denomination = row["denomination"]
+                    existing.localite = row["localite"]
+                    existing.date_creation = row["date_creation"]
+                    existing.siege = row["siege"]
+                    existing.adresse = row["adresse"]
+                    existing.telephone = row["telephone"]
+                    existing.email = row["email"]
+                    existing.type_association = row["type"]
 
-        return {"message": "Fichier Excel traité avec succès"}
+                    db.commit()
+                    updated_count += 1
+                else:
+                    # Créer une nouvelle entrée
+                    new_entry = ArmementCooperative(
+                        denomination=row["denomination"],
+                        sigle=row["sigle"],
+                        localite=row["localite"],
+                        province=row["province"],
+                        date_creation=row["date_creation"],
+                        siege=row["siege"],
+                        adresse=row["adresse"],
+                        telephone=row["telephone"],
+                        email=row["email"],
+                        type_association=row["type"],
+                        code=get_next_reference(
+                            db,
+                            province=row["province"],
+                            affiliation_type=row["type"],
+                        ),
+                    )
+                    db.add(new_entry)
+                    db.commit()
+                    inserted_count += 1
+            except Exception as e:
+                errors.append(
+                    f"Erreur pour {row['denomination']} ({row['sigle']}): {str(e)}"
+                )
+
+        return {"message": "Fichier Excel traité avec succès", "errors": errors}
 
     except pd.errors.EmptyDataError:
         raise HTTPException(

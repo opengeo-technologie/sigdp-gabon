@@ -20,6 +20,12 @@ export enum MateriauCoque {
   ACIER = "Acier",
 }
 
+export interface SiteObligatoire {
+  id: number;
+  nom: string;
+  localisation: string;
+}
+
 export interface Bateau {
   id: number;
   numero_immatriculation: string;
@@ -91,6 +97,14 @@ export interface Bateau {
     denomination: string;
     code: string;
   };
+
+  site_port_attache_info?: {
+    id: number;
+    nom: string;
+    localisation: string;
+  };
+
+  site_obligatoire_info?: SiteObligatoire[];
 
   created_at: string;
   updated_at?: string;

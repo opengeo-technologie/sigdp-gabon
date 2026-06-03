@@ -68,8 +68,13 @@
             <tr *ngFor="let armement of paginatedData">
               <td>{{ armement.code }}</td>
               <td>{{ armement.denomination || "Sans nom" }}</td>
-              <td>
+              <td *ngIf="armement.type_association == 'Cooperative'">
                 <span class="badge blue lighten-4 blue-text text-darken-4">
+                  {{ armement.type_association }}
+                </span>
+              </td>
+              <td *ngIf="armement.type_association == 'Armement'">
+                <span class="badge red lighten-3 red-text text-darken-4">
                   {{ armement.type_association }}
                 </span>
               </td>

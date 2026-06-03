@@ -1,3 +1,4 @@
+import { TypeCooperative } from "./../../../models/armement-cooperative.model";
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule, ActivatedRoute, Router } from "@angular/router";
@@ -79,25 +80,67 @@ declare var M: any;
               </div>
 
               <div class="divider" *ngIf="bateau.proprietaire_info"></div>
-
-              <div *ngIf="bateau.proprietaire_info">
-                <h6>Propriétaire</h6>
-                <p>
-                  {{ bateau.proprietaire_info.nom }}
-                  {{ bateau.proprietaire_info.prenom }}
-                </p>
-                <p>
-                  <small>{{ bateau.proprietaire_info.numero_carte }}</small>
-                </p>
-                <a
-                  [routerLink]="['/pecheurs', bateau.proprietaire_info.id]"
-                  class="btn-small"
-                  *appHasPermission="'pecheur.view'"
+              <div class="row">
+                <div class="col s12 m6" *ngIf="bateau.proprietaire_info">
+                  <h6>Propriétaire</h6>
+                  <p>
+                    {{ bateau.proprietaire_info.nom }}
+                    {{ bateau.proprietaire_info.prenom }}
+                  </p>
+                  <p>
+                    <small>{{ bateau.proprietaire_info.numero_carte }}</small>
+                  </p>
+                  <a
+                    [routerLink]="['/pecheurs', bateau.proprietaire_info.id]"
+                    class="btn-small"
+                  >
+                    Voir fiche pêcheur
+                  </a>
+                </div>
+                <div
+                  class="col s12 m6"
+                  *ngIf="bateau.cooperative_armement_info"
                 >
-                  Voir fiche pêcheur
-                </a>
+                  <h6>Coopérative / Armement</h6>
+                  <p>{{ bateau.cooperative_armement_info.denomination }}</p>
+                  <p>
+                    <small>{{ bateau.cooperative_armement_info.code }}</small>
+                  </p>
+                  <a
+                    [routerLink]="[
+                      '/armements-cooperatives',
+                      bateau.cooperative_armement_info.id,
+                    ]"
+                    class="btn-small"
+                  >
+                    Voir fiche de la coopérative ou armement
+                  </a>
+                </div>
               </div>
 
+              <div class="divider" *ngIf="bateau.site_port_attache_info"></div>
+
+              <div class="row">
+                <div class="col s12 m6" *ngIf="bateau.site_port_attache_info">
+                  <h6>Site d'attache / Port d'attache</h6>
+                  <p>
+                    {{ bateau.site_port_attache_info.nom }} -
+                    {{ bateau.site_port_attache_info.localisation }}
+                  </p>
+                </div>
+                <div
+                  class="col s12 m6"
+                  *ngIf="
+                    bateau.site_obligatoire_info &&
+                    bateau.site_obligatoire_info.length > 0
+                  "
+                >
+                  <h6>Site de débarquement</h6>
+                  @for (site of bateau.site_obligatoire_info; track site.id) {
+                    <p>{{ site.nom }} - {{ site.localisation }}</p>
+                  }
+                </div>
+              </div>
               <div class="divider" *ngIf="bateau.photo_url"></div>
 
               <div class="row" *ngIf="bateau.photo_url">
@@ -131,7 +174,8 @@ declare var M: any;
             <div class="card-content">
               <span class="card-title">Certificat</span>
               <p *ngIf="bateau.certificat_navigabilite_numero">
-                <strong>N°:</strong> {{ bateau.certificat_navigabilite_numero }}
+                <strong>N°:</strong>
+                {{ bateau.certificat_navigabilite_numero }}
               </p>
               <p *ngIf="bateau.certificat_navigabilite_date_expiration">
                 <strong>Expire le:</strong>
@@ -253,7 +297,7 @@ export class BateauDetailComponent implements OnInit {
     if (this.bateauId) {
       this.bateauService.getBateau(this.bateauId).subscribe({
         next: (d) => {
-          console.log("Données du bateau chargées:", d);
+          // console.log("Données du bateau chargées:", d);
           this.bateau = d;
           this.listEnginsPeche = d.engins_peche
             ? d.engins_peche.split(",").map((e) => e.trim())

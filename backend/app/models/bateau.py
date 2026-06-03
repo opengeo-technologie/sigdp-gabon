@@ -39,13 +39,13 @@ class MateriauCoque(str, enum.Enum):
     PLASTIQUE = "Plastique"
 
 
-class EnginPeche(str, enum.Enum):
-    FILET_MAILLANT = "Filet maillant"
-    SENNE = "Senne"
-    LIGNE = "Ligne"
-    CASIER = "Casier"
-    HARPON = "Harpon"
-    PALANGRE = "Palangre"
+# class EnginPeche(str, enum.Enum):
+#     FILET_MAILLANT = "Filet maillant"
+#     SENNE = "Senne"
+#     LIGNE = "Ligne"
+#     CASIER = "Casier"
+#     HARPON = "Harpon"
+#     PALANGRE = "Palangre"
 
 
 class Bateau(Base):
@@ -67,6 +67,20 @@ class Bateau(Base):
     tirant_eau = Column(Float)  # en mètres
     jauge_brute = Column(Float)  # en tonneaux
 
+    # Autres
+    site_port_attache = Column(Integer, nullable=True)
+    site_obligatoire = Column(String(200), nullable=True)
+    regime = Column(String(200), nullable=True)
+    pavillon = Column(String(200), nullable=True)
+    statut_bateau = Column(String(200), nullable=True)
+    balise_vms_imei = Column(String(50), nullable=True)
+    balise_vms_actif = Column(Boolean, default=False)
+    balise_ais_imei = Column(String(50), nullable=True)
+    balise_ais_actif = Column(Boolean, default=False)
+    balise_immo_imei = Column(String(50), nullable=True)
+    balise_immo_actif = Column(Boolean, default=False)
+    code_vhf = Column(String(100), nullable=True)
+
     # Motorisation
     moteur_marque = Column(String(50))
     moteur_puissance_cv = Column(Integer)
@@ -79,7 +93,10 @@ class Bateau(Base):
     chantier_construction = Column(String(100))
 
     # Engins de pêche embarqués
-    engins_peche = Column(String(200))  # Liste séparée par virgules
+    engins_peche_principal = Column(
+        Integer
+    )  # Reference à un type d'engin de pêche principal
+    engins_peche_secondaires = Column(String(200))  # Liste séparée par virgules
 
     # Propriétaire et équipage
     proprietaire_pecheur_id = Column(Integer)  # Référence au pêcheur propriétaire
@@ -153,20 +170,3 @@ class Equipage(Base):
 
     def __repr__(self):
         return f"<Equipage Bateau ID: {self.bateau_id}, Pêcheur ID: {self.pecheur_id}, Rôle: {self.role}>"
-
-
-# class EnginPecheEmbarque(Base):
-#     __tablename__ = "engins_peche_embarques"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     bateau_id = Column(Integer, ForeignKey("bateaux.id"), nullable=False)
-#     type_engin = Column(Enum(EnginPeche), nullable=False)
-#     quantite = Column(Integer, default=1)
-
-#     bateau = relationship("Bateau", back_populates="engins_peche")
-
-#     created_at = Column(DateTime(timezone=True), server_default=func.now())
-#     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-#     def __repr__(self):
-#         return f"<EnginPecheEmbarque Bateau ID: {self.bateau_id}, Type: {self.type_engin}, Quantité: {self.quantite}>"

@@ -6,10 +6,12 @@ from typing import List, Optional
 from datetime import date, timedelta
 from pathlib import Path
 import shutil
+import io
+import pandas as pd
 
 from app.database import get_db
 from app.models.licence import (
-    LicencePeche,
+    LicenceAutorisationPeche,
     InspectionLicence,
     ViolationLicence,
     RenouvellementLicence,
@@ -40,6 +42,149 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # ==========================================
 # CRUD Licences
 # ==========================================
+
+
+@router.post("/upload-excel")
+async def upload_licence_autorisation_excel(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Télécharge un fichier Excel contenant les données des licences et autorisations de pêche et les insère dans la base de données.
+
+    Format attendu du fichier Excel:
+    - denomination: Dénomination de l'armement ou de la coopérative
+    - sigle: Sigle de l'armement ou de la coopérative
+    - localite: Localité de l'armement ou de la coopérative
+    - province: Province de l'armement ou de la coopérative
+    - date_creation: Date de création de l'armement ou de la coopérative
+    - siege: Siège de l'armement ou de la coopérative
+    - adresse: Adresse de l'armement ou de la coopérative
+    - telephone: Numéro de téléphone de l'armement ou de la coopérative
+    - email: Adresse email de l'armement ou de la coopérative
+    - type: Type de l'armement ou de la coopérative
+    """
+
+    # Vérifier l'extension du fichier
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+        )
+
+    try:
+        # Lire le fichier Excel avec pandas
+        contents = await file.read()
+        excel_file = io.BytesIO(contents)
+        engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+        df = pd.read_excel(excel_file, engine=engine)
+
+        # Valider les colonnes requises
+        required_columns = {
+            "denomination",
+            "sigle",
+            "localite",
+            "province",
+            "date_creation",
+            "siege",
+            "adresse",
+            "telephone",
+            "email",
+            "type",
+        }
+        if not required_columns.issubset(df.columns):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+            )
+
+        # Nettoyer les données
+        df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+        # Statistiques d'import
+        total_rows = len(df)
+        inserted_count = 0
+        updated_count = 0
+        errors = []
+
+        # Insérer les données dans la base de données
+        for _, row in df.iterrows():
+
+            print(
+                f"Traitement de la licence ou de l'autorisation: {row['numero_licence']} - {row['type_licence']}"
+            )
+            print(
+                f"Date d'émission: {row['date_emission']}, Date de début: {row['date_debut']}"
+            )
+
+            try:
+                # Vérifier si la licence ou l'autorisation existe déjà (par numéro)
+                existing = (
+                    db.query(LicenceAutorisationPeche)
+                    .filter(
+                        LicenceAutorisationPeche.numero_licence == row["numero_licence"]
+                    )
+                    .first()
+                )
+
+                if existing:
+                    # Mettre à jour les champs existants
+                    existing.denomination = row["denomination"]
+                    existing.localite = row["localite"]
+                    existing.date_creation = row["date_creation"]
+                    existing.siege = row["siege"]
+                    existing.adresse = row["adresse"]
+                    existing.telephone = row["telephone"]
+                    existing.email = row["email"]
+                    existing.type_association = row["type"]
+
+                    db.commit()
+                    updated_count += 1
+                else:
+                    # Créer une nouvelle entrée
+                    new_entry = LicenceAutorisationPeche(
+                        numero_licence=row["numero_licence"],
+                        type_licence=row["type_licence"],
+                        categorie=row["categorie"],
+                        pecheur_id=row["pecheur_id"],
+                        annee_validite=row["annee_validite"],
+                        date_emission=row["date_emission"],
+                        date_debut=row["date_debut"],
+                        date_expiration=row["date_expiration"],
+                        zone_peche=row["zone_peche"],
+                        coordonnees_zone=row["coordonnees_zone"],
+                        types_peche_autorises=row["types_peche_autorises"],
+                        especes_autorisees=row["especes_autorisees"],
+                        quota_annuel_kg=row["quota_annuel_kg"],
+                        taille_minimale_maille=row["taille_minimale_maille"],
+                        profondeur_max_metres=row["profondeur_max_metres"],
+                        bateau_id=row["bateau_id"],
+                        nombre_embarcations_max=row["nombre_embarcations_max"],
+                        nombre_pecheurs_max=row["nombre_pecheurs_max"],
+                        montant_paye=row["montant_paye"],
+                        mode_paiement=row["mode_paiement"],
+                        reference_paiement=row["reference_paiement"],
+                        statut=row["statut"],
+                        raison_suspension=row["raison_suspension"],
+                        date_suspension=row["date_suspension"],
+                    )
+                    db.add(new_entry)
+                    db.commit()
+                    inserted_count += 1
+            except Exception as e:
+                errors.append(
+                    f"Erreur pour {row['denomination']} ({row['sigle']}): {str(e)}"
+                )
+
+        return {"message": "Fichier Excel traité avec succès", "errors": errors}
+
+    except pd.errors.EmptyDataError:
+        raise HTTPException(
+            status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+        )
 
 
 @router.post(
