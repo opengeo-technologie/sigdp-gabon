@@ -4,7 +4,7 @@
       <h1>🐟 Générateur de Licence et d'Autorisation de Pêche</h1>
       <p class="subtitle">
         République Gabonaise - Ministère de la Mer, de la Pêche Bleue et de
-        l'Économie Maritime
+        l'Économie Bleue
       </p>
     </div>
 
@@ -19,15 +19,322 @@
       </div>
       <div class="row license-form">
         <div class="input-field col s12 form-input">
-          <select name="province" required>
-            <option value="" disabled>Choisir le type</option>
-            <option value="Autorisation">Autorisation</option>
-            <option value="Licence">Licence</option>
-          </select>
-          <label
-            >Licence ou Autorisation de pêche
-            <i class="required_field">* </i></label
+          <select
+            name="type_peche"
+            required
+            (change)="onChangeType($event)"
+            [(ngModel)]="type_peche"
           >
+            <option value="" disabled>Choisir le type</option>
+            <option value="Autorisation">Artisanale</option>
+            <option value="Licence">Industrielle</option>
+          </select>
+          <label>Type de pêche <i class="required_field">* </i></label>
+        </div>
+      </div>
+      <div class="form-container">
+        <app-autorisation-form
+          [type_peche]="type_peche"
+          (formChange)="onFormChange($event)"
+          *ngIf="type_peche == 'Autorisation'"
+        ></app-autorisation-form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col s12 m6" id="autorisation">
+    <div class="card">
+      <div class="card-content">
+        <div class="row">
+          <div class="col s4 m4 institution-header">
+            <p>MINISTERE DE LA MER, DE LA PECHE ET DE L'ECONOMIE BLEUE</p>
+            <p>-----------------</p>
+            <p>SECRETARIAT GENERAL</p>
+            <p>-----------------</p>
+            <p>DIRECTION GENERALE DES PECHES ET DE L'AQUACULTURE</p>
+            <p>-----------------</p>
+            <p>DIRECTION DES PECHES</p>
+          </div>
+          <div class="col s4 m4 autorisation-header">
+            <p class="center autorisation-title">
+              AUTORISATION DE PECHE ARTISANALE
+            </p>
+            <p class="center autorisation-title">Nº ______</p>
+            @if (data.annee_validite) {
+              <p class="autorisation-subtitle">
+                ANNEE DE VALIDITE {{ data.annee_validite }}
+              </p>
+            } @else {
+              <p class="autorisation-subtitle">ANNEE DE VALIDITE ____</p>
+            }
+
+            <table class="borderless">
+              <tr>
+                <td rowspan="2" width="60%">
+                  <p class="autorisation-subtitle2">PROPRIETAIRE :</p>
+                </td>
+                <td>
+                  <div class="input-field form-input autorisation-subtitle2">
+                    <label class="checkbox-readonly">
+                      <input
+                        type="checkbox"
+                        name="pour_ordre"
+                        class="filled-in"
+                        readonly
+                        [checked]="
+                          bateau.proprietaire_info &&
+                          checkProprietaireType(
+                            bateau.proprietaire_info.nationalite
+                          ) == 'NATIONAL'
+                        "
+                      />
+                      <span style="font-size: 12px">NATIONAL</span>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="input-field form-input">
+                    <label class="checkbox-readonly">
+                      <input
+                        type="checkbox"
+                        name="pour_ordre"
+                        class="filled-in"
+                        readonly
+                        [checked]="
+                          bateau.proprietaire_info &&
+                          checkProprietaireType(
+                            bateau.proprietaire_info.nationalite
+                          ) == 'ETRANGER'
+                        "
+                      />
+                      <span style="font-size: 12px">ETRANGER</span>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="col s4 m4 logo-ministere right-align">
+            <img src="../../../../assets/logo.png" alt="" />
+          </div>
+        </div>
+        <div class="row" style="margin-top: 60px">
+          <div class="col s2 m2">
+            <p class="center">Visa</p>
+            <p class="center">DP</p>
+          </div>
+          <div class="col s10 m10">
+            <p>CARACTERISTIQUES DE L'EMBARCATION</p>
+            <table style="border: 2px solid black">
+              <tr>
+                <td>Nom :</td>
+                <td>{{ bateau.nom_bateau || "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>N° d'immatriculation :</td>
+                <td>{{ bateau.numero_immatriculation || "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>Type de pirogue :</td>
+                <td>{{ bateau.materiau_coque || "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>Marque :</td>
+                <td>{{ bateau.moteur_marque || "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>Puissance motrice :</td>
+                <td>{{ bateau.moteur_puissance_cv || "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>Débarcadère d'attache :</td>
+                @if (bateau.site_port_attache_info) {
+                  <td>{{ bateau.site_port_attache_info.nom }}</td>
+                } @else {
+                  <td>N/A</td>
+                }
+              </tr>
+              <tr>
+                <td>Site de débarquement :</td>
+                @if (bateau.site_obligatoire_info) {
+                  <td>
+                    {{ listSiteDebarquement(bateau.site_obligatoire_info) }}
+                  </td>
+                } @else {
+                  <td>N/A</td>
+                }
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+          <div class="col s2 m2"></div>
+          <div class="col s10 m10">
+            <p>IDENTIFICATION DU PROPRIETAIRE</p>
+            <table style="border: 2px solid black">
+              <tr>
+                <td>Nom du propriétaire :</td>
+                <td>
+                  @if (bateau.proprietaire_info) {
+                    {{ bateau.proprietaire_info.nom }}
+                    {{ bateau.proprietaire_info.prenom }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td>Nationalité :</td>
+                <td>
+                  @if (bateau.proprietaire_info) {
+                    {{ bateau.proprietaire_info.nationalite }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td>Type et numéro de pièce d'identification :</td>
+                <td>
+                  @if (bateau.proprietaire_info) {
+                    {{ bateau.proprietaire_info.type_carte }}
+                    {{ bateau.proprietaire_info.numero_piece }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td>Résidence :</td>
+                <td>
+                  @if (bateau.proprietaire_info) {
+                    {{ bateau.proprietaire_info.residence }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td>Tel :</td>
+                <td>
+                  @if (bateau.proprietaire_info) {
+                    {{ bateau.proprietaire_info.telephone }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td>Coopérative :</td>
+                <td>
+                  @if (bateau.cooperative_armement_info) {
+                    {{ bateau.cooperative_armement_info.sigle }}
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 10px">
+          <div class="col s2 m2">
+            <p class="center">Visa</p>
+            <p class="center" style="font-size: 9px">Responsable service</p>
+            <p class="center" style="font-size: 9px">(SPA/CB/DP)</p>
+          </div>
+          <div class="col s10 m10">
+            <p>TECHNIQUES ET ENGINS DE PECHE</p>
+            <table style="border: 2px solid black">
+              <tr>
+                <td>CODE BARRE</td>
+                <td>TYPES DE PECHE AUTORISES</td>
+              </tr>
+              <tr>
+                <td>
+                  <img
+                    src="../../../../assets/qr_code.png"
+                    alt=""
+                    style="height: 150px"
+                  />
+                </td>
+                <td>
+                  <p>
+                    Engin de pêche 1 :
+                    <span>
+                      @if (bateau.engin_peche1) {
+                        {{ bateau.engin_peche1.libelle }}
+                      } @else {
+                        N/A
+                      }
+                    </span>
+                  </p>
+                  <p>
+                    Espèces cibles 1 : {{ espece_cible1.nom_commun_francais }}
+                  </p>
+                  <br />
+                  <p>
+                    Engin de pêche 2 :
+                    <span>
+                      @if (bateau.engin_peche1) {
+                        {{ bateau.engin_peche2.libelle }}
+                      } @else {
+                        N/A
+                      }
+                    </span>
+                  </p>
+                  <p>
+                    Espèces cibles 2 : {{ espece_cible2.nom_commun_francais }}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+          <div class="col s2 m2"></div>
+          <div class="col s10 m10">
+            <table style="border: 2px solid black">
+              <tr>
+                <td>PERIODE DE VALIDITE DE L'AUTORISATION :</td>
+                <td>
+                  DU {{ formatDateFrench(data.date_debut) || "N/A" }} AU
+                  {{ formatDateFrench(data.date_expiration) || "N/A" }}
+                </td>
+              </tr>
+              <tr>
+                <td>MONTANT DE L'AUTORISATION :</td>
+                <!-- <td>200 000 FCFA</td> -->
+                <td>
+                  {{
+                    data.montant_paye
+                      | currency: "XAF" : "symbol" : "1.0-0" : "fr"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Quittance Trésor : {{ data.reference_paiement || "N/A" }}
+                </td>
+                <td>Fait à Libreville, le 01 janvier 2024</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s8 m8"></div>
+          <div class="col s4 m4">
+            <p style="font-size: 10px">P. Le Ministre</p>
+            <p style="font-size: 10px">
+              P.O Le Directeur Général desPêches et de l'Aquaculture
+            </p>
+            <p style="padding-top: 50px; font-size: 10px">
+              <b>Brice Didier Celce KOUMBA MABERT</b>
+            </p>
+          </div>
         </div>
       </div>
     </div>

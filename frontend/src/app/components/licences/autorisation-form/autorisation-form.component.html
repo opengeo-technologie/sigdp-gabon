@@ -1,1 +1,233 @@
-<p>autorisation-form works!</p>
+<form #licenseForm="ngForm" (ngSubmit)="onSubmit()">
+  <div class="row license-form">
+    <!-- Formulaire spécifique à l'autorisation de pêche artisanale -->
+    <!-- Ajoutez ici les champs nécessaires pour l'autorisation de pêche artisanale -->
+    <div class="col s12">
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon"></div>
+          <h2>Informations générales</h2>
+        </div>
+        <hr />
+      </div>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <select
+        name="pirogue"
+        [(ngModel)]="autorisation.bateau_id"
+        (ngModelChange)="emit()"
+        (change)="onChangeEmbarcation($event)"
+        required
+      >
+        <option value="" disabled>Choisir le embarcation</option>
+        <option *ngFor="let pirogue of pirogues" [value]="pirogue.id">
+          {{ pirogue.nom_bateau }}_{{ pirogue.numero_immatriculation }}
+        </option>
+      </select>
+      <label>Embarcation <i class="required_field">* </i></label>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <select
+        name="annee_validite"
+        [(ngModel)]="autorisation.annee_validite"
+        (ngModelChange)="emit()"
+        required
+      >
+        <option value="" disabled>Choisir l'année de validité</option>
+        <option *ngFor="let year of years" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+      <label>Année de validité <i class="required_field">* </i></label>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <input
+        type="date"
+        name="date_debut"
+        [(ngModel)]="autorisation.date_debut"
+        (ngModelChange)="emit()"
+        required
+      />
+      <label>Date de début <i class="required_field">* </i></label>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <input
+        type="date"
+        name="date_expiration"
+        [(ngModel)]="autorisation.date_expiration"
+        (ngModelChange)="emit()"
+        required
+      />
+      <label>Date d'expiration <i class="required_field">* </i></label>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <input
+        type="number"
+        name="montant_a_payer"
+        [(ngModel)]="autorisation.montant_paye"
+        (ngModelChange)="emit()"
+        required
+        min="0"
+        placeholder="0.00"
+      />
+      <label>Montant à payer <i class="required_field">* </i></label>
+    </div>
+    <div class="input-field col s12 m6 form-input">
+      <input
+        type="text"
+        name="reference_paiement"
+        [(ngModel)]="autorisation.reference_paiement"
+        (ngModelChange)="emit()"
+        required
+        min="0"
+        placeholder="0.00"
+      />
+      <label>Numéro de quittance<i class="required_field">* </i></label>
+    </div>
+  </div>
+  <div class="row license-form">
+    <div class="col s12">
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon"></div>
+          <h2>Informations sur les espèces cibles</h2>
+        </div>
+        <hr />
+      </div>
+    </div>
+
+    <div class="col s12 m6">
+      <div class="input-field form-input">
+        <select
+          name="espece_cible"
+          [(ngModel)]="autorisation.espece_cible1"
+          (ngModelChange)="emit()"
+          required
+        >
+          <option value="" disabled>Choisir l'espèce cible 1</option>
+          <option *ngFor="let espece of especes" [value]="espece.id">
+            {{ espece.nom_commun_francais }} ({{ espece.nom_scientifique }})
+          </option>
+        </select>
+        <label>Espèce cible 1<i class="required_field">* </i></label>
+      </div>
+    </div>
+    <div class="col s12 m6">
+      <div class="input-field form-input">
+        <select
+          name="espece_cible"
+          [(ngModel)]="autorisation.espece_cible2"
+          (ngModelChange)="emit()"
+        >
+          <option value="" disabled>Choisir l'espèce cible 2</option>
+          <option *ngFor="let espece of especes" [value]="espece.id">
+            {{ espece.nom_commun_francais }} ({{ espece.nom_scientifique }})
+          </option>
+        </select>
+        <label>Espèce cible 2 </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="row license-form">
+    <div class="col s12">
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon"></div>
+          <h2>Visas et signature</h2>
+        </div>
+        <hr />
+      </div>
+    </div>
+
+    <!-- <div class="col s12 m6">
+      <div class="input-field form-input">
+        <select name="signataire" [(ngModel)]="visa1" required>
+          <option value="" disabled>Choisir premier visa</option>
+          <option
+            *ngFor="let signataire of signataires"
+            [value]="signataire.id"
+          >
+            {{ signataire.nom_complet }} - {{ signataire.role.nom_role }}
+          </option>
+        </select>
+        <label>Visa 1<i class="required_field">* </i></label>
+      </div>
+    </div>
+    <div class="col s12 m6">
+      <div class="input-field form-input">
+        <select name="signataire" [(ngModel)]="visa2" required>
+          <option value="" disabled>Choisir second visa</option>
+          <option
+            *ngFor="let signataire of signataires"
+            [value]="signataire.id"
+          >
+            {{ signataire.nom_complet }} - {{ signataire.role.nom_role }}
+          </option>
+        </select>
+        <label>Visa 2 </label>
+      </div>
+    </div> -->
+    <div class="col s12 m6">
+      <div class="input-field form-input">
+        <label>
+          <input
+            type="checkbox"
+            name="pour_ordre"
+            class="filled-in"
+            [(ngModel)]="autorisation.pour_ordre"
+            (change)="onCheckedPourOrdre($event)"
+            (ngModelChange)="emit()"
+          />
+          <span>Pour ordre</span>
+        </label>
+      </div>
+    </div>
+    <div class="col s12 m6" *ngIf="autorisation.pour_ordre">
+      <div class="input-field form-input">
+        <select
+          name="signataire"
+          [(ngModel)]="autorisation.signataire"
+          (ngModelChange)="emit()"
+          required
+        >
+          <option value="" disabled>Choisir le signataire</option>
+          <option
+            *ngFor="let signataire of signataires"
+            [value]="signataire.id"
+          >
+            {{ signataire.nom_complet }} - {{ signataire.role.nom_role }}
+          </option>
+        </select>
+        <label>Signataire </label>
+      </div>
+    </div>
+  </div>
+  <br />
+  <hr />
+  <div class="row license-form">
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="licenseForm.invalid || isGeneratingPdf"
+      >
+        <span class="btn-icon">📄</span>
+        <span *ngIf="!isGeneratingPdf">Enregistrer</span>
+        <span *ngIf="isGeneratingPdf">Enregistrement en cours...</span>
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary red"
+        [disabled]="licenseForm.invalid || isGeneratingPdf"
+      >
+        <span class="btn-icon">
+          <i class="material-icons">close</i>
+        </span>
+        Annuler
+      </button>
+    </div>
+  </div>
+</form>

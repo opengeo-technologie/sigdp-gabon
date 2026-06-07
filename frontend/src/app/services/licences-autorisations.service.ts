@@ -8,6 +8,7 @@ import { Observable } from "rxjs";
 })
 export class LicencesAutorisationsService {
   private apiUrl = `${environment.apiUrl}/api/licences`;
+  private apiUrlSignataires = `${environment.apiUrl}/api/signataires`;
 
   constructor(private http: HttpClient) {}
 
@@ -19,7 +20,7 @@ export class LicencesAutorisationsService {
     pecheur_id?: number;
     expiration_avant?: string;
     a_renouveler?: string;
-  }): Observable<any[]> {
+  }): Observable<any> {
     let params = new HttpParams();
 
     if (filters) {
@@ -37,7 +38,7 @@ export class LicencesAutorisationsService {
       if (filters.a_renouveler)
         params = params.set("a_renouveler", filters.a_renouveler);
     }
-    return this.http.get<any[]>(`${this.apiUrl}/`, { params });
+    return this.http.get<any>(`${this.apiUrl}/`, { params });
   }
 
   getLicence(id: number): Observable<any> {
@@ -54,5 +55,26 @@ export class LicencesAutorisationsService {
 
   deleteLicence(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  // Méthodes pour les signatures
+  getSignataires(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrlSignataires}/`);
+  }
+
+  getSignataire(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrlSignataires}/${id}`);
+  }
+
+  createSignataire(signataireData: any): Observable<any> {
+    return this.http.post(`${this.apiUrlSignataires}/`, signataireData);
+  }
+
+  updateSignataire(id: number, signataireData: any): Observable<any> {
+    return this.http.put(`${this.apiUrlSignataires}/${id}`, signataireData);
+  }
+
+  deleteSignataire(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrlSignataires}/${id}`);
   }
 }

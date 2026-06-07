@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, and_, or_, cast, Integer
+
 from typing import List, Optional
 from datetime import date, timedelta
 from pathlib import Path
@@ -42,6 +43,24 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # ==========================================
 # CRUD Licences
 # ==========================================
+
+
+def get_next_reference(db: Session = Depends(get_db)) -> str:
+
+    # Récupérer la dernière commande de l'année courante
+    last_data = (
+        db.query(LicenceAutorisationPeche)
+        .order_by(cast(LicenceAutorisationPeche.numero_licence, Integer).desc())
+        .first()
+    )
+
+    if not last_data:
+        # Première commande de l'année
+        next_ref = 1
+    else:
+        next_ref = int(last_data.numero_licence) + 1
+
+    return str(next_ref)
 
 
 @router.post("/upload-excel")
@@ -220,7 +239,7 @@ def build_licence_response(
     licence_dict = {
         col.name: getattr(licence, col.name) for col in licence.__table__.columns
     }
-    licence_dict["licence_active"] = licence.est_active()
+    licence_dict["est_active"] = licence.est_active()
     licence_dict["jours_restants"] = licence.jours_avant_expiration()
     licence_dict["a_renouveler"] = licence.necessite_renouvellement()
     licence_dict["duree_mois"] = licence.calculer_duree_mois()
@@ -231,7 +250,7 @@ def build_licence_response(
     return LicencePecheResponse(**licence_dict)
 
 
-@router.get("", response_model=List[LicencePecheResponse])
+@router.get("")
 def get_licences(
     skip: int = 0,
     limit: int = 500,
@@ -244,7 +263,9 @@ def get_licences(
 ):
     """Récupérer la liste des licences avec filtres"""
 
-    query = db.query(LicenceAutorisationPeche)
+    query = db.query(LicenceAutorisationPeche).order_by(
+        cast(LicenceAutorisationPeche.numero_licence, Integer).desc()
+    )
 
     # Filtres
     if statut:
@@ -274,10 +295,13 @@ def get_licences(
 
     licences = query.offset(skip).limit(limit).all()
 
+    # ✅ COMPTER LE TOTAL (AVANT PAGINATION)
+    total = query.count()
+
     # Enrichir les réponses
     results = [build_licence_response(l, db) for l in licences]
 
-    return results
+    return {"result": results, "total": total}
 
 
 @router.get("/{licence_id}", response_model=LicencePecheResponse)
@@ -290,4 +314,37 @@ def get_licence(licence_id: int, db: Session = Depends(get_db)):
     )
     if not licence:
         raise HTTPException(status_code=404, detail="Licence non trouvée")
+    return build_licence_response(licence, db)
+
+
+@router.post(
+    "", response_model=LicencePecheResponse, status_code=status.HTTP_201_CREATED
+)
+def create_licence(licence_data: LicencePecheCreate, db: Session = Depends(get_db)):
+    """Créer une nouvelle licence de pêche"""
+
+    # Vérifier unicité numéro
+    # existing = (
+    #     db.query(LicenceAutorisationPeche)
+    #     .filter(LicenceAutorisationPeche.numero_licence == licence_data.numero_licence)
+    #     .first()
+    # )
+
+    # if existing:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Une licence avec le numéro {licence_data.numero_licence} existe déjà",
+    #     )
+
+    licence_data.numero_licence = str(get_next_reference(db))
+
+    # Créer la licence
+    licence = LicenceAutorisationPeche(**licence_data.model_dump())
+    licence.statut = "active"
+
+    db.add(licence)
+    db.commit()
+    db.refresh(licence)
+
+    # Préparer la réponse
     return build_licence_response(licence, db)

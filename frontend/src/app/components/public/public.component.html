@@ -1,0 +1,256 @@
+<!-- Navigation -->
+<nav class="blue darken-2">
+  <div class="nav-wrapper container">
+    <a href="#" class="brand-logo">
+      <img src="../../../assets/logo.png" alt="" style="height: 50px" />
+      <!-- <i class="material-icons left">anchor</i> -->
+      <span style="margin-left: 8px">SIG-PECHE</span>
+    </a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#stats">Statistiques</a></li>
+      <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+      <li>
+        <a routerLink="/login">
+          <i class="material-icons left">login</i>
+          Connexion
+        </a>
+      </li>
+    </ul>
+    <a href="#" data-target="mobile-nav" class="sidenav-trigger">
+      <i class="material-icons">menu</i>
+    </a>
+  </div>
+</nav>
+
+<!-- Sidenav mobile -->
+<ul class="sidenav" id="mobile-nav">
+  <li><a href="#about">À propos</a></li>
+  <li><a href="#stats">Statistiques</a></li>
+  <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+  <li>
+    <a routerLink="/login">
+      <i class="material-icons">login</i>
+      Connexion
+    </a>
+  </li>
+</ul>
+
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="container center-align">
+    <!-- <i class="material-icons hero-icon">anchor</i> -->
+    <img src="../../../assets/logo.png" alt="" style="height: 200px" />
+    <h1 class="white-text hero-title">
+      Système d'Information pour la Gestion<br />des Débarcadères et de la Pêche
+    </h1>
+    <p class="white-text flow-text hero-subtitle">
+      République Gabonaise - Ministère de la Mer, de la Pêche et de l'Economie
+      Bleue
+    </p>
+    <a
+      routerLink="/login"
+      class="btn btn-large waves-effect waves-light white blue-text text-darken-2 pulse"
+    >
+      <i class="material-icons left">login</i>
+      Accéder au système
+    </a>
+  </div>
+</div>
+
+<!-- Statistiques publiques -->
+<div class="container section" id="stats">
+  <h3 class="center-align blue-text text-darken-2">Statistiques année 2024</h3>
+  <p class="center-align grey-text">Données actualisées du système SIG-PECHE</p>
+
+  <div class="row" style="margin-top: 3rem">
+    <div class="col s12 m6 l3">
+      <div class="card hoverable stats-card">
+        <div class="card-content center-align">
+          <i class="material-icons large teal-text">location_on</i>
+          <h4 class="stats-number">{{ stats.debarcaderes || 0 }}</h4>
+          <p class="stats-label">Débarcadères actifs</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card hoverable stats-card">
+        <div class="card-content center-align">
+          <i class="material-icons large blue-text">people</i>
+          <h4 class="stats-number">{{ stats.pecheurs || 0 }}</h4>
+          <p class="stats-label">Pêcheurs enregistrés</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card hoverable stats-card">
+        <div class="card-content center-align">
+          <i class="material-icons large orange-text">directions_boat</i>
+          <h4 class="stats-number">{{ stats.bateaux || 0 }}</h4>
+          <p class="stats-label">Bateaux référencés</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+      <div class="card hoverable stats-card">
+        <div class="card-content center-align">
+          <i class="material-icons large green-text">assessment</i>
+          <h4 class="stats-number">{{ stats.captures || 0 }} t</h4>
+          <p class="stats-label">Tonnes capturées (annuel)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- À propos -->
+<div class="grey lighten-4 section" id="about">
+  <div class="container">
+    <h4 class="center-align blue-text text-darken-2">À propos de SIG-PECHE</h4>
+    <p class="center-align grey-text">
+      Un système moderne pour la gestion durable des ressources halieutiques
+    </p>
+
+    <div class="row" style="margin-top: 3rem">
+      <div class="col s12 m4">
+        <div class="card hoverable feature-card">
+          <div class="card-content center-align">
+            <i class="material-icons large blue-text">track_changes</i>
+            <span class="card-title">Traçabilité complète</span>
+            <p>
+              Suivi détaillé des débarquements et de la chaîne de capture depuis
+              la pêche jusqu'à la commercialisation
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m4">
+        <div class="card hoverable feature-card">
+          <div class="card-content center-align">
+            <i class="material-icons large green-text">verified_user</i>
+            <span class="card-title">Conformité réglementaire</span>
+            <p>
+              Vérification automatique des quotas, tailles minimales et respect
+              de la réglementation en vigueur
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m4">
+        <div class="card hoverable feature-card">
+          <div class="card-content center-align">
+            <i class="material-icons large orange-text">analytics</i>
+            <span class="card-title">Statistiques avancées</span>
+            <p>
+              Analyse en temps réel de la production halieutique et aide à la
+              décision pour une gestion durable
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fonctionnalités -->
+<div class="container section">
+  <h4 class="center-align blue-text text-darken-2">
+    Fonctionnalités principales
+  </h4>
+
+  <div class="row">
+    <div class="col s12 m6">
+      <ul class="collection">
+        <li class="collection-item">
+          <i class="material-icons blue-text">check_circle</i>
+          Gestion des débarcadères et infrastructures
+        </li>
+        <li class="collection-item">
+          <i class="material-icons blue-text">check_circle</i>
+          Enregistrement des pêcheurs et délivrance de cartes
+        </li>
+        <li class="collection-item">
+          <i class="material-icons blue-text">check_circle</i>
+          Suivi de la flotte de bateaux
+        </li>
+        <li class="collection-item">
+          <i class="material-icons blue-text">check_circle</i>
+          Base de données des espèces halieutiques
+        </li>
+      </ul>
+    </div>
+
+    <div class="col s12 m6">
+      <ul class="collection">
+        <li class="collection-item">
+          <i class="material-icons green-text">check_circle</i>
+          Enregistrement des débarquements en temps réel
+        </li>
+        <li class="collection-item">
+          <i class="material-icons green-text">check_circle</i>
+          Système d'alertes automatiques
+        </li>
+        <li class="collection-item">
+          <i class="material-icons green-text">check_circle</i>
+          Tableaux de bord statistiques
+        </li>
+        <li class="collection-item">
+          <i class="material-icons green-text">check_circle</i>
+          Cartographie interactive
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="page-footer blue darken-2">
+  <div class="container">
+    <div class="row">
+      <div class="col l6 s12">
+        <h5 class="white-text">SIGDP-GABON</h5>
+        <p class="grey-text text-lighten-4">
+          Système d'Information pour la Gestion des Débarcadères et de la Pêche
+          au Gabon
+        </p>
+      </div>
+      <div class="col l3 s12">
+        <h5 class="white-text">Liens rapides</h5>
+        <ul>
+          <li>
+            <a class="grey-text text-lighten-3" href="#about">À propos</a>
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" href="#stats">Statistiques</a>
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" routerLink="/login"
+              >Connexion</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="col l3 s12">
+        <h5 class="white-text">Contact</h5>
+        <ul>
+          <li class="grey-text text-lighten-3">
+            Ministère de la Mer, de la Pêche et de l'Economie Bleue
+          </li>
+          <li class="grey-text text-lighten-3">Direction des Pêches</li>
+          <li class="grey-text text-lighten-3">Libreville, Gabon</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copyright">
+    <div class="container">
+      © 2026 République Gabonaise - Tous droits réservés
+      <a class="grey-text text-lighten-4 right" href="#!">Version 1.0.1</a>
+    </div>
+  </div>
+</footer>

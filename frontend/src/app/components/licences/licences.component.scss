@@ -23,3 +23,9 @@
   background-color: #f44336;
   color: white;
 }
+
+.disabled-link {
+  pointer-events: none; /* bloque le clic */
+  opacity: 0.5; /* effet visuel grisé */
+  cursor: not-allowed;
+}

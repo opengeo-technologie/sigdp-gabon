@@ -153,6 +153,8 @@ class BateauResponse(BateauInDB):
     cooperative_armement_info: Optional[dict] = None
     site_port_attache_info: Optional[dict] = None
     site_obligatoire_info: Optional[list[dict]] = None
+    engin_peche1: Optional[dict] = None
+    engin_peche2: Optional[dict] = None
 
 
 class EquipageCreate(BaseModel):

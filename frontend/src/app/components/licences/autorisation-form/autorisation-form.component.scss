@@ -1,0 +1,215 @@
+/* Variables CSS */
+:host {
+  --primary-color: #2c5282;
+  --primary-dark: #1a365d;
+  --secondary-color: #48bb78;
+  --secondary-dark: #38a169;
+  --accent-color: #4299e1;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --border-focus: #4299e1;
+  --bg-light: #f7fafc;
+  --bg-banner: #ebf8ff;
+  --error-color: #f56565;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Container principal */
+.license-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  padding: 20px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+/* Header */
+.header {
+  //   max-width: 1000px;
+  margin: 0 auto 30px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  padding: 20px 10px;
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  color: white;
+}
+
+.header h1 {
+  font-size: clamp(18px, 5vw, 18px);
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: clamp(13px, 3vw, 15px);
+  margin: 0;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+/* Bannière d'information */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  background: var(--bg-banner);
+  border-left: 4px solid var(--accent-color);
+  padding: 20px 25px;
+  margin: 0;
+}
+
+.info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.info-text {
+  flex: 1;
+  color: var(--primary-color);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.info-text strong {
+  font-weight: 600;
+}
+
+/* Formulaire */
+.license-form {
+  padding: 0 30px;
+}
+
+.form-input {
+  margin-top: 10px;
+}
+
+.form-input label {
+  font-size: 13px;
+  margin-left: 4px;
+  color: #757575;
+}
+
+.form-input select {
+  height: 30px; /* fixed height */
+  border-radius: 5px;
+  margin-top: 2px;
+  padding-left: 10px;
+}
+
+.form-section {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--bg-light);
+  border-radius: var(--border-radius);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Boutons d'action */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  flex: 1;
+  width: 100px;
+  padding: 15px 30px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color) 0%,
+    var(--secondary-dark) 100%
+  );
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: red;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-icon {
+  font-size: 20px;
+}

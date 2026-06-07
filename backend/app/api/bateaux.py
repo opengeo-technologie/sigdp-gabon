@@ -22,6 +22,7 @@ from datetime import date
 
 from app.database import get_db
 from app.models.bateau import Bateau, Equipage
+from app.models.engin_peche import EnginPeche
 from app.models.debarcadere import Debarcadere
 from app.models.armement_coorperative import ArmementCooperative
 from app.models.pecheur import Pecheur
@@ -31,6 +32,7 @@ from app.schemas.bateau import (
     BateauResponse,
     BateauDetailResponse,
     BateauInDB,
+    BateauBase,
     EquipageCreate,
 )
 from app.models.engin_peche import EnginPeche
@@ -116,6 +118,105 @@ def is_certificat_valide(date_expiration: Optional[date]) -> bool:
     if not date_expiration:
         return False
     return date_expiration >= date.today()
+
+
+def build_bateau_response(bateau: BateauBase, db: Session) -> BateauResponse:
+    bateau_dict = BateauInDB.from_orm(bateau).model_dump()
+    bateau_dict["certificat_valide"] = is_certificat_valide(
+        bateau.certificat_navigabilite_date_expiration
+    )
+
+    # Ajouter les infos du propriétaire
+    if bateau.proprietaire_pecheur_id:
+        proprietaire = (
+            db.query(Pecheur)
+            .filter(Pecheur.id == bateau.proprietaire_pecheur_id)
+            .first()
+        )
+        if proprietaire:
+            bateau_dict["proprietaire_info"] = {
+                "id": proprietaire.id,
+                "nom": proprietaire.nom,
+                "prenom": proprietaire.prenom,
+                "numero_carte": proprietaire.numero_carte,
+                "type_carte": proprietaire.type_carte,
+                "nationalite": proprietaire.nationalite,
+                "numero_piece": proprietaire.numero_piece_identite,
+                "residence": proprietaire.adresse,
+                "telephone": proprietaire.telephone,
+            }
+
+    # Ajouter les infos de la coopérative/armement
+    if bateau.cooperative_armement_id:
+        cooperative_armement = (
+            db.query(ArmementCooperative)
+            .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
+            .first()
+        )
+        if cooperative_armement:
+            bateau_dict["cooperative_armement_info"] = {
+                "id": cooperative_armement.id,
+                "denomination": cooperative_armement.denomination,
+                "code": cooperative_armement.code,
+                "sigle": cooperative_armement.sigle,
+            }
+
+        # Ajouter les infos du site de port d'attache si disponible
+        if bateau.site_port_attache:
+            site_port = (
+                db.query(Debarcadere)
+                .filter(Debarcadere.id == bateau.site_port_attache)
+                .first()
+            )
+            if site_port:
+                bateau_dict["site_port_attache_info"] = {
+                    "id": site_port.id,
+                    "nom": site_port.denomination,
+                    "localisation": site_port.localite,
+                }
+
+        # Ajouter les infos du site obligatoire si disponible
+        if bateau.site_obligatoire:
+            site_obligatoires = []
+            for site_id in bateau.site_obligatoire.split(","):
+                site = (
+                    db.query(Debarcadere).filter(Debarcadere.id == int(site_id)).first()
+                )
+                if site:
+                    site_obligatoires.append(
+                        {
+                            "id": site.id,
+                            "nom": site.denomination,
+                            "localisation": site.localite,
+                        }
+                    )
+            bateau_dict["site_obligatoire_info"] = site_obligatoires
+
+        if bateau.engins_peche_principal:
+            engin_peche = (
+                db.query(EnginPeche)
+                .filter(EnginPeche.id == bateau.engins_peche_principal)
+                .first()
+            )
+            if engin_peche:
+                bateau_dict["engin_peche1"] = {
+                    "id": engin_peche.id,
+                    "libelle": engin_peche.libelle,
+                }
+
+        if bateau.engins_peche_secondaires:
+            engin_peche = (
+                db.query(EnginPeche)
+                .filter(EnginPeche.id == bateau.engins_peche_secondaires)
+                .first()
+            )
+            if engin_peche:
+                bateau_dict["engin_peche2"] = {
+                    "id": engin_peche.id,
+                    "libelle": engin_peche.libelle,
+                }
+
+    return BateauResponse(**bateau_dict)
 
 
 @router.post("/upload-excel")
@@ -331,75 +432,7 @@ def get_bateaux(
     bateaux = query.offset(skip).all()
 
     # Enrichir avec les données calculées
-    result = []
-    for bateau in bateaux:
-        bateau_dict = BateauInDB.from_orm(bateau).model_dump()
-        bateau_dict["certificat_valide"] = is_certificat_valide(
-            bateau.certificat_navigabilite_date_expiration
-        )
-
-        # Ajouter les infos du propriétaire si disponible
-        if bateau.proprietaire_pecheur_id:
-            proprietaire = (
-                db.query(Pecheur)
-                .filter(Pecheur.id == bateau.proprietaire_pecheur_id)
-                .first()
-            )
-            if proprietaire:
-                bateau_dict["proprietaire_info"] = {
-                    "id": proprietaire.id,
-                    "nom": proprietaire.nom,
-                    "prenom": proprietaire.prenom,
-                    "numero_carte": proprietaire.numero_carte,
-                }
-
-        # Ajouter les infos de la coopérative/armement si disponible
-        if bateau.cooperative_armement_id:
-            cooperative_armement = (
-                db.query(ArmementCooperative)
-                .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
-                .first()
-            )
-            if cooperative_armement:
-                bateau_dict["cooperative_armement_info"] = {
-                    "id": cooperative_armement.id,
-                    "denomination": cooperative_armement.denomination,
-                    "code": cooperative_armement.code,
-                }
-
-        # Ajouter les infos du site de port d'attache si disponible
-        if bateau.site_port_attache:
-            site_port = (
-                db.query(Debarcadere)
-                .filter(Debarcadere.id == bateau.site_port_attache)
-                .first()
-            )
-            if site_port:
-                bateau_dict["site_port_attache_info"] = {
-                    "id": site_port.id,
-                    "nom": site_port.denomination,
-                    "localisation": site_port.localite,
-                }
-
-        # Ajouter les infos du site obligatoire si disponible
-        if bateau.site_obligatoire:
-            site_obligatoires = []
-            for site_id in bateau.site_obligatoire.split(","):
-                site = (
-                    db.query(Debarcadere).filter(Debarcadere.id == int(site_id)).first()
-                )
-                if site:
-                    site_obligatoires.append(
-                        {
-                            "id": site.id,
-                            "nom": site.denomination,
-                            "localisation": site.localite,
-                        }
-                    )
-            bateau_dict["site_obligatoire_info"] = site_obligatoires
-
-        result.append(BateauResponse(**bateau_dict))
-
+    result = [build_bateau_response(l, db) for l in bateaux]
     return result
 
 
@@ -421,73 +454,7 @@ def get_bateau(bateau_id: int, db: Session = Depends(get_db)):
             detail=f"Bateau avec ID {bateau_id} introuvable",
         )
 
-    bateau_dict = BateauInDB.from_orm(bateau).model_dump()
-    bateau_dict["certificat_valide"] = is_certificat_valide(
-        bateau.certificat_navigabilite_date_expiration
-    )
-
-    # Ajouter les infos du propriétaire
-    if bateau.proprietaire_pecheur_id:
-        proprietaire = (
-            db.query(Pecheur)
-            .filter(Pecheur.id == bateau.proprietaire_pecheur_id)
-            .first()
-        )
-        if proprietaire:
-            bateau_dict["proprietaire_info"] = {
-                "id": proprietaire.id,
-                "nom": proprietaire.nom,
-                "prenom": proprietaire.prenom,
-                "numero_carte": proprietaire.numero_carte,
-                "telephone": proprietaire.telephone,
-            }
-
-    # Ajouter les infos de la coopérative/armement
-    if bateau.cooperative_armement_id:
-        cooperative_armement = (
-            db.query(ArmementCooperative)
-            .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
-            .first()
-        )
-        if cooperative_armement:
-            bateau_dict["cooperative_armement_info"] = {
-                "id": cooperative_armement.id,
-                "denomination": cooperative_armement.denomination,
-                "code": cooperative_armement.code,
-            }
-
-        # Ajouter les infos du site de port d'attache si disponible
-        if bateau.site_port_attache:
-            site_port = (
-                db.query(Debarcadere)
-                .filter(Debarcadere.id == bateau.site_port_attache)
-                .first()
-            )
-            if site_port:
-                bateau_dict["site_port_attache_info"] = {
-                    "id": site_port.id,
-                    "nom": site_port.denomination,
-                    "localisation": site_port.localite,
-                }
-
-        # Ajouter les infos du site obligatoire si disponible
-        if bateau.site_obligatoire:
-            site_obligatoires = []
-            for site_id in bateau.site_obligatoire.split(","):
-                site = (
-                    db.query(Debarcadere).filter(Debarcadere.id == int(site_id)).first()
-                )
-                if site:
-                    site_obligatoires.append(
-                        {
-                            "id": site.id,
-                            "nom": site.denomination,
-                            "localisation": site.localite,
-                        }
-                    )
-            bateau_dict["site_obligatoire_info"] = site_obligatoires
-
-    return BateauResponse(**bateau_dict)
+    return build_bateau_response(bateau, db)
 
 
 @router.get("/immatriculation/{numero}", response_model=BateauResponse)

@@ -72,6 +72,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "public-especes",
+    loadComponent: () =>
+      import("./components/public/especes/especes.component").then(
+        (m) => m.EspecesComponent,
+      ),
+  },
+  {
     path: "login",
     loadComponent: () =>
       import("./components/login/login.component").then(

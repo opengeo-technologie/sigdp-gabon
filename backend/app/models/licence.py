@@ -74,6 +74,8 @@ class LicenceAutorisationPeche(Base):
     autorite_emission = Column(String(100))  # Ministère des Eaux et Forêts
     agent_emission = Column(String(100))
     bureau_emission = Column(String(100))
+    pour_ordre = Column(Boolean, default=False)
+    signataire_id = Column(Integer, nullable=True)
 
     # Documents
     document_scan = Column(String(255))  # Chemin vers scan de la licence
@@ -117,6 +119,52 @@ class LicenceAutorisationPeche(Base):
         """Calculer la durée en mois"""
         delta = self.date_expiration - self.date_debut
         return delta.days // 30
+
+
+class RoleSignataire(Base):
+    """Rôles des signataires de licences"""
+
+    __tablename__ = "roles_signataires"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nom_role = Column(
+        String(50), unique=True, nullable=False
+    )  # ex: Directeur, Chef de Service
+    abbreviation = Column(String(20), unique=True, nullable=False)  # ex: DIR, CS
+    description = Column(Text)
+
+
+class Signataire(Base):
+    """Signataires de licences"""
+
+    __tablename__ = "signataires"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nom_complet = Column(String(100), nullable=False)
+    role_id = Column(Integer, ForeignKey("roles_signataires.id"), nullable=False)
+    organisme = Column(
+        String(200),
+        default="Ministère de la Mer, de la Pêche Bleue et de l'Économie Maritime",
+    )
+    contact_email = Column(String(100))
+    contact_telephone = Column(String(20))
+    is_actif = Column(Boolean, default=True)
+
+    # role = relationship("RoleSignataire")
+
+
+class SignataireLicence(Base):
+    """Association entre licences et signataires"""
+
+    __tablename__ = "signataires_licences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    licence_id = Column(
+        Integer, ForeignKey("licences_autorisation_peche.id"), nullable=False
+    )
+    signataire_id = Column(Integer, ForeignKey("signataires.id"), nullable=False)
+    date_signature = Column(Date, nullable=False)
+    remarques = Column(Text)
 
 
 # class InspectionLicence(Base):

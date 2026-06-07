@@ -2,13 +2,9 @@
   <nav>
     <div class="nav-wrapper container-fluid">
       <a routerLink="/dashboard" class="brand-logo">
-        <img
-          src="../../../assets/logo_dp.jpeg"
-          alt=""
-          style="height: 50px; padding-top: 15px"
-        />
+        <img src="../../../assets/logo_dp.jpeg" alt="" style="height: 50px" />
 
-        SIG-PECHE
+        <span style="margin-left: 8px">SIG-PECHE</span>
       </a>
       <a href="#" data-target="mobile-menu" class="sidenav-trigger">
         <i class="material-icons">menu</i>
@@ -189,6 +185,16 @@
         <i class="material-icons">dashboard</i>Tableau de bord
       </a>
     </li>
+    <li>
+      <a href="/armements-cooperatives"
+        ><i class="material-icons">anchor</i>Armements</a
+      >
+    </li>
+    <li>
+      <a href="/armements-cooperatives"
+        ><i class="material-icons">anchor</i>Cooperatives</a
+      >
+    </li>
     <li *appHasPermission="'debarcadere.read'">
       <a routerLink="/debarcaderes" (click)="closeSidenav()">
         <i class="material-icons">location_on</i>Débarcadères
@@ -211,7 +217,12 @@
     </li>
     <li *appHasPermission="'debarquement.read'">
       <a routerLink="/debarquements" (click)="closeSidenav()">
-        <i class="material-icons">inventory</i>Débarquements
+        <i class="material-icons">inventory</i>Captures
+      </a>
+    </li>
+    <li>
+      <a routerLink="/licences" routerLinkActive="active">
+        <i class="material-icons left">assignment</i>Licences & autorisations
       </a>
     </li>
     <li>

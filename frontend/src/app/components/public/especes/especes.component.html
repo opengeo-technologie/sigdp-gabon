@@ -1,0 +1,162 @@
+<!-- Navigation -->
+<nav class="blue darken-2">
+  <div class="nav-wrapper container">
+    <a href="#" class="brand-logo">
+      <img src="../../../assets/logo.png" alt="" style="height: 50px" />
+      <!-- <i class="material-icons left">anchor</i> -->
+      <span style="margin-left: 8px">SIG-PECHE</span>
+    </a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#stats">Statistiques</a></li>
+      <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+      <li>
+        <a routerLink="/login">
+          <i class="material-icons left">login</i>
+          Connexion
+        </a>
+      </li>
+    </ul>
+    <a href="#" data-target="mobile-nav" class="sidenav-trigger">
+      <i class="material-icons">menu</i>
+    </a>
+  </div>
+</nav>
+
+<!-- Sidenav mobile -->
+<ul class="sidenav" id="mobile-nav">
+  <li><a href="#about">À propos</a></li>
+  <li><a href="#stats">Statistiques</a></li>
+  <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+  <li>
+    <a routerLink="/login">
+      <i class="material-icons">login</i>
+      Connexion
+    </a>
+  </li>
+</ul>
+
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="container center-align">
+    <h1 class="white-text hero-title">
+      Liste des espèces de poissons pêchés au Gabon
+    </h1>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col s12 m6 l4" *ngFor="let espece of paginatedData">
+      <div class="card hoverable espece-card">
+        <div class="card-image" *ngIf="espece.photo_url">
+          <img
+            [src]="url + espece.photo_url"
+            alt="{{ espece.nom_commun_francais }}"
+            onerror="this.style.display = 'none'"
+          />
+        </div>
+        <div class="card-image" *ngIf="!espece.photo_url">
+          <img
+            [src]="'../../../../assets/fish.png'"
+            alt="{{ espece.nom_commun_francais }}"
+            onerror="this.style.display = 'none'"
+          />
+        </div>
+        <div class="divider"></div>
+        <div class="card-content">
+          <span class="card-title truncate">{{
+            espece.nom_commun_francais
+          }}</span>
+          <p>
+            <em>{{ espece.nom_scientifique }}</em>
+          </p>
+          <p><strong>Code:</strong> {{ espece.code_espece }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p *ngIf="especes.length === 0" class="center-align grey-text">
+    Aucune espèce trouvée
+  </p>
+  <div
+    class="center"
+    style="padding-top: 10px; padding-bottom: 20px"
+    *ngIf="especes.length > 0"
+  >
+    <button
+      (click)="prevPage()"
+      class="btn waves-effect waves-light white darken-4 btn-small"
+      [disabled]="currentPage === 1"
+    >
+      <i class="material-icons" style="color: #000000">chevron_left</i>
+    </button>
+    <span class="page-number" style="margin-left: 10px; margin-right: 10px"
+      >page {{ currentPage }} / {{ totalPages() }}</span
+    >
+    <button
+      (click)="nextPage()"
+      class="btn waves-effect waves-light white btn-small"
+      [disabled]="currentPage === totalPages()"
+    >
+      <i class="material-icons" style="color: #000000">chevron_right</i>
+    </button>
+  </div>
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left"><div class="circle"></div></div>
+        <div class="gap-patch"><div class="circle"></div></div>
+        <div class="circle-clipper right"><div class="circle"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="page-footer blue darken-2">
+  <div class="container">
+    <div class="row">
+      <div class="col l6 s12">
+        <h5 class="white-text">SIGDP-GABON</h5>
+        <p class="grey-text text-lighten-4">
+          Système d'Information pour la Gestion des Débarcadères et de la Pêche
+          au Gabon
+        </p>
+      </div>
+      <div class="col l3 s12">
+        <h5 class="white-text">Liens rapides</h5>
+        <ul>
+          <li>
+            <a class="grey-text text-lighten-3" href="#about">À propos</a>
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" href="#stats">Statistiques</a>
+          </li>
+          <li>
+            <a class="grey-text text-lighten-3" routerLink="/login"
+              >Connexion</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="col l3 s12">
+        <h5 class="white-text">Contact</h5>
+        <ul>
+          <li class="grey-text text-lighten-3">
+            Ministère de la Mer, de la Pêche et de l'Economie Bleue
+          </li>
+          <li class="grey-text text-lighten-3">Direction des Pêches</li>
+          <li class="grey-text text-lighten-3">Libreville, Gabon</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copyright">
+    <div class="container">
+      © 2026 République Gabonaise - Tous droits réservés
+      <a class="grey-text text-lighten-4 right" href="#!">Version 1.0.1</a>
+    </div>
+  </div>
+</footer>

@@ -22,7 +22,7 @@
 
 /* Container principal */
 .license-container {
-  min-height: 100vh;
+  // min-height: 100vh;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   padding: 20px;
   font-family:
@@ -100,7 +100,7 @@
 
 /* Formulaire */
 .license-form {
-  padding: 40px 30px;
+  padding: 10px 30px;
 }
 
 .form-input {
@@ -118,4 +118,62 @@
   border-radius: 5px;
   margin-top: 2px;
   padding-left: 10px;
+}
+
+// Autorisation output
+
+.checkbox-readonly {
+  pointer-events: none;
+}
+
+#autorisation .institution-header {
+  font-size: 8px;
+}
+
+#autorisation .autorisation-header {
+  padding-top: 60px;
+}
+#autorisation .autorisation-title {
+  font-weight: bolder;
+}
+
+#autorisation .autorisation-subtitle {
+  font-size: 14px;
+  padding-top: 15px;
+  font-weight: bolder;
+}
+
+#autorisation .autorisation-subtitle2 {
+  font-size: 12px;
+  // padding-top: 15px;
+  // padding-left: 20px;
+  font-weight: bolder;
+}
+
+#autorisation table {
+  font-size: 12px;
+  font-weight: bolder;
+}
+#autorisation table tr {
+  border: none;
+}
+
+#autorisation table tr td {
+  padding: 4px;
+}
+
+// #autorisation .autorisation-subtitle2 [type="checkbox"]+span:not(.lever) {
+//     position: relative;
+//     padding-left: 12px;
+//     cursor: pointer;
+//     display: inline-block;
+//     height: 25px;
+//     line-height: 25px;
+//     font-size: 1rem;
+//     -webkit-user-select: none;
+//     user-select: none;
+// }
+
+#autorisation .logo-ministere img {
+  width: 80px;
 }

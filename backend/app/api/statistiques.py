@@ -45,8 +45,22 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         .first()
     )
 
+    # Captures annuelles
+    debut_annee = date(2024, 1, 1)
+    details_annee = (
+        db.query(
+            func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+            func.sum(DetailDebarquement.valeur_totale).label("total_valeur"),
+        )
+        .join(Debarquement)
+        .filter(Debarquement.date_debarquement >= debut_annee)
+        .first()
+    )
+
     total_kg_mois = details_mois.total_kg or 0
     total_valeur_mois = details_mois.total_valeur or 0
+    total_kg_annee = details_annee.total_kg or 0
+    total_valeur_annee = details_annee.total_valeur or 0
 
     # Alertes actives
     alertes_actives = (
@@ -79,6 +93,11 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             "quantite_kg": round(total_kg_mois, 2),
             "quantite_tonnes": round(total_kg_mois / 1000, 2),
             "valeur_fcfa": round(total_valeur_mois, 2),
+        },
+        "captures_annee": {
+            "quantite_kg": round(total_kg_annee, 2),
+            "quantite_tonnes": round(total_kg_annee / 1000, 2),
+            "valeur_fcfa": round(total_valeur_annee, 2),
         },
         "alertes": {
             "actives_mois": alertes_actives,

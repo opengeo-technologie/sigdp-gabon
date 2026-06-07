@@ -9,6 +9,7 @@ import { environment } from "../../environments/environment";
 })
 export class BateauService {
   private apiUrl = `${environment.apiUrl}/api/bateaux`;
+  private apiUrlEngin = `${environment.apiUrl}/api/engin-peche`;
 
   constructor(private http: HttpClient) {}
 
@@ -75,5 +76,15 @@ export class BateauService {
     return this.http.get<Bateau[]>(
       `${this.apiUrl}/proprietaire/${pecheurId}/bateaux`,
     );
+  }
+
+  getEngins(): Observable<any[]> {
+    let params = new HttpParams();
+
+    return this.http.get<any[]>(this.apiUrlEngin);
+  }
+
+  getEngin(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrlEngin}/${id}`);
   }
 }

@@ -9,7 +9,7 @@ from decimal import Decimal
 
 
 class LicencePecheBase(BaseModel):
-    numero_licence: str = Field(..., min_length=0, max_length=50)
+
     type_licence: str = Field(
         ..., description="artisanale, industrielle, semi-industrielle"
     )
@@ -18,7 +18,7 @@ class LicencePecheBase(BaseModel):
     )
 
     pecheur_id: Optional[int] = None
-    entreprise_id: Optional[int] = None
+    # entreprise_id: Optional[int] = None
 
     annee_validite: int
     date_emission: date
@@ -46,6 +46,8 @@ class LicencePecheBase(BaseModel):
     autorite_emission: str = "Ministère de la Mer, de la Pêche et de l'Économie Bleue"
     agent_emission: Optional[str] = None
     bureau_emission: Optional[str] = None
+    pour_ordre: Optional[bool] = None
+    signataire_id: Optional[int] = None
 
     remarques: Optional[str] = None
     actif: bool = True
@@ -54,19 +56,21 @@ class LicencePecheBase(BaseModel):
 class LicencePecheCreate(LicencePecheBase):
     """Création d'une nouvelle licence"""
 
+    numero_licence: Optional[str] = None
+
     @validator("date_expiration")
     def expiration_apres_debut(cls, v, values):
         if "date_debut" in values and v <= values["date_debut"]:
             raise ValueError("La date d'expiration doit être après la date de début")
         return v
 
-    @validator("pecheur_id", "entreprise_id")
-    def au_moins_un_titulaire(cls, v, values):
-        if not v and not values.get("pecheur_id") and not values.get("entreprise_id"):
-            raise ValueError(
-                "La licence doit avoir un titulaire (pêcheur ou entreprise)"
-            )
-        return v
+    # @validator("pecheur_id", "entreprise_id")
+    # def au_moins_un_titulaire(cls, v, values):
+    #     if not v and not values.get("pecheur_id") and not values.get("entreprise_id"):
+    #         raise ValueError(
+    #             "La licence doit avoir un titulaire (pêcheur ou entreprise)"
+    #         )
+    #     return v
 
 
 class LicencePecheUpdate(BaseModel):
@@ -109,6 +113,7 @@ class LicencePecheInDB(LicencePecheBase):
 class LicencePecheResponse(LicencePecheInDB):
     """Réponse avec informations calculées"""
 
+    numero_licence: str = Field(..., min_length=0, max_length=50)
     est_active: bool = False
     jours_avant_expiration: int = 0
     necessite_renouvellement: bool = False
@@ -258,3 +263,94 @@ class RapportLicence(BaseModel):
     inspections: List[InspectionLicenceResponse]
     violations: List[ViolationLicenceResponse]
     historique_renouvellements: List[RenouvellementLicenceResponse]
+
+
+class RoleSignataire(BaseModel):
+    """Rôle d'un signataire dans le processus de délivrance des licences"""
+
+    id: int
+    nom_role: str  # ex: Directeur, Chef de Service, Agent de Terrain
+    abbreviation: str  # ex: DIR, CS, AT
+    description: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class RoleSignataireCreate(BaseModel):
+    nom_role: str
+    abbreviation: str
+    description: Optional[str] = None
+
+
+class RoleSignataireResponse(RoleSignataireCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class Signataire(BaseModel):
+    """Signataire d'une licence"""
+
+    id: int
+    nom_complet: str
+    role_id: int
+    organisme: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_telephone: Optional[str] = None
+    is_actif: bool = True
+
+    # role: Optional[RoleSignataire] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SignataireCreate(BaseModel):
+    nom_complet: str
+    role_id: int
+    organisme: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_telephone: Optional[str] = None
+    is_actif: bool = True
+
+
+class SignataireResponse(Signataire):
+    id: int
+    role: Optional[RoleSignataireResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SignataireLicence(BaseModel):
+    """Association entre une licence et un signataire"""
+
+    id: int
+    licence_id: int
+    signataire_id: int
+    date_signature: date
+    remarques: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SignataireLicenceCreate(BaseModel):
+    licence_id: int
+    signataire_id: int
+    date_signature: date
+    remarques: Optional[str] = None
+
+
+class SignataireLicenceResponse(SignataireLicence):
+    signataire: Optional[Signataire] = None
+
+
+class SignataireLicenceDetailResponse(SignataireLicence):
+    signataire: Optional[Signataire] = None
+    role_signataire: Optional[RoleSignataire] = None
+
+    class Config:
+        from_attributes = True

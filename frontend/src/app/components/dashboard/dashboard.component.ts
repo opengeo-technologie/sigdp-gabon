@@ -164,7 +164,8 @@ import { environment } from "../../../environments/environment";
                       </td>
                       <td>{{ espece.code }}</td>
                       <td>{{ espece.quantite_tonnes }} t</td>
-                      <td>{{ espece.valeur_fcfa | number: "1.0-0" }}</td>
+                      <!-- <td>{{ espece.valeur_fcfa | number: "1.0-0" }}</td> -->
+                      <td>2024</td>
                     </tr>
                   </tbody>
                 </table>

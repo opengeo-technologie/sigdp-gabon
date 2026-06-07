@@ -62,7 +62,7 @@
   <div class="card" *ngIf="!loading">
     <div class="card-content">
       <span class="card-title">
-        {{ licences.length }} licence(s) et autorisation(s) trouvé(s)
+        {{ totalData }} licence(s) et autorisation(s) trouvé(s)
       </span>
       <div class="table-responsive">
         <table class="highlight responsive-table">
@@ -80,7 +80,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let licence of paginatedData">
+            <tr *ngFor="let licence of licences">
               <td>
                 <strong>{{ licence.numero_licence }}</strong>
               </td>
@@ -124,16 +124,14 @@
                 </a>
                 <a
                   [routerLink]="['/bateaux', licence.id, 'edit']"
-                  class="btn-small btn-flat waves-effect"
-                  *appHasPermission="'bateau.update'"
+                  class="btn-small btn-flat waves-effect disabled-link"
                   title="Modifier"
                 >
                   <i class="material-icons">edit</i>
                 </a>
                 <a
                   (click)="deleteLicence(licence)"
-                  *appHasPermission="'bateau.delete'"
-                  class="btn-small btn-flat waves-effect red-text"
+                  class="btn-small btn-flat waves-effect red-text disabled-link"
                   title="Supprimer"
                 >
                   <i class="material-icons">delete</i>

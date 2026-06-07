@@ -22,10 +22,14 @@ export class LicencesComponent {
   filters = {
     type: "",
     statut: "",
+    limit: 10,
   };
+
+  filterParams: any = {};
 
   currentPage = 1;
   rowsPerPage = 10;
+  totalData = 0;
 
   constructor(
     private licenceService: LicencesAutorisationsService,
@@ -34,21 +38,23 @@ export class LicencesComponent {
   ) {}
 
   ngOnInit() {
+    this.filterParams.limit = this.filters.limit;
     this.loadBData();
     setTimeout(() => this.initializeSelects(), 100);
   }
 
   loadBData() {
     this.loading = false;
-    const filterParams: any = {};
+    // const filterParams: any = {};
 
-    if (this.filters.type) filterParams.type = this.filters.type;
-    if (this.filters.statut) filterParams.statut = this.filters.statut;
+    if (this.filters.type) this.filterParams.type = this.filters.type;
+    if (this.filters.statut) this.filterParams.statut = this.filters.statut;
 
-    this.licenceService.getLicences(filterParams).subscribe({
+    this.licenceService.getLicences(this.filterParams).subscribe({
       next: (data) => {
-        // console.log("Licences chargées:", data);
-        this.licences = data;
+        console.log("Licences chargées:", data);
+        this.licences = data.result;
+        this.totalData = data.total;
         this.loading = false;
       },
       error: (error) => {
@@ -62,24 +68,28 @@ export class LicencesComponent {
     });
   }
 
-  get paginatedData() {
-    const start = (this.currentPage - 1) * this.rowsPerPage;
-    return this.licences.slice(start, start + this.rowsPerPage);
-  }
+  // get paginatedData() {
+  //   const start = (this.currentPage - 1) * this.rowsPerPage;
+  //   return this.licences.slice(start, start + this.rowsPerPage);
+  // }
 
   totalPages() {
-    return Math.ceil(this.licences.length / this.rowsPerPage);
+    return Math.ceil(this.totalData / this.rowsPerPage);
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadBData();
     }
   }
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadBData();
     }
   }
 
