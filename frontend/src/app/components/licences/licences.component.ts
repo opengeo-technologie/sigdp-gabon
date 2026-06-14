@@ -39,11 +39,11 @@ export class LicencesComponent {
 
   ngOnInit() {
     this.filterParams.limit = this.filters.limit;
-    this.loadBData();
+    this.loadData();
     setTimeout(() => this.initializeSelects(), 100);
   }
 
-  loadBData() {
+  loadData() {
     this.loading = false;
     // const filterParams: any = {};
 
@@ -52,7 +52,7 @@ export class LicencesComponent {
 
     this.licenceService.getLicences(this.filterParams).subscribe({
       next: (data) => {
-        console.log("Licences chargées:", data);
+        // console.log("Licences chargées:", data);
         this.licences = data.result;
         this.totalData = data.total;
         this.loading = false;
@@ -81,7 +81,7 @@ export class LicencesComponent {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;
       this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
-      this.loadBData();
+      this.loadData();
     }
   }
 
@@ -89,17 +89,17 @@ export class LicencesComponent {
     if (this.currentPage > 1) {
       this.currentPage--;
       this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
-      this.loadBData();
+      this.loadData();
     }
   }
 
   applyFilters() {
-    this.loadBData();
+    this.loadData();
   }
 
   search() {
     this.currentPage = 1;
-    this.loadBData();
+    this.loadData();
   }
 
   deleteLicence(licence: any) {

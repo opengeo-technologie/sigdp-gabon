@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, ActivatedRoute, RouterModule } from "@angular/router";
@@ -6,7 +12,8 @@ import { BateauService } from "../../../services/bateau.service";
 import { PecheurService } from "../../../services/pecheur.service";
 
 import { PhotoUploaderComponent } from "../photo-uploader/photo-uploader.component";
-import { filter } from "rxjs";
+import { filter, forkJoin } from "rxjs";
+import { DebarcadereService } from "../../../services/debarcadere.service";
 
 declare var M: any;
 
@@ -18,6 +25,8 @@ declare var M: any;
   styleUrls: ["./bateau-form.component.css"],
 })
 export class BateauFormComponent implements OnInit {
+  @ViewChild("siteSelect") siteSelect!: ElementRef;
+
   bateau: any = {
     numero_immatriculation: "",
     nom_bateau: "",
@@ -37,6 +46,10 @@ export class BateauFormComponent implements OnInit {
     tirant_eau: 0,
     puissance_moteur: 0,
     jauge_brute: 0,
+    site_port_attache: null,
+    site_obligatoire: [],
+    engins_peche_principal: null,
+    engins_peche_secondaires: [] as (string | number)[],
   };
 
   enginsPecheSelectionnes: any = {
@@ -49,10 +62,13 @@ export class BateauFormComponent implements OnInit {
   };
 
   pecheurs: any[] = [];
+  sites: any[] = [];
+  engins_peche: any[] = [];
   isEditMode = false;
   bateauId: number | null = null;
   loading = false;
   showListEquipage = false;
+  selectedValues: string[] = [];
 
   equipageRoles = [
     { nom: "Capitaine", role: "capitaine" },
@@ -62,8 +78,11 @@ export class BateauFormComponent implements OnInit {
 
   listSelectedEquipage: any[] = [];
 
+  readonly MAX_ENGINS = 2;
+
   constructor(
     private bateauService: BateauService,
+    private debarcadereService: DebarcadereService,
     private pecheurService: PecheurService,
     private router: Router,
     private route: ActivatedRoute,
@@ -73,6 +92,8 @@ export class BateauFormComponent implements OnInit {
   ngOnInit() {
     // Charger la liste des pêcheurs
     this.loadPecheurs();
+    this.loadDebarcaderes();
+    this.loadEnginsPeche();
     this.bateau.nombre_equipage = 0; // Initialiser à 0 pour éviter les problèmes de validation
 
     // Vérifier si mode édition
@@ -80,7 +101,8 @@ export class BateauFormComponent implements OnInit {
       if (params["id"]) {
         this.isEditMode = true;
         this.bateauId = +params["id"];
-        this.loadBateau(this.bateauId);
+        // this.loadBateau(this.bateauId);
+        this.chargerFormulaire(this.bateauId);
       }
     });
 
@@ -128,6 +150,58 @@ export class BateauFormComponent implements OnInit {
     }
   }
 
+  resetSiteSelect() {
+    // 1. vider le modèle
+    this.bateau.site_obligatoire = [];
+
+    // 2. désélectionner toutes les options dans le DOM
+    const el = this.siteSelect.nativeElement as HTMLSelectElement;
+    Array.from(el.options).forEach((opt) => (opt.selected = false));
+
+    // 3. réinitialiser Materialize pour rafraîchir l'affichage
+    M.FormSelect.init(el);
+  }
+
+  preselectionnerSites() {
+    // convertir la chaîne "2270, 2099" en tableau ["2270", "2099"]
+    const idsSelectionnes = (this.bateau.site_obligatoire ?? "")
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter((s: string) => s !== "");
+
+    const el = this.siteSelect.nativeElement as HTMLSelectElement;
+
+    // marquer les options correspondantes comme selected
+    Array.from(el.options).forEach((opt) => {
+      opt.selected = idsSelectionnes.includes(opt.value);
+    });
+
+    // réinitialiser Materialize pour afficher la sélection
+    M.FormSelect.init(el);
+  }
+
+  isEnginSelected(id: string | number): boolean {
+    return this.bateau.engins_peche_secondaires.includes(id);
+  }
+
+  isMaxReached(): boolean {
+    return this.bateau.engins_peche_secondaires.length >= this.MAX_ENGINS;
+  }
+
+  onEnginChange(event: Event, id: string | number) {
+    const checked = (event.target as HTMLInputElement).checked;
+
+    if (checked) {
+      if (this.bateau.engins_peche_secondaires.length < this.MAX_ENGINS) {
+        this.bateau.engins_peche_secondaires.push(id);
+      }
+    } else {
+      this.bateau.engins_peche_secondaires =
+        this.bateau.engins_peche_secondaires.filter((x: any) => x !== id);
+    }
+    // console.log(this.bateau.engins_peche_secondaires);
+  }
+
   loadPecheurs() {
     this.pecheurService.getPecheurs().subscribe({
       next: (data) => {
@@ -141,25 +215,48 @@ export class BateauFormComponent implements OnInit {
     });
   }
 
+  loadEnginsPeche() {
+    this.bateauService.getEngins().subscribe({
+      next: (data) => {
+        this.engins_peche = data;
+        setTimeout(() => this.initializeMaterialize(), 100);
+      },
+      error: (error) => {
+        console.error("Erreur chargement engins de pêche:", error);
+        M.toast({ html: "Erreur chargement engins de pêche", classes: "red" });
+      },
+    });
+  }
+
+  loadDebarcaderes() {
+    this.debarcadereService.getDebarcaderes().subscribe({
+      next: (data) => {
+        // console.log(data);
+        this.sites = data;
+      },
+      error: (error) => {
+        console.error("Erreur chargement pêcheurs:", error);
+        M.toast({ html: "Erreur chargement pêcheurs", classes: "red" });
+      },
+    });
+  }
+
   loadBateau(id: number) {
     this.bateauService.getBateau(id).subscribe({
       next: (data) => {
+        // console.log(data);
         this.bateau = data;
 
+        this.preselectionnerSites();
         // Charger les engins de pêche
-        if (this.bateau.engins_peche) {
-          const engins = this.bateau.engins_peche
-            .split(",")
-            .map((e: string) => e.trim());
-          this.enginsPecheSelectionnes = {
-            filet_maillant: engins.includes("Filet maillant"),
-            senne: engins.includes("Senne"),
-            ligne: engins.includes("Ligne"),
-            casier: engins.includes("Casier"),
-            harpon: engins.includes("Harpon"),
-            palangre: engins.includes("Palangre"),
-          };
-        }
+        // if (data.engins_peche_secondaires) {
+        //   this.bateau.engins_peche_secondaires = (
+        //     data.engins_peche_secondaires ?? ""
+        //   )
+        //     .split(",")
+        //     .map((s: string) => s.trim())
+        //     .filter((s: string) => s !== "");
+        // }
 
         setTimeout(() => this.initializeMaterialize(), 100);
       },
@@ -169,6 +266,45 @@ export class BateauFormComponent implements OnInit {
         this.router.navigate(["/bateaux"]);
       },
     });
+  }
+
+  chargerFormulaire(id: number) {
+    forkJoin({
+      engins: this.bateauService.getEngins(),
+      // en édition on charge le bateau, en création on renvoie null
+      bateau: this.bateauService.getBateau(id),
+    }).subscribe({
+      next: ({ engins, bateau }) => {
+        this.engins_peche = engins;
+
+        if (bateau) {
+          // --- MODE ÉDITION : pré-remplir ---
+          this.bateau = {
+            ...bateau,
+            engins_peche_secondaires: this.stringToIds(
+              bateau.engins_peche_secondaires,
+            ),
+          };
+
+          // pré-sélection du select Materialize (les checkboxes se gèrent seules)
+          setTimeout(() => this.preselectionnerSites(), 0);
+        }
+        // --- MODE CRÉATION : on garde l'objet vierge initial ---
+      },
+      error: (err) => console.error("Erreur de chargement", err),
+    });
+  }
+
+  stringToIds(value: string | undefined): number[] {
+    if (!value) return [];
+    return value
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+  }
+
+  idsToString(ids: (string | number)[]): string {
+    return ids.join(", ");
   }
 
   get filteredPecheurs() {
@@ -197,6 +333,19 @@ export class BateauFormComponent implements OnInit {
     this.listSelectedEquipage.splice(index, 1);
   }
 
+  onSelectSiteDebarquement(e: Event) {
+    const select = e.target as HTMLSelectElement;
+    const values = Array.from(select.selectedOptions)
+      .map((opt) =>
+        opt.value.includes(": ") ? opt.value.split(": ")[1] : opt.value,
+      )
+      .filter((v) => v !== "");
+
+    this.selectedValues = values;
+    this.bateau.site_obligatoire = values.join(", ");
+    // console.log(this.bateau.site_obligatoire);
+  }
+
   onSubmit() {
     // Construire la liste des engins de pêche
     const enginsSelectionnes = [];
@@ -209,7 +358,7 @@ export class BateauFormComponent implements OnInit {
     if (this.enginsPecheSelectionnes.palangre)
       enginsSelectionnes.push("Palangre");
 
-    this.bateau.engins_peche = enginsSelectionnes.join(", ");
+    // this.bateau.engins_peche = enginsSelectionnes.join(", ");
 
     this.loading = false;
 
@@ -268,6 +417,16 @@ export class BateauFormComponent implements OnInit {
       "nombre_equipage",
       String(this.bateau.nombre_equipage || 0),
     );
+    formData.append("site_port_attache", this.bateau.site_port_attache);
+    formData.append("site_obligatoire", this.bateau.site_obligatoire);
+    formData.append(
+      "engins_peche_secondaires",
+      this.idsToString(this.bateau.engins_peche_secondaires),
+    );
+    formData.append(
+      "engins_peche_principal",
+      this.bateau.engins_peche_principal,
+    );
     if (this.bateau.photo) {
       formData.append("photo", this.bateau.photo);
       formData.append("remove_photo", "true");
@@ -316,12 +475,12 @@ export class BateauFormComponent implements OnInit {
 
   onPhotoSelected(file: File) {
     this.bateau.photo = file;
-    console.log("Photo sélectionnée:", file.name, file.size);
+    // console.log("Photo sélectionnée:", file.name, file.size);
   }
 
   onPhotoRemoved() {
     this.bateau.photo = null;
-    console.log("Photo supprimée");
+    // console.log("Photo supprimée");
   }
 
   validateEquipageForm(): boolean {

@@ -45,6 +45,10 @@ export class LicencesAutorisationsService {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
+  getLicencesByBateauId(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/bateau/${id}`);
+  }
+
   createLicence(licenceData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/`, licenceData);
   }

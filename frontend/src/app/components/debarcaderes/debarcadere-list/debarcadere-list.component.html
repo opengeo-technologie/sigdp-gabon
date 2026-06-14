@@ -1,0 +1,212 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">location_on</i> Débarcadères</h1>
+    <p>Gestion des débarcadères de pêche au Gabon</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Filtres et actions -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="province">Province (Strate majeure)</label>
+            <select
+              class="browser-default"
+              id="province"
+              [(ngModel)]="filters.province"
+              (change)="applyFilters()"
+            >
+              <option value="">Toutes les provinces</option>
+              <option value="ESTUAIRE">Estuaire</option>
+              <option value="OGOOUE MARITIME">Ogooué-Maritime</option>
+              <option value="HAUT OGOOUE">Haut-Ogooué</option>
+              <option value="NYANGA">Nyanga</option>
+              <option value="NGOUNIE">Ngounié</option>
+              <option value="MOYEN OGOOUE">Moyen-Ogooué</option>
+              <option value="OGOOUE IVINDO">Ogooué-Ivindo</option>
+              <option value="OGOOUE LOLO">Ogooué-Lolo</option>
+              <option value="WOLEU-NTEM">Woleu-Ntem</option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="type_site">Localité (Strate mineure)</label>
+            <select
+              #selectLocalite
+              [(ngModel)]="filters.type"
+              id="type_site"
+              (change)="applyFilters()"
+            >
+              <option value="">Toutes les localités</option>
+              <option *ngFor="let item of localites" [value]="item.localite">
+                {{ item.localite }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <!-- <div class="col s12 m3">
+              <div class="form-input">
+                <label for="type_site">Localité (Strate mineure)</label>
+                <select
+                  [(ngModel)]="filters.type"
+                  class="browser-default"
+                  id="type_site"
+                  (change)="applyFilters()"
+                >
+                  <option value="">Tous les types</option>
+                  <option value="Officiel">Officiel</option>
+                  <option value="Informel">Informel</option>
+                  <option value="Saisonnier">Saisonnier</option>
+                </select>
+              </div>
+            </div> -->
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="etat_site">Statut</label>
+            <select
+              class="browser-default"
+              id="etat_site"
+              [(ngModel)]="filters.statut"
+              (change)="applyFilters()"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="Actif">Actif</option>
+              <option value="Inactif">Inactif</option>
+              <option value="En travaux">En travaux</option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <a
+            routerLink="/debarcaderes/new"
+            class="btn btn-primary waves-effect waves-light"
+            style="margin-top: 1.5rem"
+          >
+            <i class="material-icons left">add</i>
+            Nouveau débarcadère
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-content">
+      <span class="card-title"> {{ totalData }} débarcadère(s) trouvé(s) </span>
+      <div class="table-responsive">
+        <table class="highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Dénomination</th>
+              <th>Type</th>
+              <th>Milieu</th>
+              <th>Province</th>
+              <th>Localité</th>
+              <th>Nombre de bateau</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let deb of paginatedData">
+              <td>
+                {{ deb.denomination }}
+                <br />
+                <small class="grey-text" *ngIf="deb.nom_local">{{
+                  deb.nom_local
+                }}</small>
+              </td>
+              <td>{{ deb.type }}</td>
+              <td>
+                <span class="badge" [ngClass]="getMilieuClass(deb.milieu)">
+                  {{ deb.milieu }}
+                </span>
+              </td>
+              <td>{{ deb.province }}</td>
+              <td>{{ deb.localite }}</td>
+              <td class="center">{{ deb.taille_flottile }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="getStatutClass(deb.statut_operationnel)"
+                >
+                  {{ deb.statut_operationnel }}
+                </span>
+              </td>
+              <td>
+                <a
+                  [routerLink]="['/debarcaderes', deb.id]"
+                  class="btn-small btn-flat waves-effect"
+                >
+                  <i class="material-icons">visibility</i>
+                </a>
+                <a
+                  [routerLink]="['/debarcaderes', deb.id, 'edit']"
+                  class="btn-small btn-flat waves-effect"
+                >
+                  <i class="material-icons">edit</i>
+                </a>
+                <a
+                  (click)="deleteDebarcadere(deb)"
+                  class="btn-small btn-flat waves-effect red-text"
+                >
+                  <i class="material-icons">delete</i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="debarcaderes.length === 0">
+              <td colspan="7" class="center-align">
+                <p class="grey-text">
+                  Aucun débarcadère trouvé avec ces critères
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center" style="padding-top: 20px">
+          <button
+            (click)="prevPage()"
+            class="btn waves-effect waves-light white darken-4 btn-small"
+            [disabled]="currentPage === 1"
+          >
+            <i class="material-icons" style="color: #000000">chevron_left</i>
+          </button>
+          <span
+            class="page-number"
+            style="margin-left: 10px; margin-right: 10px"
+            >page {{ currentPage }} / {{ totalPages() }}</span
+          >
+          <button
+            (click)="nextPage()"
+            class="btn waves-effect waves-light white btn-small"
+            [disabled]="currentPage === totalPages()"
+          >
+            <i class="material-icons" style="color: #000000">chevron_right</i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

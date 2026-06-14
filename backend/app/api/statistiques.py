@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, and_, asc, desc
 from typing import Optional
 from datetime import date, datetime, timedelta
 
@@ -10,8 +10,26 @@ from app.models.debarcadere import Debarcadere
 from app.models.pecheur import Pecheur
 from app.models.bateau import Bateau
 from app.models.espece import Espece
+from app.models.licence import LicenceAutorisationPeche
+from app.models.armement_coorperative import ArmementCooperative
 
 router = APIRouter(prefix="/api/statistiques", tags=["Statistiques"])
+
+
+LIST_MONTHS = [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Decembre",
+]
 
 
 @router.get("/dashboard")
@@ -82,7 +100,15 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     #     Pecheur.statut == "Actif"
     # ).count()
 
+    # ✅ Extraire
+    annee = debut_mois.year
+    mois = debut_mois.month
+
     return {
+        "periode": {
+            "full": f"{LIST_MONTHS[int(mois) - 1]} {int(annee)}",
+            "periode": f"{int(annee)}-{int(mois):02d}",
+        },
         "globaux": {
             "debarcaderes_actifs": total_debarcaderes,
             "pecheurs_actifs": total_pecheurs,
@@ -91,12 +117,12 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         },
         "captures_mois": {
             "quantite_kg": round(total_kg_mois, 2),
-            "quantite_tonnes": round(total_kg_mois / 1000, 2),
+            "quantite_tonnes": round(total_kg_mois / 1000, 3),
             "valeur_fcfa": round(total_valeur_mois, 2),
         },
         "captures_annee": {
             "quantite_kg": round(total_kg_annee, 2),
-            "quantite_tonnes": round(total_kg_annee / 1000, 2),
+            "quantite_tonnes": round(total_kg_annee / 1000, 3),
             "valeur_fcfa": round(total_valeur_annee, 2),
         },
         "alertes": {
@@ -142,7 +168,39 @@ def get_evolution_debarquements(
                     "periode": f"{int(r.annee)}-{int(r.mois):02d}",
                     "nombre_debarquements": r.nombre,
                     "quantite_kg": float(r.quantite_kg or 0),
-                    "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 2),
+                    "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+                }
+            )
+
+        return evolution
+
+    if periode == "annee":
+        # Grouper par année
+        resultats = (
+            db.query(
+                extract("year", Debarquement.date_debarquement).label("annee"),
+                func.count(Debarquement.id).label("nombre"),
+                func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+            )
+            .select_from(Debarquement)
+            .join(
+                DetailDebarquement,
+                DetailDebarquement.debarquement_id == Debarquement.id,
+            )
+            .group_by("annee")
+            .order_by("annee")
+            .limit(5)
+            .all()
+        )
+
+        evolution = []
+        for r in resultats:
+            evolution.append(
+                {
+                    "periode": f"{int(r.annee)}",
+                    "nombre_debarquements": r.nombre,
+                    "quantite_kg": float(r.quantite_kg or 0),
+                    "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
                 }
             )
 
@@ -192,14 +250,58 @@ def get_top_especes(
             {
                 "nom": r.nom_commun_francais,
                 "code": r.code_espece,
-                "quantite_kg": round(float(r.total_kg or 0), 2),
-                "quantite_tonnes": round(float(r.total_kg or 0) / 1000, 2),
+                "quantite_kg": round(float(r.total_kg or 0), 3),
+                "quantite_tonnes": round(float(r.total_kg or 0) / 1000, 3),
                 "valeur_fcfa": round(float(r.total_valeur or 0), 2),
                 "nb_captures": r.nb_captures,
             }
         )
 
     return top_especes
+
+
+# @router.get("/debarcaderes/activite")
+# def get_activite_debarcaderes(
+#     limite: int = Query(10, ge=1, le=50), db: Session = Depends(get_db)
+# ):
+#     """
+#     Classement des débarcadères par activité
+#     """
+#     resultats = (
+#         db.query(
+#             Debarcadere.denomination,
+#             # Debarcadere.code,
+#             # Debarcadere.province,
+#             func.count(Debarquement.id).label("nb_debarquements"),
+#             func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+#         )
+#         .select_from(Debarcadere)
+#         .join(Debarquement, Debarquement.debarcadere_id == Debarcadere.id)
+#         .join(DetailDebarquement, DetailDebarquement.debarquement_id == Debarquement.id)
+#         .group_by(
+#             # Debarcadere.id,
+#             Debarcadere.denomination,
+#             # Debarcadere.code,
+#             # Debarcadere.province,
+#         )
+#         .order_by(func.count(Debarquement.id).desc())
+#         .limit(limite)
+#         .all()
+#     )
+
+#     classement = []
+#     for r in resultats:
+#         classement.append(
+#             {
+#                 "debarcadere": r.denomination,
+#                 # "code": r.code,
+#                 "nb_debarquements": r.nb_debarquements,
+#                 "quantite_kg": round(float(r.total_kg or 0), 2),
+#                 "quantite_tonnes": round(float(r.total_kg or 0) / 1000, 3),
+#             }
+#         )
+
+#     return classement
 
 
 @router.get("/debarcaderes/activite")
@@ -209,41 +311,69 @@ def get_activite_debarcaderes(
     """
     Classement des débarcadères par activité
     """
-    resultats = (
+    embarcations = (
         db.query(
-            Debarcadere.denomination,
-            Debarcadere.code,
-            Debarcadere.province,
-            func.count(Debarquement.id).label("nb_debarquements"),
-            func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+            Debarcadere.denomination.label("nom_site"),
+            Debarcadere.id.label("id_site"),
+            func.count(Bateau.id).label("nb_debarquements"),
         )
         .select_from(Debarcadere)
-        .join(Debarquement, Debarquement.debarcadere_id == Debarcadere.id)
-        .join(DetailDebarquement, DetailDebarquement.debarquement_id == Debarquement.id)
+        .join(Bateau, Bateau.site_port_attache == Debarcadere.id)
         .group_by(
             Debarcadere.id,
             Debarcadere.denomination,
-            Debarcadere.code,
-            Debarcadere.province,
         )
-        .order_by(func.count(Debarquement.id).desc())
-        .limit(limite)
+        .order_by(func.count(Bateau.id).desc())
         .all()
     )
 
     classement = []
-    for r in resultats:
-        classement.append(
-            {
-                "debarcadere": r.denomination,
-                "code": r.code,
-                "province": r.province,
-                "nb_debarquements": r.nb_debarquements,
-                "quantite_kg": round(float(r.total_kg or 0), 2),
-                "quantite_tonnes": round(float(r.total_kg or 0) / 1000, 2),
-            }
+
+    for embarcation in embarcations:
+        resultat = (
+            db.query(
+                Debarcadere.denomination,
+                func.count(Debarquement.id).label("nb_debarquements"),
+            )
+            .select_from(Debarcadere)
+            .join(Debarquement, Debarquement.debarcadere_id == Debarcadere.id)
+            .filter(embarcation.id_site == Debarcadere.id)
+            .group_by(
+                Debarcadere.denomination,
+            )
+            .first()
         )
 
+        resultat_quantite = (
+            db.query(
+                Debarcadere.denomination,
+                func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+            )
+            .select_from(Debarcadere)
+            .join(Debarquement, Debarquement.debarcadere_id == Debarcadere.id)
+            .join(
+                DetailDebarquement,
+                DetailDebarquement.debarquement_id == Debarquement.id,
+            )
+            .filter(embarcation.id_site == Debarcadere.id)
+            .group_by(
+                Debarcadere.denomination,
+            )
+            .first()
+        )
+
+        if resultat and resultat_quantite:
+            classement.append(
+                {
+                    "debarcadere": embarcation.nom_site,
+                    "nb_embarcations": embarcation.nb_debarquements,
+                    "nb_debarquements": resultat.nb_debarquements,
+                    "quantite_kg": round(float(resultat_quantite.total_kg or 0), 2),
+                    "quantite_tonnes": round(
+                        float(resultat_quantite.total_kg or 0) / 1000, 3
+                    ),
+                }
+            )
     return classement
 
 
@@ -370,3 +500,211 @@ def get_utilisation_quotas(db: Session = Depends(get_db)):
         )
 
     return sorted(utilisation, key=lambda x: x["taux_utilisation_pct"], reverse=True)
+
+
+@router.get("/captures/yearly")
+def get_evolution_captures(
+    filtre: str = Query(
+        "province", regex="^(province|localite|site|cooperative|metier|nationalite)$"
+    ),
+    annee: int = Query(2020, ge=1),
+    db: Session = Depends(get_db),
+):
+    """
+    Liste des captures par mois
+    """
+
+    # Récupérer toutes les provinces
+    provinces_query = (
+        db.query(Debarcadere.province)
+        .filter(Debarcadere.province.isnot(None))
+        .distinct()
+    )
+
+    # if filtre == "province":
+    evolution_data = []
+
+    resultats = (
+        db.query(
+            extract("year", Debarquement.date_debarquement).label("annee"),
+            extract("month", Debarquement.date_debarquement).label("mois"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .join(Debarcadere, Debarcadere.id == Debarquement.debarcadere_id)
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+            )
+        )
+        .group_by("annee", "mois")
+        .order_by("annee", "mois")
+        .all()
+    )
+
+    periodes = [
+        {
+            "mois": LIST_MONTHS[int(r.mois) - 1],
+            "periode": f"{int(r.annee)}-{int(r.mois):02d}",
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats
+    ]
+
+    evolution_data.append({"evolution": periodes})
+
+    return {"evolution": periodes}
+
+
+@router.get("/autorisations/province")
+def get_autorisation_par_province(
+    annee: int = Query(2020, ge=1), db: Session = Depends(get_db)
+):
+    """
+    Liste des autorisations par année
+    """
+
+    # Récupérer toutes les provinces
+    provinces_query = (
+        db.query(Debarcadere.province)
+        .filter(Debarcadere.province.isnot(None))
+        .distinct()
+    )
+
+    provinces = [row[0] for row in provinces_query.all()]
+
+    autorisation_data = []
+
+    for prov in provinces:
+        resultat = (
+            db.query(
+                Debarcadere.province.label("province"),
+                func.count(LicenceAutorisationPeche.id).label("nombre"),
+            )
+            .join(
+                Bateau,
+                LicenceAutorisationPeche.bateau_id == Bateau.id,
+            )
+            .join(Debarcadere, Debarcadere.id == Bateau.site_port_attache)
+            .filter(
+                and_(
+                    Debarcadere.province == prov,
+                    LicenceAutorisationPeche.annee_validite == annee,
+                )
+            )
+            .group_by("province")
+            .order_by(desc("nombre"))
+            .first()
+        )
+
+        if resultat:
+            periodes = {
+                "province": prov,
+                "nombre_autorisations": resultat.nombre,
+            }
+
+        else:
+            periodes = {
+                "province": prov,
+                "nombre_autorisations": 0,
+            }
+
+        autorisation_data.append(periodes)
+
+    return {"data": autorisation_data}
+
+
+@router.get("/captures/zone")
+def get_captures_par_zone(
+    annee: int = Query(2020, ge=1), db: Session = Depends(get_db)
+):
+    """
+    Pourcentage des captures par zone
+    """
+    # evolution_data = []
+
+    resultats = (
+        db.query(
+            Debarquement.zone_peche_nom.label("zone_peche"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .join(Debarcadere, Debarcadere.id == Debarquement.debarcadere_id)
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+            )
+        )
+        .group_by("zone_peche")
+        .order_by(asc("zone_peche"), desc("quantite_kg"))
+        .all()
+    )
+
+    periodes = [
+        {
+            "zone_peche": r.zone_peche,
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats
+    ]
+
+    # evolution_data.append({"evolution": periodes})
+
+    return {"evolution": periodes}
+
+
+@router.get("/productions/especes/goupes")
+def get_production_par_espece_par_groupe(
+    annee: int = Query(2020, ge=1), db: Session = Depends(get_db)
+):
+    """
+    Quantité de production par groupe d'espèce
+    """
+    evolution_data = []
+
+    resultats = (
+        db.query(
+            Espece.categorie.label("groupe"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .join(Espece, Espece.id == DetailDebarquement.espece_id)
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+            )
+        )
+        .group_by("groupe")
+        .order_by("groupe", desc("quantite_kg"))
+        .all()
+    )
+
+    periodes = [
+        {
+            "groupe": r.groupe,
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats
+    ]
+
+    evolution_data.append({"evolution": periodes})
+
+    return {"evolution": periodes}

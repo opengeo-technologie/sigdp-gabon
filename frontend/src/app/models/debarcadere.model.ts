@@ -40,6 +40,7 @@ export interface Debarcadere {
   infrastructure_electricite: boolean;
 
   capacite_accueil?: number;
+  taille_flottile: number;
 
   // Agent responsable
   agent_responsable_nom?: string;

@@ -177,3 +177,20 @@
 #autorisation .logo-ministere img {
   width: 80px;
 }
+
+/* Checkboxes */
+[type="checkbox"].filled-in:checked + span:not(.lever):after {
+  border: 2px solid #2196f3;
+  background-color: #2196f3;
+}
+
+/* Améliorer l'espacement des inputs */
+.input-field {
+  margin-top: 1.5rem;
+}
+
+/* Style pour les labels actifs */
+.input-field label.active {
+  font-size: 0.8rem;
+  color: #2196f3;
+}

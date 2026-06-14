@@ -12,13 +12,17 @@ export class DebarcadereService {
 
   constructor(private http: HttpClient) {}
 
+  getLocalites(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/site/localite`);
+  }
+
   getDebarcaderes(filters?: {
     skip?: number;
     limit?: number;
     province?: string;
     type?: string;
     statut?: string;
-  }): Observable<Debarcadere[]> {
+  }): Observable<any> {
     let params = new HttpParams();
 
     if (filters) {
@@ -31,7 +35,7 @@ export class DebarcadereService {
       if (filters.statut) params = params.set("statut", filters.statut);
     }
 
-    return this.http.get<Debarcadere[]>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   getDebarcadere(id: number): Observable<Debarcadere> {

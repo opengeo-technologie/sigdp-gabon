@@ -6,6 +6,9 @@ import { BateauService } from "../../../services/bateau.service";
 import { Bateau } from "../../../models/bateau.model";
 import { environment } from "../../../../environments/environment";
 import { HasPermissionDirective } from "../../../directives/has-permission.directive";
+import { LicencesAutorisationsService } from "../../../services/licences-autorisations.service";
+import { AutorisationPechePdfService } from "../../../services/autorisation-pdf.service";
+import { ImageHelperService } from "../../../services/image-helper.service";
 
 declare var M: any;
 
@@ -141,10 +144,10 @@ declare var M: any;
                   }
                 </div>
               </div>
-              <div class="divider" *ngIf="bateau.photo_url"></div>
+              <div class="divider"></div>
 
-              <div class="row" *ngIf="bateau.photo_url">
-                <div class="col s12 m6">
+              <div class="row">
+                <div class="col s12 m12" *ngIf="bateau.photo_url">
                   <h6 class="mt-2">Photo bateau</h6>
                   <div *ngIf="bateau.photo_url">
                     <img
@@ -155,14 +158,39 @@ declare var M: any;
                     />
                   </div>
                 </div>
-                <div class="col s12 m6">
+                <div class="col s12 m12">
                   <h6 class="mt-2">Engins de pêche</h6>
-                  <p *ngFor="let item of listEnginsPeche">
-                    <i class="material-icons tiny" [class.green-text]="true">
-                      check_circle</i
-                    >
-                    {{ item }}
-                  </p>
+                  <div class="row">
+                    <p *ngFor="let item of listEnginsPeche" class="col s12 m4">
+                      <i
+                        class="material-icons tiny"
+                        *ngIf="
+                          item.id == bateau.engins_peche_principal ||
+                          item.id == bateau.engins_peche_secondaires
+                        "
+                        [class.green-text]="true"
+                      >
+                        check_circle</i
+                      >
+                      <i
+                        class="material-icons tiny"
+                        *ngIf="
+                          item.id != bateau.engins_peche_principal &&
+                          item.id != bateau.engins_peche_secondaires
+                        "
+                        [class.grey-text]="true"
+                      >
+                        cancel</i
+                      >
+                      {{ item.libelle }}
+                      @if (item.id == bateau.engins_peche_principal) {
+                        <span class="blue-text">(Engin principal)</span>
+                      }
+                      @if (item.id == bateau.engins_peche_secondaires) {
+                        <span class="red-text">(Engin secondaire)</span>
+                      }
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -172,25 +200,46 @@ declare var M: any;
         <div class="col s12 l4">
           <div class="card">
             <div class="card-content">
-              <span class="card-title">Certificat</span>
-              <p *ngIf="bateau.certificat_navigabilite_numero">
-                <strong>N°:</strong>
-                {{ bateau.certificat_navigabilite_numero }}
-              </p>
-              <p *ngIf="bateau.certificat_navigabilite_date_expiration">
-                <strong>Expire le:</strong>
-                {{
-                  bateau.certificat_navigabilite_date_expiration
-                    | date: "dd/MM/yyyy"
-                }}
-                <br />
-                <span
-                  class="badge"
-                  [ngClass]="bateau.certificat_valide ? 'green' : 'red'"
-                >
-                  {{ bateau.certificat_valide ? "Valide" : "Expiré" }}
-                </span>
-              </p>
+              <span class="card-title">Licences</span>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Numéro</th>
+                    <th>Année</th>
+                    <th>Etat</th>
+                    <th>Montant</th>
+                    <th>Détail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let licence of licences">
+                    <td>{{ licence.numero_licence }}</td>
+                    <td>{{ licence.annee }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [ngClass]="
+                          licence.est_active
+                            ? 'green white-text'
+                            : 'red white-text'
+                        "
+                      >
+                        {{ licence.est_active ? "Valide" : "Expiré" }}
+                      </span>
+                    </td>
+                    <td>{{ licence.montant || 0 }}</td>
+                    <td>
+                      <a
+                        (click)="generatePDf(licence.id)"
+                        class="btn-small btn-flat waves-effect"
+                        title="Voir détails"
+                      >
+                        <i class="material-icons">visibility</i>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -276,12 +325,16 @@ declare var M: any;
 export class BateauDetailComponent implements OnInit {
   bateau?: Bateau;
   bateauId?: number;
-  listEnginsPeche: string[] = [];
+  listEnginsPeche: any[] = [];
+  licences: any[] = [];
 
   url: any = `${environment.apiUrl}/uploads/bateaux/`;
 
   constructor(
     private bateauService: BateauService,
+    private licenceService: LicencesAutorisationsService,
+    private pdf: AutorisationPechePdfService,
+    private imageHelper: ImageHelperService,
     private route: ActivatedRoute,
     private router: Router,
   ) {}
@@ -290,6 +343,8 @@ export class BateauDetailComponent implements OnInit {
     this.route.params.subscribe((params) => {
       this.bateauId = +params["id"];
       this.loadBateau();
+      this.getLicencesByBateau();
+      this.getEnginsPeche();
     });
   }
 
@@ -297,11 +352,11 @@ export class BateauDetailComponent implements OnInit {
     if (this.bateauId) {
       this.bateauService.getBateau(this.bateauId).subscribe({
         next: (d) => {
-          // console.log("Données du bateau chargées:", d);
+          console.log("Données du bateau chargées:", d);
           this.bateau = d;
-          this.listEnginsPeche = d.engins_peche
-            ? d.engins_peche.split(",").map((e) => e.trim())
-            : [];
+          // this.listEnginsPeche = d.engins_peche
+          //   ? d.engins_peche.split(",").map((e) => e.trim())
+          //   : [];
         },
         error: (e) => {
           console.error(e);
@@ -310,6 +365,36 @@ export class BateauDetailComponent implements OnInit {
         },
       });
     }
+  }
+
+  getLicencesByBateau() {
+    if (this.bateauId) {
+      this.licenceService.getLicencesByBateauId(this.bateauId).subscribe({
+        next: (d) => {
+          // console.log("Données du bateau chargées:", d);
+          this.licences = d;
+        },
+        error: (e) => {
+          console.error(e);
+          M.toast({ html: "Erreur", classes: "red" });
+          this.router.navigate(["/bateaux"]);
+        },
+      });
+    }
+  }
+
+  getEnginsPeche() {
+    this.bateauService.getEngins().subscribe({
+      next: (d) => {
+        // console.log("Données du bateau chargées:", d);
+        this.listEnginsPeche = d;
+      },
+      error: (e) => {
+        console.error(e);
+        M.toast({ html: "Erreur", classes: "red" });
+        this.router.navigate(["/bateaux"]);
+      },
+    });
   }
 
   deleteBateau() {
@@ -330,5 +415,95 @@ export class BateauDetailComponent implements OnInit {
         },
       });
     }
+  }
+
+  listSiteDebarquement(site_obligatoire: any[]): string {
+    if (!site_obligatoire || site_obligatoire.length === 0) {
+      return "N/A";
+    }
+    return site_obligatoire.map((s) => s.nom).join(", ");
+  }
+
+  checkProprietaireType(type: string): "NATIONAL" | "ETRANGER" {
+    return type === "Gabonaise" ? "NATIONAL" : "ETRANGER";
+  }
+
+  async generatePDf(licenceId: number) {
+    const logoBase64 = await this.imageHelper.getBase64ImageFromURL(
+      "../../../assets/logo.jpg",
+    );
+
+    this.licenceService.getLicence(licenceId).subscribe({
+      next: (data) => {
+        // console.log("Données de la licence:", data);
+        // this.pdfService.generateLicencePDF(data);
+        this.pdf.open({
+          numero: data.numero_licence.padStart(3, "0"),
+          anneeValidite: data.annee_validite,
+          proprietaireType: this.checkProprietaireType(
+            data.proprietaire_info.nationalite,
+          ),
+          embarcation: {
+            nom: data.bateau_info.nom,
+            immatriculation: data.bateau_info.immatriculation,
+            typePirogue: data.bateau_info.type_bateau,
+            marqueMoteur: data.bateau_info.moteur_marque || "N/A",
+            puissanceCv: data.bateau_info.moteur_puissance_cv,
+            debarcadereAttache: data.bateau_info.site_port_attache.nom,
+            siteDebarquement: this.listSiteDebarquement(
+              data.bateau_info.site_obligatoire,
+            ),
+          },
+          proprietaire: {
+            nom:
+              data.proprietaire_info.nom + " " + data.proprietaire_info.prenom,
+            nationalite: data.proprietaire_info.nationalite,
+            typePiece: data.proprietaire_info.type_piece_identite || "N/A",
+            numeroPiece: data.proprietaire_info.numero_piece_identite || "N/A",
+            residence: data.proprietaire_info.adresse || "N/A",
+            telephone: data.proprietaire_info.telephone || "N/A",
+            cooperative: data.bateau_info.cooperative.denomination || "N/A",
+          },
+          engins: {
+            engin1: "Senne tournante",
+            especes1: "Sardine",
+            codeBarre: "SIGDP-AUTH-452-2026",
+          },
+          periodeDebut: data.date_debut
+            ? new Date(data.date_debut).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A",
+          periodeFin: data.date_expiration
+            ? new Date(data.date_expiration).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A",
+          montantFcfa: 200000,
+          quittanceTresor: "2419",
+          faitA: "Libreville",
+          dateFait: data.date_emission
+            ? new Date(data.date_emission).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A",
+          signataire: "Brice Didier Celce KOUMBA MABERT",
+          logoBase64: logoBase64,
+        });
+      },
+      error: (error) => {
+        console.error("Erreur lors de la récupération de la licence:", error);
+        M.toast({
+          html: "Erreur lors de la récupération de la licence",
+          classes: "red",
+        });
+      },
+    });
   }
 }

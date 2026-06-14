@@ -1,0 +1,76 @@
+.stat-card i {
+  float: right;
+  margin-top: 10px;
+  font-size: 2.5rem;
+}
+.stat-card h3 {
+  margin: 0;
+  font-size: 2rem;
+  color: #0d47a1;
+}
+.stat-card p {
+  margin: 0.5rem 0 0;
+  color: #757575;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+h4 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 2rem;
+}
+
+.alerte-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.alerte-item:last-child {
+  border-bottom: none;
+}
+.alerte-item .badge {
+  font-size: 1rem;
+  padding: 0px 0px;
+}
+.alerte-item p {
+  margin: 0;
+  flex: 1;
+}
+
+/* Le champ visible (input de sélection) */
+.form-input {
+  margin-top: 10px;
+}
+
+.form-input label {
+  font-size: 13px;
+  margin-left: 4px;
+  color: #757575;
+}
+
+.form-input select {
+  height: 30px; /* fixed height */
+  border-radius: 5px;
+  margin-top: 2px;
+  padding-left: 10px;
+  border: 1px solid black;
+}
+
+.pie-container {
+  width: 100%;
+  max-width: 400px; /* ✅ Réduit */
+  margin: 0 auto;
+  padding: 15px;
+}
+
+.pie-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px; /* ✅ Hauteur fixe réduite */
+}
+
+// .form-input select .dropdown {
+//   background-color: #0d47a1;
+// }

@@ -285,3 +285,59 @@ tbody tr td {
 .marker-cluster:hover div {
   transform: scale(1.1);
 }
+
+.form-input .select-wrapper input.select-dropdown {
+  border: 2px solid #2196f3 !important;
+  border-radius: 8px !important;
+  height: 30px !important;
+  line-height: 50px !important;
+  /* padding: 0 12px !important; */
+  font-size: 12px !important;
+  background-color: #fff !important;
+}
+
+/* Dropdown focus effect */
+.form-input .select-wrapper input.select-dropdown:focus {
+  border-color: #0d47a1 !important;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5) !important;
+}
+
+// .form-input {
+//   margin-top: 10px;
+// }
+
+// .form-input label {
+//   font-size: 13px;
+//   margin-left: 4px;
+//   color: #757575;
+// }
+
+// .form-input select {
+//   height: 30px; /* fixed height */
+//   border-radius: 5px;
+//   margin-top: 2px;
+//   padding-left: 10px;
+//   border: 1px solid black;
+// }
+
+.form-input .select-wrapper .select-dropdown {
+  background-color: #595858 !important;
+}
+
+.form-input .select-wrapper .select-dropdown li span {
+  /* padding-top: 2px !important;
+  padding-bottom: 2px !important; */
+  color: #ffffff !important;
+  font-size: 12px !important;
+}
+
+.search-input {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  font-size: 14px !important;
+}

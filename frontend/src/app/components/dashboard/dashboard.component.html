@@ -1,0 +1,340 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">dashboard</i> Tableau de bord</h1>
+    <p>Vue d'ensemble du système SIG-PECHE</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Statistiques principales -->
+  <div class="row">
+    <div class="col s12 m6 l3">
+      <div class="card stat-card">
+        <i class="material-icons medium teal-text">location_on</i>
+        <h3>{{ stats.globaux?.debarcaderes_actifs || 0 }}</h3>
+        <p>Débarcadères actifs</p>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card stat-card">
+        <i class="material-icons medium blue-text">people</i>
+        <h3>{{ stats.globaux?.pecheurs_actifs || 0 }}</h3>
+        <p>Pêcheurs actifs</p>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card stat-card">
+        <i class="material-icons medium orange-text">directions_boat</i>
+        <h3>{{ stats.globaux?.bateaux_actifs || 0 }}</h3>
+        <p>Bateaux actifs</p>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card stat-card">
+        <i class="material-icons medium green-text">assessment</i>
+        <h3>{{ stats.globaux?.debarquements_mois || 0 }}</h3>
+        <p>Débarquements ce mois ({{ stats.periode?.full }})</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Captures et valeur -->
+  <div class="row">
+    <div class="col s12 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">scale</i>
+            Captures du mois ({{ stats.periode?.full }})
+          </span>
+          <h4 class="blue-text">
+            {{ stats.captures_mois?.quantite_tonnes || 0 }} tonnes
+          </h4>
+          <p class="grey-text">
+            {{ stats.captures_mois?.quantite_kg || 0 }} kg
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">attach_money</i>
+            Valeur commerciale ({{ stats.periode?.full }})
+          </span>
+          <h4 class="green-text">
+            {{ stats.captures_mois?.valeur_fcfa || 0 | number: "1.0-0" }}
+            FCFA
+          </h4>
+          <p class="grey-text">Mois en cours</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertes et top espèces -->
+  <div class="row">
+    <div class="col s12 l6 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Top 5 des espèces les plus débarquées
+          </span>
+          <div class="table-responsive" *ngIf="topEspeces.length > 0">
+            <table class="highlight">
+              <thead>
+                <tr>
+                  <th>Espèce</th>
+                  <!-- <th>Code</th> -->
+                  <th>Quantité</th>
+                  <th>Valeur</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let espece of topEspeces">
+                  <td>
+                    <strong>{{ espece.nom }}</strong>
+                  </td>
+                  <!-- <td>{{ espece.code }}</td> -->
+                  <td>{{ espece.quantite_tonnes }} t</td>
+                  <td>
+                    {{
+                      espece.valeur_fcfa
+                        | currency: "XAF" : "symbol" : "1.0-0" : "fr"
+                    }}
+                  </td>
+                  <!-- <td>2024</td> -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p *ngIf="topEspeces.length === 0" class="grey-text center-align">
+            Aucune donnée disponible
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">place</i>
+            Débarcadères les plus actifs
+          </span>
+          <div class="table-responsive" *ngIf="topDebarcaderes.length > 0">
+            <table class="highlight">
+              <thead>
+                <tr>
+                  <th>Débarcadère</th>
+                  <th>Embarcations</th>
+                  <th>Débarquements</th>
+                  <th>Quantité</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let deb of topDebarcaderes">
+                  <td>
+                    <strong>{{ deb.debarcadere }}</strong>
+                  </td>
+                  <td>{{ deb.nb_embarcations }}</td>
+                  <td>{{ deb.nb_debarquements }}</td>
+                  <td>{{ deb.quantite_tonnes }} t</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Distribution des Captures par Zone de Pêche
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYearCapture"
+                (change)="refreshPieChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                class="pie-container"
+                *ngIf="captureZoneData && captureZoneData.length != 0"
+              >
+                <canvas id="pieChart"></canvas>
+              </div>
+              <div *ngIf="captureZoneData && captureZoneData.length == 0">
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 l6 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Evolution des captures mensuelles
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <!-- <div class="form-input col s12 m4 l4">
+              <label for="filtre">Filtre </label>
+              <select
+                class="browser-default"
+                [(ngModel)]="filtreAutorisationSelected"
+                name="filtre"
+                required
+              >
+                <option
+                  *ngFor="let item of filtresAutorisation"
+                  [value]="item.id"
+                >
+                  {{ item.valeur }}
+                </option>
+              </select>
+            </div> -->
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYear"
+                (change)="refreshLineChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+            <!-- <div class="form-input col s12 m4 l4">
+              <label for="month">Mois </label>
+              <select
+                class="browser-default"
+                id="month"
+                name="annee_validite"
+                [(ngModel)]="selectedMonth"
+                required
+              >
+                <option value="12">Tout</option>
+                <option *ngFor="let month of listeMois" [value]="month.id">
+                  {{ month.valeur }}
+                </option>
+              </select>
+            </div> -->
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="evolutionData && evolutionData.evolution.length != 0"
+              >
+                <canvas id="lineChart"></canvas>
+              </div>
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="evolutionData && evolutionData.evolution.length == 0"
+              >
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Autorisations de pêche par province
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYearAutorisation"
+                (change)="refreshBarChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                style="width: 600px; margin: 20px auto"
+                *ngIf="autorisationData && autorisationData.length != 0"
+              >
+                <canvas id="barChart"></canvas>
+              </div>
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="autorisationData && autorisationData.length == 0"
+              >
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

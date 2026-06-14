@@ -105,7 +105,7 @@ def get_engins_peche(
     """
     Récupérer la liste des engins de pêche
     """
-    result = db.query(EnginPeche).all
+    result = db.query(EnginPeche).all()
 
     return result
 

@@ -96,6 +96,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "dashboard/stats",
+    loadComponent: () =>
+      import("./components/dashboard/new-dashboard/new-dashboard.component").then(
+        (m) => m.NewDashboardComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "debarcaderes",
     loadComponent: () =>
       import("./components/debarcaderes/debarcadere-list/debarcadere-list.component").then(

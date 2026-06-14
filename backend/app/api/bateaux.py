@@ -205,15 +205,14 @@ def build_bateau_response(bateau: BateauBase, db: Session) -> BateauResponse:
                 }
 
         if bateau.engins_peche_secondaires:
+            list_engins = bateau.engins_peche_secondaires.split(",")
             engin_peche = (
-                db.query(EnginPeche)
-                .filter(EnginPeche.id == bateau.engins_peche_secondaires)
-                .first()
+                db.query(EnginPeche).filter(EnginPeche.id in list_engins).all()
             )
             if engin_peche:
                 bateau_dict["engin_peche2"] = {
-                    "id": engin_peche.id,
-                    "libelle": engin_peche.libelle,
+                    "id": engin_peche[0].id,
+                    "libelle": engin_peche[0].libelle,
                 }
 
     return BateauResponse(**bateau_dict)
@@ -739,6 +738,10 @@ def create_bateau_with_photo(
     equipement_balise_detresse: Optional[bool] = Form(False),
     balise_gps_imei: Optional[str] = Form(None),
     balise_gps_actif: Optional[bool] = Form(False),
+    site_port_attache: Optional[int] = Form(None),
+    site_obligatoire: Optional[str] = Form(None),
+    engins_peche_principal: Optional[int] = Form(None),
+    engins_peche_secondaires: Optional[str] = Form(None),
     statut: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
     equipage: Optional[str] = Form(None),
@@ -822,6 +825,10 @@ def create_bateau_with_photo(
         "equipement_balise_detresse": equipement_balise_detresse,
         "balise_gps_imei": balise_gps_imei,
         "balise_gps_actif": balise_gps_actif,
+        "site_port_attache": site_port_attache,
+        "site_obligatoire": site_obligatoire,
+        "engins_peche_principal": engins_peche_principal,
+        "engins_peche_secondaires": engins_peche_secondaires,
         "statut": statut,
     }
 
@@ -924,6 +931,10 @@ def update_bateau_with_photo(
     equipement_balise_detresse: Optional[bool] = Form(False),
     balise_gps_imei: Optional[str] = Form(None),
     balise_gps_actif: Optional[bool] = Form(False),
+    site_port_attache: Optional[int] = Form(None),
+    site_obligatoire: Optional[str] = Form(None),
+    engins_peche_principal: Optional[int] = Form(None),
+    engins_peche_secondaires: Optional[str] = Form(None),
     statut: Optional[str] = Form(None),
     photo: Optional[UploadFile] = File(None),
     remove_photo: Optional[bool] = Form(False),
@@ -985,6 +996,10 @@ def update_bateau_with_photo(
         "equipement_balise_detresse": equipement_balise_detresse,
         "balise_gps_imei": balise_gps_imei,
         "balise_gps_actif": balise_gps_actif,
+        "site_port_attache": site_port_attache,
+        "site_obligatoire": site_obligatoire,
+        "engins_peche_principal": engins_peche_principal,
+        "engins_peche_secondaires": engins_peche_secondaires,
         "statut": statut,
     }
 

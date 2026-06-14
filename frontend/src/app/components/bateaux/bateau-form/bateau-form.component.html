@@ -114,6 +114,42 @@
                   <label>Matériau de coque *</label>
                 </div>
               </div>
+              <div class="row">
+                <div class="input-field col s12 m6">
+                  <select
+                    id="site_port_attache"
+                    [(ngModel)]="bateau.site_port_attache"
+                    name="site_port_attache"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      Choisir un site d'attache
+                    </option>
+                    <option *ngFor="let site of sites" [value]="site.id">
+                      {{ site.nom_local }}
+                    </option>
+                  </select>
+                  <label for="site_port_attache">Site d'attache *</label>
+                </div>
+                <div class="input-field col s12 m6">
+                  <select
+                    id="site_obligatoire"
+                    name="site_obligatoire"
+                    (change)="onSelectSiteDebarquement($event)"
+                    multiple
+                    #siteSelect
+                    required
+                  >
+                    <option value="" disabled>
+                      Choisir un (des) sites de débarquement
+                    </option>
+                    <option *ngFor="let site of sites" [value]="site.id">
+                      {{ site.nom_local }}
+                    </option>
+                  </select>
+                  <label>Sites de débarquement *</label>
+                </div>
+              </div>
               <!-- Section Photo -->
               <div class="col s12">
                 <div class="card">
@@ -323,83 +359,50 @@
               <br />
 
               <div class="row">
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.filet_maillant"
-                        name="engin_filet"
-                      />
-                      <span>Filet maillant</span>
-                    </label>
-                  </p>
+                <div class="input-field col s12 m4">
+                  <select
+                    id="engins_peche_principal"
+                    [(ngModel)]="bateau.engins_peche_principal"
+                    name="engins_peche_principal"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      Choisir un engin de pêche principal
+                    </option>
+                    <option
+                      *ngFor="let engin of engins_peche"
+                      [value]="engin.id"
+                    >
+                      {{ engin.libelle }}
+                    </option>
+                  </select>
+                  <label for="engins_peche_principal"
+                    >Engin de pêche principal *</label
+                  >
                 </div>
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.senne"
-                        name="engin_senne"
-                      />
-                      <span>Senne</span>
-                    </label>
-                  </p>
-                </div>
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.ligne"
-                        name="engin_ligne"
-                      />
-                      <span>Ligne</span>
-                    </label>
-                  </p>
-                </div>
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.casier"
-                        name="engin_casier"
-                      />
-                      <span>Casier</span>
-                    </label>
-                  </p>
-                </div>
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.harpon"
-                        name="engin_harpon"
-                      />
-                      <span>Harpon</span>
-                    </label>
-                  </p>
-                </div>
-                <div class="col s12 m6 l4">
-                  <p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        class="filled-in"
-                        [(ngModel)]="enginsPecheSelectionnes.palangre"
-                        name="engin_palangre"
-                      />
-                      <span>Palangre</span>
-                    </label>
-                  </p>
+                <div class="col s12 m8">
+                  <div class="row">
+                    <div
+                      class="col s12 m6 l4"
+                      *ngFor="let engin of engins_peche"
+                    >
+                      <p>
+                        <label>
+                          <input
+                            type="checkbox"
+                            class="filled-in"
+                            [value]="engin.id"
+                            [checked]="isEnginSelected(engin.id)"
+                            [disabled]="
+                              isMaxReached() && !isEnginSelected(engin.id)
+                            "
+                            (change)="onEnginChange($event, engin.id)"
+                          />
+                          <span>{{ engin.libelle }}</span>
+                        </label>
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

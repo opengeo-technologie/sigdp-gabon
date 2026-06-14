@@ -18,6 +18,7 @@ from app.schemas.licence import (
     LicencePecheCreate,
     LicencePecheUpdate,
     LicencePecheResponse,
+    LicencePecheSimpleResponse,
     LicencePecheInDB,
     InspectionLicenceCreate,
     InspectionLicenceResponse,
@@ -315,6 +316,33 @@ def get_licence(licence_id: int, db: Session = Depends(get_db)):
     if not licence:
         raise HTTPException(status_code=404, detail="Licence non trouvée")
     return build_licence_response(licence, db)
+
+
+@router.get(
+    "/bateau/{bateau_id}",
+)
+def get_licence_by_boat(bateau_id: int, db: Session = Depends(get_db)):
+    """Récupérer une licence par ID du bateau"""
+    licences = (
+        db.query(LicenceAutorisationPeche)
+        .filter(LicenceAutorisationPeche.bateau_id == bateau_id)
+        .all()
+    )
+
+    result = []
+    for licence in licences:
+        result.append(
+            {
+                "id": licence.id,
+                "numero_licence": licence.numero_licence,
+                "annee": licence.annee_validite,
+                "date_emission": licence.date_emission,
+                "montant": licence.montant_paye,
+                "est_active": licence.est_active(),
+                "jours_restants": licence.jours_avant_expiration(),
+            }
+        )
+    return result
 
 
 @router.post(

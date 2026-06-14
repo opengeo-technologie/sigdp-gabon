@@ -52,6 +52,8 @@ export interface Bateau {
 
   // Engins de pêche
   engins_peche?: string;
+  engins_peche_principal?: number;
+  engins_peche_secondaires?: string;
 
   // Propriétaire et équipage
   proprietaire_pecheur_id?: number;

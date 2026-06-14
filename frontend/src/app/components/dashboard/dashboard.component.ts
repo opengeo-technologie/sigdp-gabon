@@ -1,260 +1,25 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
+import { FormsModule } from "@angular/forms";
+import { Chart, registerables } from "chart.js";
+declare var M: any;
+
+Chart.register(...registerables);
 
 @Component({
   selector: "app-dashboard",
   standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
-    <div class="page-header">
-      <div class="container-fluid">
-        <h1><i class="material-icons left">dashboard</i> Tableau de bord</h1>
-        <p>Vue d'ensemble du système SIG-PECHE</p>
-      </div>
-    </div>
-
-    <div class="container-fluid">
-      <!-- Statistiques principales -->
-      <div class="row">
-        <div class="col s12 m6 l3">
-          <div class="card stat-card">
-            <i class="material-icons medium teal-text">location_on</i>
-            <h3>{{ stats.globaux?.debarcaderes_actifs || 0 }}</h3>
-            <p>Débarcadères actifs</p>
-          </div>
-        </div>
-        <div class="col s12 m6 l3">
-          <div class="card stat-card">
-            <i class="material-icons medium blue-text">people</i>
-            <h3>{{ stats.globaux?.pecheurs_actifs || 0 }}</h3>
-            <p>Pêcheurs actifs</p>
-          </div>
-        </div>
-        <div class="col s12 m6 l3">
-          <div class="card stat-card">
-            <i class="material-icons medium orange-text">directions_boat</i>
-            <h3>{{ stats.globaux?.bateaux_actifs || 0 }}</h3>
-            <p>Bateaux actifs</p>
-          </div>
-        </div>
-        <div class="col s12 m6 l3">
-          <div class="card stat-card">
-            <i class="material-icons medium green-text">assessment</i>
-            <h3>{{ stats.globaux?.debarquements_mois || 0 }}</h3>
-            <p>Débarquements ce mois</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Captures et valeur -->
-      <div class="row">
-        <div class="col s12 m6">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                <i class="material-icons left">scale</i>
-                Captures du mois
-              </span>
-              <h4 class="blue-text">
-                {{ stats.captures_mois?.quantite_tonnes || 0 }} tonnes
-              </h4>
-              <p class="grey-text">
-                {{ stats.captures_mois?.quantite_kg || 0 }} kg
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col s12 m6">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                <i class="material-icons left">attach_money</i>
-                Valeur commerciale
-              </span>
-              <h4 class="green-text">
-                {{ stats.captures_mois?.valeur_fcfa || 0 | number: "1.0-0" }}
-                FCFA
-              </h4>
-              <p class="grey-text">Mois en cours</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Alertes et top espèces -->
-      <div class="row">
-        <div class="col s12 l4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                <i class="material-icons left red-text">warning</i>
-                Alertes
-              </span>
-              <div class="alerte-item">
-                <span class="badge red white-text">{{
-                  stats.alertes?.actives_mois || 0
-                }}</span>
-                <p>Alertes actives ce mois</p>
-              </div>
-              <div class="alerte-item">
-                <span class="badge orange white-text">{{
-                  stats.alertes?.licences_a_renouveler || 0
-                }}</span>
-                <p>Licences à renouveler (30 jours)</p>
-              </div>
-              <a
-                routerLink="/debarquements"
-                [queryParams]="{ alertes: true }"
-                class="btn-small waves-effect"
-              >
-                Voir les alertes
-              </a>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Accès rapides</span>
-              <div class="collection">
-                <a routerLink="/debarcaderes/new" class="collection-item">
-                  <i class="material-icons left">add_location</i>
-                  Nouveau débarcadère
-                </a>
-                <a routerLink="/pecheurs/new" class="collection-item">
-                  <i class="material-icons left">person_add</i>
-                  Nouveau pêcheur
-                </a>
-                <a routerLink="/bateaux/new" class="collection-item">
-                  <i class="material-icons left">add</i>
-                  Nouveau bateau
-                </a>
-                <a routerLink="/debarquements/new" class="collection-item">
-                  <i class="material-icons left">note_add</i>
-                  Enregistrer débarquement
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 l8">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                <i class="material-icons left">trending_up</i>
-                Top 5 des espèces capturées
-              </span>
-              <div class="table-responsive" *ngIf="topEspeces.length > 0">
-                <table class="highlight">
-                  <thead>
-                    <tr>
-                      <th>Espèce</th>
-                      <th>Code</th>
-                      <th>Quantité</th>
-                      <th>Année</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let espece of topEspeces">
-                      <td>
-                        <strong>{{ espece.nom }}</strong>
-                      </td>
-                      <td>{{ espece.code }}</td>
-                      <td>{{ espece.quantite_tonnes }} t</td>
-                      <!-- <td>{{ espece.valeur_fcfa | number: "1.0-0" }}</td> -->
-                      <td>2024</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p *ngIf="topEspeces.length === 0" class="grey-text center-align">
-                Aucune donnée disponible
-              </p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                <i class="material-icons left">place</i>
-                Débarcadères les plus actifs
-              </span>
-              <div class="table-responsive" *ngIf="topDebarcaderes.length > 0">
-                <table class="highlight">
-                  <thead>
-                    <tr>
-                      <th>Débarcadère</th>
-                      <th>Province</th>
-                      <th>Débarquements</th>
-                      <th>Quantité</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let deb of topDebarcaderes">
-                      <td>
-                        <strong>{{ deb.debarcadere }}</strong>
-                      </td>
-                      <td>{{ deb.province }}</td>
-                      <td>{{ deb.nb_debarquements }}</td>
-                      <td>{{ deb.quantite_tonnes }} t</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [
-    `
-      .stat-card i {
-        float: right;
-        margin-top: 10px;
-      }
-      .stat-card h3 {
-        margin: 0;
-        font-size: 2.5rem;
-        color: #0d47a1;
-      }
-      .stat-card p {
-        margin: 0.5rem 0 0;
-        color: #757575;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-      }
-
-      h4 {
-        margin: 1rem 0 0.5rem 0;
-        font-size: 2rem;
-      }
-
-      .alerte-item {
-        padding: 1rem 0;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .alerte-item:last-child {
-        border-bottom: none;
-      }
-      .alerte-item .badge {
-        font-size: 1rem;
-        padding: 0px 0px;
-      }
-      .alerte-item p {
-        margin: 0;
-        flex: 1;
-      }
-    `,
-  ],
+  imports: [CommonModule, RouterModule, FormsModule],
+  templateUrl: "./dashboard.component.html",
+  styleUrls: ["./dashboard.component.scss"],
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild("chartCanvas") chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  private chart?: Chart;
   stats: any = {
     globaux: {},
     captures_mois: {},
@@ -263,12 +28,103 @@ export class DashboardComponent implements OnInit {
   topEspeces: any[] = [];
   topDebarcaderes: any[] = [];
 
-  constructor(private http: HttpClient) {}
+  years: number[] = [];
+  evolutionData: any = null;
+  autorisationData: any = null;
+  captureZoneData: any = null;
+
+  filtresAutorisation: any[] = [
+    { id: 1, valeur: "Province (Strate majeure)" },
+    { id: 2, valeur: "Localité (Strate mineure)" },
+    { id: 3, valeur: "Site de pêche" },
+    { id: 4, valeur: "Coopérative" },
+    { id: 5, valeur: "Type de métier" },
+    { id: 6, valeur: "Nationalité" },
+  ];
+
+  listeMois: any[] = [
+    { id: 1, valeur: "Janvier" },
+    { id: 2, valeur: "Février" },
+    { id: 3, valeur: "Mars" },
+    { id: 4, valeur: "Avril" },
+    { id: 5, valeur: "Mai" },
+    { id: 6, valeur: "Juin" },
+    { id: 6, valeur: "Juillet" },
+    { id: 6, valeur: "Août" },
+    { id: 6, valeur: "Septembre" },
+    { id: 6, valeur: "Octobre" },
+    { id: 6, valeur: "Novembre" },
+    { id: 6, valeur: "Decembre" },
+  ];
+
+  filtreAutorisationSelected: any = 1;
+  selectedYear: any;
+  selectedYearAutorisation: any;
+  selectedYearCapture: any;
+  selectedMonth: any = 12;
+
+  // Chart references
+  lineChart: Chart | null = null;
+  barChart: Chart | null = null;
+  pieChartCaptureZone: Chart | null = null;
+
+  // UI
+  loading = false;
+  activeChart = "line-chart";
+
+  constructor(private http: HttpClient) {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2024; // année de début pour les licences
+    this.selectedYear = startYear;
+    this.selectedYearAutorisation = startYear;
+    this.selectedYearCapture = startYear;
+    this.years = Array.from(
+      { length: currentYear - startYear + 1 },
+      (_, i) => currentYear - i, // ordre décroissant
+    );
+  }
 
   ngOnInit() {
     this.loadDashboardStats();
-    this.loadTopEspeces();
-    this.loadTopDebarcaderes();
+    // this.loadTopEspeces();
+    // this.loadTopDebarcaderes();
+    setTimeout(() => this.loadTopEspeces(), 300);
+    setTimeout(() => this.loadTopDebarcaderes(), 600);
+    setTimeout(() => this.loadCaptureParAn(), 900);
+    setTimeout(() => this.loadAutorisationParProvince(), 1200);
+    setTimeout(() => this.loadCaptureParZone(), 1500);
+    setTimeout(() => this.initMaterialize(), 100);
+  }
+
+  // ngAfterViewInit() {
+  //   this.chart = new Chart(this.chartCanvas.nativeElement, {
+  //     type: "bar",
+  //     data: {
+  //       labels: ["Thon", "Sardine", "Crevette", "Maquereau"],
+  //       datasets: [
+  //         {
+  //           label: "Captures (tonnes)",
+  //           data: [120, 90, 45, 70],
+  //           backgroundColor: ["#0277bd", "#00897b", "#fb8c00", "#7b1fa2"],
+  //         },
+  //       ],
+  //     },
+  //     options: {
+  //       responsive: true,
+  //       plugins: {
+  //         title: { display: true, text: "Captures par espèce" },
+  //       },
+  //     },
+  //   });
+  // }
+
+  ngOnDestroy() {
+    this.chart?.destroy(); // ÉVITE les fuites mémoire / canvas réutilisé
+  }
+
+  private initMaterialize() {
+    if (typeof M !== "undefined")
+      M.FormSelect.init(document.querySelectorAll("select"), {});
   }
 
   loadDashboardStats() {
@@ -276,6 +132,7 @@ export class DashboardComponent implements OnInit {
       .get(`${environment.apiUrl}/api/statistiques/dashboard`)
       .subscribe({
         next: (data: any) => {
+          // console.log(data);
           this.stats = data;
         },
         error: (err) => console.error("Erreur chargement stats:", err),
@@ -305,5 +162,261 @@ export class DashboardComponent implements OnInit {
         },
         error: (err) => console.error("Erreur top débarcadères:", err),
       });
+  }
+
+  loadCaptureParAn() {
+    this.loading = true;
+    this.http
+      .get(
+        `${environment.apiUrl}/api/statistiques/captures/yearly?filtre=province&annee=${this.selectedYear}`,
+      )
+      .subscribe({
+        next: (response: any) => {
+          // console.log(response);
+          this.evolutionData = response;
+          this.loading = false;
+
+          setTimeout(() => this.initLineChartGlobale(), 300);
+        },
+        error: (err) => console.error("Erreur top débarcadères:", err),
+      });
+  }
+
+  loadAutorisationParProvince() {
+    this.loading = true;
+    this.http
+      .get(
+        `${environment.apiUrl}/api/statistiques/autorisations/province?annee=${this.selectedYearAutorisation}`,
+      )
+      .subscribe({
+        next: (response: any) => {
+          // console.log(response);
+          this.autorisationData = response.data.sort(
+            (a: any, b: any) => b.nombre_autorisations - a.nombre_autorisations,
+          );
+          // console.log(this.autorisationData);
+          // this.autorisationData = response;
+          this.loading = false;
+
+          setTimeout(() => this.initBarChartAutorisation(), 300);
+        },
+        error: (err) => console.error("Erreur top débarcadères:", err),
+      });
+  }
+
+  loadCaptureParZone() {
+    // this.loading = true;
+    this.http
+      .get(
+        `${environment.apiUrl}/api/statistiques/captures/zone?annee=${this.selectedYearCapture}`,
+      )
+      .subscribe({
+        next: (response: any) => {
+          // console.log(response);
+          this.captureZoneData = response.evolution.sort(
+            (a: any, b: any) => b.quantite_tonnes - a.quantite_tonnes,
+          );
+          // console.log(this.captureZoneData);
+          // this.autorisationData = response;
+          // this.loading = false;
+
+          setTimeout(() => this.initPieCaptureParzone(), 300);
+        },
+        error: (err) => console.error("Erreur top débarcadères:", err),
+      });
+  }
+
+  /**
+   * ✅ Line chart évolution capture par année
+   */
+  initLineChartGlobale() {
+    const ctx = document.getElementById("lineChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const data = this.evolutionData.evolution || [];
+
+    this.lineChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map((d: any) => d.mois),
+        datasets: [
+          {
+            label: "Tonnage (t)",
+            data: data.map((d: any) => d.quantite_tonnes),
+            borderColor: "#2196F3",
+            backgroundColor: "rgba(33, 150, 243, 0.1)",
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            yAxisID: "y",
+          },
+          {
+            label: "Nombre captures (débarquements)",
+            data: data.map((d: any) => d.nombre_debarquements),
+            borderColor: "#FF9800",
+            backgroundColor: "rgba(255, 152, 0, 0.1)",
+            borderWidth: 2,
+            tension: 0.3,
+            yAxisID: "y1",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true, position: "top" },
+        },
+        scales: {
+          x: {
+            type: "category",
+            display: true,
+            title: {
+              display: true,
+              text: `Mois (${this.selectedYear})`,
+            },
+            ticks: {
+              color: "#333",
+              font: { size: 12 },
+              maxRotation: 45,
+              minRotation: 0,
+            },
+            grid: {
+              display: true,
+              color: "rgba(0, 0, 0, 0.05)",
+            },
+          },
+          y: {
+            type: "linear",
+            display: true,
+            position: "left",
+            title: { display: true, text: "Tonnage (t)" },
+          },
+          y1: {
+            type: "linear",
+            display: true,
+            position: "right",
+            title: { display: true, text: "Nombre captures (débarquements)" },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * ✅ Bar chart comparaison Top 5
+   */
+  initBarChartAutorisation() {
+    const ctx = document.getElementById("barChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const provinceData = this.autorisationData || [];
+
+    this.barChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: [...provinceData.map((p: any) => p.province)],
+        datasets: [
+          {
+            label: "Nombre d'autorisations",
+            data: [...provinceData.map((p: any) => p.nombre_autorisations)],
+            backgroundColor: "#2196F3",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+        },
+      },
+    });
+  }
+
+  initPieCaptureParzone() {
+    const canvas = document.getElementById("pieChart") as HTMLCanvasElement;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      // ✅ Extraire données
+      const labels = this.captureZoneData.map((d: any) => d.zone_peche);
+      const values = this.captureZoneData.map((d: any) => d.quantite_tonnes);
+
+      // ✅ AJOUTER CECI
+      const total = values.reduce((a: any, b: any) => a + b, 0);
+      const percentages = values.map((v: any) =>
+        ((v / total) * 100).toFixed(1),
+      );
+
+      const labelsWithPercent = labels.map(
+        (label: any, i: any) => `${label} (${percentages[i]}%)`,
+      );
+
+      this.pieChartCaptureZone = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: labelsWithPercent,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: [
+                "#2196F3", // Bleu
+                "#FF9800", // Orange
+                "#4CAF50", // Vert
+                "#F44336", // Rouge
+                "#9C27B0", // Mauve
+                "#00BCD4", // Cyan
+                "#8BC34A", // Light Green
+                "#FF5722", // Deep Orange
+              ],
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "right", // right, top, bottom, left
+            },
+            title: {
+              display: true,
+              text: "Distribution des Captures par Zone",
+              font: { size: 16, weight: "bold" },
+            },
+          },
+        },
+      });
+    } else {
+      return;
+    }
+
+    //
+  }
+
+  refreshLineChart() {
+    if (this.lineChart) {
+      this.lineChart.destroy();
+      this.lineChart = null;
+    }
+    this.loadCaptureParAn();
+  }
+
+  refreshBarChart() {
+    if (this.barChart) {
+      this.barChart.destroy();
+      this.barChart = null;
+    }
+    this.loadAutorisationParProvince();
+  }
+
+  refreshPieChart() {
+    if (this.pieChartCaptureZone) {
+      this.pieChartCaptureZone.destroy();
+      this.pieChartCaptureZone = null;
+    }
+    this.loadCaptureParZone();
   }
 }

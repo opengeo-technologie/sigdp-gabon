@@ -12,6 +12,7 @@ from app.api import (
     especes,
     debarquements,
     statistiques,
+    statistiques_evolution,
     auth,
     rapports,
     profile,
@@ -63,6 +64,7 @@ app.include_router(especes.router)
 app.include_router(engin_peche.router)
 app.include_router(debarquements.router)
 app.include_router(statistiques.router)
+app.include_router(statistiques_evolution.router)
 app.include_router(rapports.router)
 
 

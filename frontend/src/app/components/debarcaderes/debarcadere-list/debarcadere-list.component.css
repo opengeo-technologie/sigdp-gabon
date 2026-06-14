@@ -1,0 +1,32 @@
+.badge.Maritime {
+  background-color: #2196f3;
+  color: #ffffff;
+}
+
+.badge.Continental {
+  background-color: #4caf50;
+  color: #ffffff;
+}
+
+.badge.Lagunaire {
+  background-color: #00bcd4;
+  color: #ffffff;
+}
+
+.form-input {
+  margin-top: 10px;
+}
+
+.form-input label {
+  font-size: 13px;
+  margin-left: 4px;
+  color: #757575;
+}
+
+.form-input select {
+  height: 30px; /* fixed height */
+  border-radius: 5px;
+  margin-top: 2px;
+  padding-left: 10px;
+  border: 1px solid black;
+}

@@ -87,3 +87,4 @@ class DebarcadereResponse(DebarcadereInDB):
     """Response model with GeoJSON point"""
 
     geojson: Optional[dict] = None
+    taille_flottile: Optional[int] = None

@@ -1,0 +1,386 @@
+<!-- evolution-captures.component.html -->
+
+<div class="container">
+  <!-- En-tête -->
+  <div class="row">
+    <div class="col s12">
+      <h3>📈 Évolution des Captures</h3>
+      <p class="grey-text">
+        Suivi temporel des débarquements par dimension géographique
+      </p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="row">
+    <div class="col s12 m4 l2">
+      <div class="input-field">
+        <select
+          [(ngModel)]="dimensionSelected"
+          (change)="onDimensionChange(dimensionSelected)"
+          class="browser-default"
+        >
+          <option *ngFor="let dim of dimensionOptions" [value]="dim.value">
+            {{ dim.label }}
+          </option>
+        </select>
+        <label>Dimension</label>
+      </div>
+    </div>
+
+    <div class="col s12 m4 l2">
+      <div class="input-field">
+        <select
+          [(ngModel)]="periodeSelected"
+          (change)="onPeriodeChange(periodeSelected)"
+          class="browser-default"
+        >
+          <option *ngFor="let per of periodeOptions" [value]="per.value">
+            {{ per.label }}
+          </option>
+        </select>
+        <label>Période</label>
+      </div>
+    </div>
+
+    <div class="col s12 m4 l2">
+      <div class="input-field">
+        <select
+          [(ngModel)]="limiteSelected"
+          (change)="loadEvolution()"
+          class="browser-default"
+        >
+          <option *ngFor="let lim of limiteOptions" [value]="lim">
+            Derniers {{ lim }}
+          </option>
+        </select>
+        <label>Limite</label>
+      </div>
+    </div>
+
+    <div class="col s12 l6">
+      <button
+        class="btn blue waves-effect waves-light"
+        (click)="loadEvolution()"
+      >
+        <i class="material-icons left">refresh</i>
+        Rafraîchir
+      </button>
+      <button class="btn grey waves-effect waves-light" (click)="exportData()">
+        <i class="material-icons left">download</i>
+        Exporter JSON
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="row" *ngIf="loading">
+    <div class="col s12 center-align">
+      <div class="preloader-wrapper active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+      <p class="grey-text">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Graphique principal -->
+  <div class="row" *ngIf="!loading && evolutionData">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            📊
+            <span *ngIf="dimensionSelected === 'globale'"
+              >Évolution Globale</span
+            >
+            <span *ngIf="dimensionSelected === 'debarcadere'"
+              >Évolution par Débarcadère</span
+            >
+            <span *ngIf="dimensionSelected === 'localite'"
+              >Évolution par Localité</span
+            >
+            <span *ngIf="dimensionSelected === 'province'"
+              >Évolution par Province</span
+            >
+            <span *ngIf="dimensionSelected === 'comparaison'"
+              >Comparaison Top 5</span
+            >
+          </span>
+
+          <!-- Graphiques -->
+          <div *ngIf="dimensionSelected !== 'comparaison'">
+            <canvas id="lineChart"></canvas>
+          </div>
+
+          <div *ngIf="dimensionSelected === 'comparaison'">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableaux détails -->
+  <div class="row" *ngIf="!loading && evolutionData">
+    <!-- Détails Globale -->
+    <div class="col s12" *ngIf="dimensionSelected === 'globale'">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">📋 Évolution Détaillée</span>
+
+          <!-- Top 3 provinces -->
+          <h5>🏆 Top 3 Provinces</h5>
+          <div class="collection">
+            <a
+              class="collection-item"
+              *ngFor="let prov of evolutionData.top_3_provinces"
+            >
+              <span>{{ prov.province }}</span>
+              <span class="badge blue white-text"
+                >{{ prov.quantite_tonnes | number: "1.0-0" }} T</span
+              >
+            </a>
+          </div>
+
+          <!-- Top 3 débarcadères -->
+          <h5 style="margin-top: 20px">🎣 Top 3 Débarcadères</h5>
+          <div class="collection">
+            <a
+              class="collection-item"
+              *ngFor="let deb of evolutionData.top_3_debarcaderes"
+            >
+              <span>{{ deb.debarcadere }}</span>
+              <span class="badge orange white-text"
+                >{{ deb.quantite_tonnes | number: "1.0-0" }} T</span
+              >
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détails Débarcadère -->
+    <div class="col s12" *ngIf="dimensionSelected === 'debarcadere'">
+      <div *ngFor="let deb of evolutionData.debarcaderes" class="card">
+        <div class="card-content">
+          <span class="card-title">
+            🏢 {{ deb.debarcadere }}
+            <small class="grey-text"
+              >{{ deb.localite }}, {{ deb.province }}</small
+            >
+          </span>
+
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Débarquements</th>
+                <th>Tonnage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ev of deb.evolution">
+                <td>
+                  <strong>{{ ev.periode }}</strong>
+                </td>
+                <td>{{ ev.nombre_debarquements }}</td>
+                <td>
+                  <strong>{{ ev.quantite_tonnes }} T</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détails Localité -->
+    <div class="col s12" *ngIf="dimensionSelected === 'localite'">
+      <div *ngFor="let loc of evolutionData.localites" class="card">
+        <div class="card-content">
+          <span class="card-title">📍 {{ loc.localite }}</span>
+
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Débarquements</th>
+                <th>Tonnage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ev of loc.evolution">
+                <td>
+                  <strong>{{ ev.periode }}</strong>
+                </td>
+                <td>{{ ev.nombre_debarquements }}</td>
+                <td>
+                  <strong>{{ ev.quantite_tonnes }} T</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détails Province -->
+    <div class="col s12" *ngIf="dimensionSelected === 'province'">
+      <div *ngFor="let prov of evolutionData.provinces" class="card">
+        <div class="card-content">
+          <span class="card-title">🌍 {{ prov.province }}</span>
+
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Débarquements</th>
+                <th>Tonnage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ev of prov.evolution">
+                <td>
+                  <strong>{{ ev.periode }}</strong>
+                </td>
+                <td>{{ ev.nombre_debarquements }}</td>
+                <td>
+                  <strong>{{ ev.quantite_tonnes }} T</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Détails Comparaison -->
+    <div class="col s12" *ngIf="dimensionSelected === 'comparaison'">
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">🌍 Provinces</span>
+              <div class="collection">
+                <a
+                  class="collection-item"
+                  *ngFor="let prov of evolutionData.top_provinces"
+                >
+                  <span>{{ prov.nom }}</span>
+                  <span class="badge"
+                    >{{ prov.quantite_tonnes | number: "1.0-0" }} T</span
+                  >
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">📍 Localités</span>
+              <div class="collection">
+                <a
+                  class="collection-item"
+                  *ngFor="let loc of evolutionData.top_localites"
+                >
+                  <span>{{ loc.nom }}</span>
+                  <span class="badge"
+                    >{{ loc.quantite_tonnes | number: "1.0-0" }} T</span
+                  >
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">🏢 Débarcadères</span>
+              <div class="collection">
+                <a
+                  class="collection-item"
+                  *ngFor="let deb of evolutionData.top_debarcaderes"
+                >
+                  <span>{{ deb.nom }}</span>
+                  <span class="badge"
+                    >{{ deb.quantite_tonnes | number: "1.0-0" }} T</span
+                  >
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== STYLES ==================== -->
+<style>
+  .card {
+    margin-top: 10px;
+  }
+
+  .card-title {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+
+  canvas {
+    max-height: 400px;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  table td {
+    padding: 10px;
+  }
+
+  .badge {
+    background-color: #2196f3;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+
+  .badge.blue {
+    background-color: #2196f3;
+  }
+
+  .badge.orange {
+    background-color: #ff9800;
+  }
+
+  .collection-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px !important;
+  }
+
+  h5 {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+
+  .preloader-wrapper {
+    width: 50px;
+    height: 50px;
+    margin: 20px auto;
+  }
+
+  .input-field {
+    margin-bottom: 1rem;
+  }
+</style>

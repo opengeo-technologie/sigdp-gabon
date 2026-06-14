@@ -15,6 +15,7 @@ from fastapi import (
     status,
     Query,
 )
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from geoalchemy2.functions import ST_AsGeoJSON
@@ -29,6 +30,7 @@ from app.schemas.debarcadere import (
     DebarcadereResponse,
     DebarcadereInDB,
 )
+from app.models.bateau import Bateau
 
 router = APIRouter(prefix="/api/debarcaderes", tags=["Débarcadères"])
 
@@ -250,7 +252,7 @@ async def upload_site_peche_excel(
         )
 
 
-@router.get("", response_model=List[DebarcadereResponse])
+@router.get("")
 def get_debarcaderes(
     skip: int = Query(0, ge=0),
     limit: int = Query(500, ge=1, le=1000),
@@ -267,23 +269,35 @@ def get_debarcaderes(
     if province:
         query = query.filter(Debarcadere.province == province)
     if type:
-        query = query.filter(Debarcadere.type == type)
+        query = query.filter(Debarcadere.localite == type)
     if statut:
         query = query.filter(Debarcadere.statut_operationnel == statut)
 
     debarcaderes = query.offset(skip).limit(limit).all()
 
+    # ✅ COMPTER LE TOTAL (AVANT PAGINATION)
+    total = query.count()
+
     # Ajouter les données GeoJSON
-    result = []
+    results = []
     for deb in debarcaderes:
         deb_dict = DebarcadereInDB.from_orm(deb).model_dump()
+        count_bateau = (
+            db.query(func.count(Bateau.id).label("nb_bateau"))
+            .select_from(Bateau)
+            .join(Debarcadere, Debarcadere.id == Bateau.site_port_attache)
+            .filter(Debarcadere.id == deb.id)
+            .first()
+        )
+        deb_dict["taille_flottile"] = count_bateau.nb_bateau
         deb_dict["geojson"] = {
             "type": "Point",
             "coordinates": [deb.longitude, deb.latitude],
         }
-        result.append(DebarcadereResponse(**deb_dict))
 
-    return result
+        results.append(DebarcadereResponse(**deb_dict))
+
+    return {"result": results, "total": total}
 
 
 @router.get("/{debarcadere_id}", response_model=DebarcadereResponse)
@@ -300,6 +314,14 @@ def get_debarcadere(debarcadere_id: int, db: Session = Depends(get_db)):
         )
 
     deb_dict = DebarcadereInDB.from_orm(debarcadere).model_dump()
+    count_bateau = (
+        db.query(func.count(Bateau.id).label("nb_bateau"))
+        .select_from(Bateau)
+        .join(Debarcadere, Debarcadere.id == Bateau.site_port_attache)
+        .filter(Debarcadere.id == debarcadere.id)
+        .first()
+    )
+    deb_dict["taille_flottile"] = count_bateau.nb_bateau
     deb_dict["geojson"] = {
         "type": "Point",
         "coordinates": [debarcadere.longitude, debarcadere.latitude],
@@ -657,3 +679,18 @@ async def update_debarcadere_with_photo(
         "coordinates": [debarcadere.longitude, debarcadere.latitude],
     }
     return DebarcadereResponse(**debarcadere_dict)
+
+
+@router.get("/site/localite")
+def get_localite_site(db: Session = Depends(get_db)):
+    # Récupérer toutes les provinces
+    localite_query = (
+        db.query(Debarcadere.localite)
+        .filter(Debarcadere.localite.isnot(None))
+        .distinct()
+        .all()
+    )
+
+    localite_dict = [{"localite": l.localite} for l in localite_query]
+
+    return localite_dict

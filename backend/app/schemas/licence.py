@@ -110,6 +110,11 @@ class LicencePecheInDB(LicencePecheBase):
         from_attributes = True
 
 
+class LicencePecheSimpleResponse(LicencePecheInDB):
+    numero_licence: str = Field(..., min_length=0, max_length=50)
+    est_active: bool = False
+
+
 class LicencePecheResponse(LicencePecheInDB):
     """Réponse avec informations calculées"""
 
