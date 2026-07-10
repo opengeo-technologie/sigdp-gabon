@@ -70,7 +70,7 @@ nav {
     var(--secondary-color)
   );
   color: white;
-  padding: 2rem 0;
+  padding: 1rem 0;
   margin-bottom: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -219,7 +219,25 @@ tbody tr td {
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 8px;
+  // border-radius: 25px !important;
+  background-color: #dae9f8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content-wrapper .popup-header {
+  background-color: var(--primary-color);
+  padding: 5px 10px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.leaflet-popup-content-wrapper .popup-header h6 {
+  color: white !important;
+  font-size: 20px;
+}
+
+.leaflet-popup-content-wrapper p strong {
+  font-weight: bold;
 }
 
 .custom-marker-icon {
@@ -286,42 +304,94 @@ tbody tr td {
   transform: scale(1.1);
 }
 
+.form-input {
+  margin-top: 10px;
+}
+
+.form-input label {
+  font-size: 13px;
+  margin-left: 4px;
+  color: #757575;
+}
+
+.form-input select {
+  height: 30px; /* fixed height */
+  border-radius: 5px;
+  margin-top: 2px;
+  padding-left: 10px;
+  border: 1px solid black;
+}
+
+/* Remove Materialize underline style and add rounded border */
+.form-input .input-field {
+  margin-top: 2px;
+  margin-bottom: 0 !important;
+}
+.form-input .input-field input[type="text"],
+.form-input .input-field input[type="password"],
+.form-input .input-field input[type="number"],
+.form-input .input-field input[type="date"],
+.form-input .input-field input[type="email"] {
+  border: 1px solid #ccc; /* regular border */
+  border-radius: 5px; /* rounded edges */
+  padding: 0; /* spacing inside */
+  padding-left: 10px;
+  height: 30px; /* fixed height */
+  width: 98%;
+  box-shadow: none; /* remove default focus shadow */
+  color: #000000;
+}
+
+/* Focus effect */
+.form-input .input-field input[type="text"]:focus,
+.form-input .input-field input[type="password"]:focus,
+.form-input .input-field input[type="number"]:focus,
+.form-input .input-field input[type="date"]:focus,
+.form-input .input-field input[type="email"]:focus {
+  border-color: #0288d1; /* highlight color */
+  box-shadow: 0 0 5px rgba(0, 121, 107, 0.4);
+}
+
+.form-input .input-field textarea {
+  border: 1px solid #ccc;
+  border-radius: 5px; /* rounded edges */
+  padding: 0; /* spacing inside */
+  padding-left: 10px;
+  padding-top: 10px;
+  height: 100px; /* fixed height */
+  box-shadow: none; /* remove default focus shadow */
+  color: #000000;
+}
+
+.form-input input:invalid {
+  border: 2px solid red;
+  background-color: #ffe5e5;
+}
+
+.form-input input:valid {
+  border: 2px solid green;
+}
+
 .form-input .select-wrapper input.select-dropdown {
   border: 2px solid #2196f3 !important;
   border-radius: 8px !important;
   height: 30px !important;
   line-height: 50px !important;
   /* padding: 0 12px !important; */
+  padding-left: 10px;
   font-size: 12px !important;
   background-color: #fff !important;
 }
 
 /* Dropdown focus effect */
 .form-input .select-wrapper input.select-dropdown:focus {
-  border-color: #0d47a1 !important;
+  // border-color: #0d47a1 !important;
   box-shadow: 0 0 5px rgba(33, 150, 243, 0.5) !important;
 }
 
-// .form-input {
-//   margin-top: 10px;
-// }
-
-// .form-input label {
-//   font-size: 13px;
-//   margin-left: 4px;
-//   color: #757575;
-// }
-
-// .form-input select {
-//   height: 30px; /* fixed height */
-//   border-radius: 5px;
-//   margin-top: 2px;
-//   padding-left: 10px;
-//   border: 1px solid black;
-// }
-
 .form-input .select-wrapper .select-dropdown {
   background-color: #595858 !important;
+  max-height: 300px;
 }
 
 .form-input .select-wrapper .select-dropdown li span {
@@ -340,4 +410,83 @@ tbody tr td {
   border-radius: 4px !important;
   padding: 4px 8px !important;
   font-size: 14px !important;
+}
+
+.btn-group {
+  position: relative;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.btn-group > .btn:first-child:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn-group > .btn:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .dropdown-toggle:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.btn-group > .btn-inactive {
+  background-color: #607d8b;
+}
+
+.btn-group > .btn {
+  -webkit-box-shadow:
+    0 0px 0px 0 rgba(0, 0, 0, 0),
+    0 0px 0px 0px rgba(0, 0, 0, 0),
+    0 0px 0px 0 rgba(0, 0, 0, 0);
+  box-shadow:
+    0 0px 0px 0 rgba(0, 0, 0, 0),
+    0 0px 0px 0px rgba(0, 0, 0, 0),
+    0 0px 0px 0 rgba(0, 0, 0, 0);
+}
+
+.btn-group > .btn-inactive:hover {
+  background-color: #728f9d;
+}
+
+.disabled-link {
+  pointer-events: none; /* Disable click events */
+  color: gray; /* Change color to indicate it's disabled */
+  text-decoration: none; /* Remove underline */
+  cursor: not-allowed; /* Change cursor to indicate it's not clickable */
+}
+
+.btn-group > .btn:hover {
+  -webkit-box-shadow:
+    0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 3px 1px -2px rgba(0, 0, 0, 0.12),
+    0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 3px 1px -2px rgba(0, 0, 0, 0.12),
+    0 1px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-group a i img {
+  height: 20px;
+  margin-top: 7px;
+}
+
+.btn-group a {
+  display: flex;
+  align-items: center; /* Centers vertically */
+  justify-content: center; /* Centers horizontally */
+  gap: 8px; /* Adds space between the icon and text */
+  /* Add desired padding, background, border, etc. */
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-group a .material-icons {
+  vertical-align: middle; /* or try 'text-bottom', 'sub', or a specific pixel value like '-2px' */
 }

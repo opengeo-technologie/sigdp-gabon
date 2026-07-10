@@ -38,3 +38,93 @@ main {
   width: 1px;
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  display: flex;
+  background: #f4f6f9;
+} */
+.sidebar {
+  position: fixed;
+  width: 260px;
+  height: 100vh;
+  background: #1f2937;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo h2 {
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.menu {
+  list-style: none;
+  margin-top: 20px;
+}
+
+.menu li {
+  margin: 6px 12px;
+}
+
+.menu li a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+  color: #d1d5db;
+  padding: 14px 18px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.menu li a:hover {
+  background: #374151;
+  color: white;
+}
+
+.menu li.active a {
+  background: #2563eb;
+  color: white;
+}
+
+.material-icons {
+  font-size: 22px;
+}
+
+.logout {
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+/* Content */
+
+.content {
+  margin-left: 260px;
+  /* padding: 40px; */
+  /* padding: 20px; */
+  width: calc(100% - 260px);
+  overflow-x: hidden;
+}
+
+.content h1 {
+  margin-bottom: 20px;
+}

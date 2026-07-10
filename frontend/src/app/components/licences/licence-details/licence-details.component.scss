@@ -1,0 +1,106 @@
+// Autorisation output
+
+.checkbox-readonly {
+  pointer-events: none;
+}
+
+#autorisation .institution-header {
+  font-size: 8px;
+}
+
+#autorisation .autorisation-header {
+  padding-top: 60px;
+}
+#autorisation .autorisation-title {
+  font-weight: bolder;
+}
+
+#autorisation .autorisation-subtitle {
+  font-size: 14px;
+  padding-top: 15px;
+  font-weight: bolder;
+}
+
+#autorisation .autorisation-subtitle2 {
+  font-size: 12px;
+  // padding-top: 15px;
+  // padding-left: 20px;
+  font-weight: bolder;
+}
+
+#autorisation table {
+  font-size: 12px;
+  font-weight: bolder;
+}
+#autorisation table tr {
+  border: none;
+}
+
+#autorisation table tr td {
+  padding: 4px;
+}
+
+// #autorisation .autorisation-subtitle2 [type="checkbox"]+span:not(.lever) {
+//     position: relative;
+//     padding-left: 12px;
+//     cursor: pointer;
+//     display: inline-block;
+//     height: 25px;
+//     line-height: 25px;
+//     font-size: 1rem;
+//     -webkit-user-select: none;
+//     user-select: none;
+// }
+
+#autorisation .logo-ministere img {
+  width: 80px;
+}
+
+/* Checkboxes */
+#autorisation [type="checkbox"].filled-in:checked + span:not(.lever):after {
+  border: 2px solid #2196f3;
+  background-color: #2196f3;
+}
+
+/* Améliorer l'espacement des inputs */
+// .input-field {
+//   margin-top: 1.5rem;
+// }
+
+// /* Style pour les labels actifs */
+// .input-field label.active {
+//   font-size: 0.8rem;
+//   color: #2196f3;
+// }
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-item i {
+  font-size: 2.5rem;
+  margin-right: 1rem;
+}
+
+.stat-item div {
+  flex: 1;
+}
+
+.stat-item strong {
+  font-size: 1.8rem;
+  display: block;
+  color: #0d47a1;
+}
+
+.stat-item p {
+  margin: 0;
+  color: #757575;
+  font-size: 0.9rem;
+}

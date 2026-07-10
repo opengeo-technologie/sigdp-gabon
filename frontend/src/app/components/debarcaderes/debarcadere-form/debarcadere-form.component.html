@@ -16,151 +16,191 @@
         <!-- Informations de base -->
         <h5>Informations de base</h5>
         <div class="row">
-          <!-- <div class="input-field col s12 m6">
-            <input
-              id="code"
-              type="text"
-              [(ngModel)]="formData.code"
-              name="code"
-              required
-            />
-            <label for="code">Code du débarcadère *</label>
-            <span class="helper-text">Ex: GA-EST-DEB-001</span>
-          </div> -->
-          <div class="input-field col s12 m6">
-            <input
-              id="denomination"
-              type="text"
-              [(ngModel)]="formData.denomination"
-              name="denomination"
-              required
-            />
+          <div class="form-input col s12 m6">
             <label for="denomination"
               >Dénomination <i class="required_field">* </i></label
             >
+            <div class="input-field">
+              <input
+                id="denomination"
+                type="text"
+                [(ngModel)]="formData.denomination"
+                name="denomination"
+                required
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m6">
-            <input
-              id="nom_local"
-              type="text"
-              [(ngModel)]="formData.nom_local"
-              name="nom_local"
-            />
+
+          <div class="form-input col s12 m6">
             <label for="nom_local">Nom local</label>
+            <div class="input-field">
+              <input
+                id="nom_local"
+                type="text"
+                [(ngModel)]="formData.nom_local"
+                name="nom_local"
+              />
+            </div>
           </div>
         </div>
 
         <div class="row">
-          <div class="input-field col s12 m6">
-            <select [(ngModel)]="formData.type" name="type" required>
-              <option value="" disabled>Choisir le type</option>
-              <option value="Officiel">Officiel</option>
-              <option value="Informel">Informel</option>
-              <option value="Saisonnier">Saisonnier</option>
-            </select>
+          <div class="form-input col s12 m6">
             <label>Type de débarcadère <i class="required_field">* </i></label>
+            <div class="input-field">
+              <select
+                [(ngModel)]="formData.type"
+                name="type"
+                class="browser-default"
+                required
+              >
+                <option value="" disabled>Choisir le type</option>
+                <option *ngFor="let type of types" [value]="type">
+                  {{ type }}
+                </option>
+                <!-- <option value="Officiel">Officiel</option>
+                <option value="Informel">Informel</option>
+                <option value="Saisonnier">Saisonnier</option>
+                <option value="Centre d'Appui à la Pêche Artisanale">
+                  Centre d'Appui à la Pêche Artisanale
+                </option> -->
+              </select>
+            </div>
           </div>
-          <div class="input-field col s12 m6">
-            <select [(ngModel)]="formData.milieu" name="milieu" required>
-              <option value="" disabled>Choisir le milieu</option>
-              <option value="Maritime">Maritime</option>
-              <option value="Continental">Continental</option>
-              <option value="Lagunaire">Lagunaire</option>
-            </select>
+
+          <div class="form-input col s12 m6">
             <label>Milieu <i class="required_field">* </i></label>
+            <div class="input-field">
+              <select
+                [(ngModel)]="formData.milieu"
+                name="milieu"
+                class="browser-default"
+                required
+              >
+                <option value="" disabled>Choisir le milieu</option>
+                <option value="Maritime">Maritime</option>
+                <option value="Continental">Continental</option>
+                <option value="Lagunaire">Lagunaire</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div class="row">
-          <div class="input-field col s12 m6">
-            <select
-              [(ngModel)]="formData.statut_operationnel"
-              name="statut"
-              required
-            >
-              <option value="" disabled>Choisir le statut</option>
-              <option value="Actif">Actif</option>
-              <option value="Inactif">Inactif</option>
-              <option value="En travaux">En travaux</option>
-            </select>
+          <div class="form-input col s12 m6">
             <label>Statut opérationnel <i class="required_field">* </i></label>
+            <div class="input-field">
+              <select
+                [(ngModel)]="formData.statut_operationnel"
+                class="browser-default"
+                name="statut"
+                required
+              >
+                <option value="" disabled>Choisir le statut</option>
+                <option value="Actif">Actif</option>
+                <option value="Inactif">Inactif</option>
+                <option value="En travaux">En travaux</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <!-- Localisation -->
         <h5 class="mt-3">Localisation</h5>
         <div class="row">
-          <div class="input-field col s12 m4">
-            <input
-              id="latitude"
-              type="number"
-              step="0.000001"
-              [(ngModel)]="formData.latitude"
-              name="latitude"
-              required
-            />
+          <div class="form-input col s12 m4">
             <label for="latitude"
               >Latitude <i class="required_field">* </i></label
             >
+            <div class="input-field">
+              <input
+                id="latitude"
+                type="number"
+                step="0.000001"
+                [(ngModel)]="formData.latitude"
+                name="latitude"
+                required
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="longitude"
-              type="number"
-              step="0.000001"
-              [(ngModel)]="formData.longitude"
-              name="longitude"
-              required
-            />
+
+          <div class="form-input col s12 m4">
             <label for="longitude"
               >Longitude <i class="required_field">* </i></label
             >
+            <div class="input-field">
+              <input
+                id="longitude"
+                type="number"
+                step="0.000001"
+                [(ngModel)]="formData.longitude"
+                name="longitude"
+                required
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="capacite"
-              type="number"
-              [(ngModel)]="formData.capacite_accueil"
-              name="capacite"
-            />
+
+          <div class="form-input col s12 m4">
             <label for="capacite">Capacité d'accueil</label>
-            <span class="helper-text">Nombre de bateaux</span>
+            <div class="input-field">
+              <input
+                id="capacite"
+                type="number"
+                [(ngModel)]="formData.capacite_accueil"
+                name="capacite"
+              />
+
+              <span class="helper-text">Nombre de bateaux</span>
+            </div>
           </div>
         </div>
 
         <div class="row">
-          <div class="input-field col s12 m4">
-            <select [(ngModel)]="formData.province" name="province" required>
-              <option value="" disabled>Choisir la province</option>
-              <option value="ESTUAIRE">Estuaire</option>
-              <option value="OGOOUE MARITIME">Ogooué-Maritime</option>
-              <option value="HAUT OGOOUE">Haut-Ogooué</option>
-              <option value="NYANGA">Nyanga</option>
-              <option value="NGOUNIE">Ngounié</option>
-              <option value="MOYEN OGOOUE">Moyen-Ogooué</option>
-              <option value="OGOOUE IVINDO">Ogooué-Ivindo</option>
-              <option value="OGOOUE LOLO">Ogooué-Lolo</option>
-              <option value="WOLEU-NTEM">Woleu-Ntem</option>
-            </select>
+          <div class="form-input col s12 m4">
             <label>Province <i class="required_field">* </i></label>
+            <div class="input-field">
+              <select
+                [(ngModel)]="formData.province"
+                class="browser-default"
+                name="province"
+                required
+              >
+                <option value="" disabled>Choisir la province</option>
+                <option value="ESTUAIRE">Estuaire</option>
+                <option value="OGOOUE MARITIME">Ogooué-Maritime</option>
+                <option value="HAUT OGOOUE">Haut-Ogooué</option>
+                <option value="NYANGA">Nyanga</option>
+                <option value="NGOUNIE">Ngounié</option>
+                <option value="MOYEN OGOOUE">Moyen-Ogooué</option>
+                <option value="OGOOUE IVINDO">Ogooué-Ivindo</option>
+                <option value="OGOOUE LOLO">Ogooué-Lolo</option>
+                <option value="WOLEU-NTEM">Woleu-Ntem</option>
+              </select>
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="departement"
-              type="text"
-              [(ngModel)]="formData.departement"
-              name="departement"
-            />
+
+          <div class="form-input col s12 m4">
             <label for="departement">Département</label>
+            <div class="input-field">
+              <input
+                id="departement"
+                type="text"
+                [(ngModel)]="formData.departement"
+                name="departement"
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="localite"
-              type="text"
-              [(ngModel)]="formData.localite"
-              name="localite"
-            />
+
+          <div class="form-input col s12 m4">
             <label for="localite">Localité</label>
+            <div class="input-field">
+              <input
+                id="localite"
+                type="text"
+                [(ngModel)]="formData.localite"
+                name="localite"
+              />
+            </div>
           </div>
         </div>
 
@@ -275,45 +315,55 @@
         <!-- Agent responsable -->
         <h5 class="mt-3">Agent responsable</h5>
         <div class="row">
-          <div class="input-field col s12 m4">
-            <input
-              id="agent_nom"
-              type="text"
-              [(ngModel)]="formData.agent_responsable_nom"
-              name="agent_nom"
-            />
+          <div class="form-input col s12 m4">
             <label for="agent_nom">Nom de l'agent</label>
+            <div class="input-field">
+              <input
+                id="agent_nom"
+                type="text"
+                [(ngModel)]="formData.agent_responsable_nom"
+                name="agent_nom"
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="agent_matricule"
-              type="text"
-              [(ngModel)]="formData.agent_responsable_matricule"
-              name="agent_matricule"
-            />
+
+          <div class="form-input col s12 m4">
             <label for="agent_matricule">Matricule</label>
+            <div class="input-field">
+              <input
+                id="agent_matricule"
+                type="text"
+                [(ngModel)]="formData.agent_responsable_matricule"
+                name="agent_matricule"
+              />
+            </div>
           </div>
-          <div class="input-field col s12 m4">
-            <input
-              id="agent_tel"
-              type="tel"
-              [(ngModel)]="formData.agent_responsable_telephone"
-              name="agent_tel"
-            />
+
+          <div class="form-input col s12 m4">
             <label for="agent_tel">Téléphone</label>
+            <div class="input-field">
+              <input
+                id="agent_tel"
+                type="text"
+                [(ngModel)]="formData.agent_responsable_telephone"
+                name="agent_tel"
+              />
+            </div>
           </div>
         </div>
 
         <!-- Description -->
         <div class="row">
-          <div class="input-field col s12">
-            <textarea
-              id="description"
-              class="materialize-textarea"
-              [(ngModel)]="formData.description"
-              name="description"
-            ></textarea>
+          <div class="form-input">
             <label for="description">Description / Observations</label>
+            <div class="input-field col s12">
+              <textarea
+                id="description"
+                [(ngModel)]="formData.description"
+                name="description"
+                rows="5"
+              ></textarea>
+            </div>
           </div>
         </div>
 

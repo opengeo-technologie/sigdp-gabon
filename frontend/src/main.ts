@@ -6,9 +6,14 @@ import { routes } from "./app/app.routes";
 
 import { registerLocaleData } from "@angular/common";
 import localeFr from "@angular/common/locales/fr";
+import { LOCALE_ID } from "@angular/core";
 
 registerLocaleData(localeFr);
 
 bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes), provideHttpClient()],
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(),
+    { provide: LOCALE_ID, useValue: "fr" },
+  ],
 }).catch((err) => console.error(err));

@@ -33,10 +33,12 @@ declare var M: any;
         <div class="card-content">
           <div class="row">
             <div class="col s12 m3">
-              <div class="input-field">
+              <div class="form-input">
+                <label>Catégorie</label>
                 <select
                   [(ngModel)]="filters.categorie"
                   (change)="applyFilters()"
+                  class="browser-default"
                 >
                   <option value="">Toutes les catégories</option>
                   <option value="Pêcheur artisanal">Pêcheur artisanal</option>
@@ -46,14 +48,15 @@ declare var M: any;
                   <option value="Patron de pêche">Patron de pêche</option>
                   <option value="Aide-pêcheur">Aide-pêcheur</option>
                 </select>
-                <label>Catégorie</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
+              <div class="form-input">
+                <label>Type de pêche</label>
                 <select
                   [(ngModel)]="filters.type_peche"
                   (change)="applyFilters()"
+                  class="browser-default"
                 >
                   <option value="">Tous les types</option>
                   <option value="Côtière">Côtière</option>
@@ -61,29 +64,35 @@ declare var M: any;
                   <option value="Lagunaire">Lagunaire</option>
                   <option value="Hauturière">Hauturière</option>
                 </select>
-                <label>Type de pêche</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
-                <select [(ngModel)]="filters.statut" (change)="applyFilters()">
+              <div class="form-input">
+                <label>Statut</label>
+                <select
+                  [(ngModel)]="filters.statut"
+                  (change)="applyFilters()"
+                  class="browser-default"
+                >
                   <option value="">Tous les statuts</option>
                   <option value="Actif">Actif</option>
                   <option value="Inactif">Inactif</option>
                   <option value="Suspendu">Suspendu</option>
                 </select>
-                <label>Statut</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <a
-                routerLink="/pecheurs/new"
-                class="btn btn-primary waves-effect waves-light"
-                *appHasPermission="'pecheur.create'"
-              >
-                <i class="material-icons left">person_add</i>
-                Nouveau pêcheur
-              </a>
+              <div class="form-input">
+                <a
+                  routerLink="/pecheurs/new"
+                  class="btn btn-primary waves-effect waves-light"
+                  *appHasPermission="'pecheur.create'"
+                  style="margin-top: 1.5rem;"
+                >
+                  <i class="material-icons left">person_add</i>
+                  Nouveau pêcheur
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -135,37 +144,39 @@ declare var M: any;
                     </span>
                   </td>
                   <td>
-                    <a
-                      [routerLink]="['/pecheurs', pecheur.id]"
-                      class="btn-small btn-flat waves-effect"
-                      title="Voir détails"
-                    >
-                      <i class="material-icons">visibility</i>
-                    </a>
-                    <a
-                      [routerLink]="['/pecheurs', pecheur.id, 'edit']"
-                      class="btn-small btn-flat waves-effect"
-                      *appHasPermission="'pecheur.update'"
-                      title="Modifier"
-                    >
-                      <i class="material-icons">edit</i>
-                    </a>
-                    <a
-                      (click)="printCarte(pecheur)"
-                      class="btn-small btn-flat waves-effect teal-text"
-                      *appHasPermission="'pecheur.read'"
-                      title="Télécharger carte"
-                    >
-                      <i class="material-icons">credit_card</i>
-                    </a>
-                    <a
-                      (click)="deletePecheur(pecheur)"
-                      class="btn-small btn-flat waves-effect red-text"
-                      title="Supprimer"
-                      *appHasPermission="'pecheur.delete'"
-                    >
-                      <i class="material-icons">delete</i>
-                    </a>
+                    <div class="btn-group" role="group">
+                      <a
+                        [routerLink]="['/pecheurs', pecheur.id]"
+                        class="btn-small btn green white-text btn-flat waves-effect"
+                        title="Voir détails"
+                      >
+                        <i class="material-icons">visibility</i>
+                      </a>
+                      <a
+                        [routerLink]="['/pecheurs', pecheur.id, 'edit']"
+                        class="btn-small btn blue white-text btn-flat waves-effect"
+                        *appHasPermission="'pecheur.update'"
+                        title="Modifier"
+                      >
+                        <i class="material-icons">edit</i>
+                      </a>
+                      <a
+                        (click)="printCarte(pecheur)"
+                        class="btn-small btn teal white-text btn-flat waves-effect"
+                        *appHasPermission="'pecheur.read'"
+                        title="Télécharger carte"
+                      >
+                        <i class="material-icons">credit_card</i>
+                      </a>
+                      <a
+                        (click)="deletePecheur(pecheur)"
+                        class="btn-small btn red white-text btn-flat waves-effect"
+                        title="Supprimer"
+                        *appHasPermission="'pecheur.delete'"
+                      >
+                        <i class="material-icons">delete</i>
+                      </a>
+                    </div>
                   </td>
                 </tr>
                 <tr *ngIf="pecheurs.length === 0">
@@ -178,29 +189,31 @@ declare var M: any;
               </tbody>
             </table>
             <div class="center" style="padding-top: 20px">
-              <button
-                (click)="prevPage()"
-                class="btn waves-effect waves-light white darken-4 btn-small"
-                [disabled]="currentPage === 1"
-              >
-                <i class="material-icons" style="color: #000000;"
-                  >chevron_left</i
+              <div class="btn-group" role="group">
+                <button
+                  (click)="prevPage()"
+                  class="btn waves-effect waves-light white darken-4 btn-small"
+                  [disabled]="currentPage === 1"
                 >
-              </button>
-              <span
-                class="page-number"
-                style="margin-left: 10px; margin-right: 10px"
-                >page {{ currentPage }} / {{ totalPages() }}</span
-              >
-              <button
-                (click)="nextPage()"
-                class="btn waves-effect waves-light white btn-small"
-                [disabled]="currentPage === totalPages()"
-              >
-                <i class="material-icons" style="color: #000000;"
-                  >chevron_right</i
+                  <i class="material-icons" style="color: #000000;"
+                    >chevron_left</i
+                  >
+                </button>
+                <span
+                  class="page-number"
+                  style="margin-left: 10px; margin-right: 10px"
+                  >page {{ currentPage }} / {{ totalPages() }}</span
                 >
-              </button>
+                <button
+                  (click)="nextPage()"
+                  class="btn waves-effect waves-light white btn-small"
+                  [disabled]="currentPage === totalPages()"
+                >
+                  <i class="material-icons" style="color: #000000;"
+                    >chevron_right</i
+                  >
+                </button>
+              </div>
             </div>
           </div>
         </div>

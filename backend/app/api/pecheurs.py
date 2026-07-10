@@ -1,3 +1,4 @@
+import os
 import shutil
 
 from fastapi import (
@@ -11,6 +12,7 @@ from fastapi import (
     File,
 )
 from fastapi.responses import FileResponse, StreamingResponse
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime
@@ -31,6 +33,8 @@ from app.schemas.pecheur import (
     CartePecheurGenerate,
 )
 from app.services.activity_logger import log_activity, ActivityLogger
+from app.models.armement_coorperative import ArmementCooperative
+from app.models.debarcadere import Debarcadere
 
 router = APIRouter(prefix="/api/pecheurs", tags=["Pêcheurs"])
 
@@ -41,25 +45,49 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # Taille max photo: 5MB
 MAX_PHOTO_SIZE = 5 * 1024 * 1024
 
+# Configuration upload
+ERRORS_DIR = Path("errors/pecheurs")
+ERRORS_DIR.mkdir(parents=True, exist_ok=True)
+
+ERROR_FILE = ERRORS_DIR / "errors.xlsx"
+
 
 def get_next_reference(db: Session = Depends(get_db)) -> str:
+    current_year = datetime.now().year
 
     # Récupérer la dernière commande de l'année courante
     last_data = db.query(Pecheur).order_by(Pecheur.id.desc()).first()
 
     if not last_data:
         # Première commande de l'année
-        next_ref = f"GAB-PECH-001"
+        next_ref = f"001/{current_year}"
     else:
-        parts = last_data.numero_carte.split("-")
-        if len(parts) == 3 and parts[2].isdigit():
-            next_number = int(parts[2]) + 1
-            next_ref = f"GAB-PECH-{next_number:03d}"
+        parts = last_data.numero_carte.split("/")
+        if len(parts) == 2 and parts[0].isdigit():
+            next_number = int(parts[0]) + 1
+            next_ref = f"{next_number:03d}/{current_year}"
         else:
             # Fallback si le format n’est pas reconnu
-            next_ref = f"GAB-PECH-001"
+            next_ref = f"001/{current_year}"
 
     return next_ref
+
+
+def save_errors(errors: list[dict], header: list[str]):
+    new_df = pd.DataFrame(errors)
+    new_df = (
+        new_df[header + ["error_message"]]
+        if all(h in new_df.columns for h in header)
+        else new_df
+    )
+
+    if os.path.exists(ERROR_FILE):
+        existing_df = pd.read_excel(ERROR_FILE)
+        final_df = pd.concat([existing_df, new_df], ignore_index=True)
+    else:
+        final_df = new_df
+
+    final_df.to_excel(ERROR_FILE, index=False, header=True)
 
 
 @router.post("/upload-excel")
@@ -106,6 +134,7 @@ async def upload_pecheurs_excel(
             "adresse",
             "categorie",
             "statut",
+            "cooperative",
         }
 
         if not required_columns.issubset(df.columns):
@@ -126,26 +155,90 @@ async def upload_pecheurs_excel(
         # Insérer les données dans la base de données
         for _, row in df.iterrows():
 
-            pecheur_data = PecheurCreate(
-                numero_carte=get_next_reference(db),
-                nom=str(row["nom"]),
-                prenom=str(row["prenom"]),
-                date_naissance="1900-01-01",  # Valeur par défaut, à ajuster selon les besoins
-                lieu_naissance="",
-                email="",
-                nationalite=str(row["nationalite"]),
-                type_carte=str(row["type_carte"]),
-                numero_piece_identite=str(row["numero_piece_identite"]),
-                telephone=str(row["telephone"]),
-                adresse=str(row["adresse"]),
-                categorie=str(row["categorie"]),
-                statut=str(row["statut"]),
+            pecheur = (
+                db.query(Pecheur)
+                .filter(
+                    or_(
+                        and_(
+                            func.lower(func.trim(Pecheur.nom))
+                            == str(row["nom"]).strip().lower(),
+                            func.lower(func.trim(Pecheur.prenom))
+                            == str(row["prenom"]).strip().lower(),
+                        ),
+                        func.lower(func.trim(Pecheur.numero_piece_identite))
+                        == str(row["numero_piece_identite"]).strip().lower(),
+                    )
+                )
+                .first()
             )
-            pecheur = Pecheur(**pecheur_data.model_dump())
-            db.add(pecheur)
-            db.commit()
 
-        return {"message": "Fichier Excel traité avec succès"}
+            if not pecheur:
+
+                cooperative = (
+                    db.query(ArmementCooperative)
+                    .filter(
+                        and_(
+                            func.lower(func.trim(ArmementCooperative.sigle))
+                            == str(row["cooperative"]).strip().lower(),
+                            ArmementCooperative.type_association
+                            == row["type_association"],
+                        )
+                    )
+                    .first()
+                )
+
+                debarcadere = (
+                    db.query(Debarcadere)
+                    .filter(
+                        func.lower(func.trim(Debarcadere.nom_local))
+                        == str(row["site_attache"]).strip().lower(),
+                    )
+                    .first()
+                )
+
+                try:
+                    pecheur_data = PecheurCreate(
+                        numero_carte=get_next_reference(db),
+                        nom=str(row["nom"]),
+                        prenom=str(row["prenom"]),
+                        date_naissance="2026-06-01",  # Valeur par défaut, à ajuster selon les besoins
+                        lieu_naissance="",
+                        email="",
+                        nationalite=str(row["nationalite"]),
+                        type_carte=str(row["type_carte"]),
+                        numero_piece_identite=str(row["numero_piece_identite"]),
+                        telephone=str(row["telephone"]),
+                        adresse=str(row["adresse"]),
+                        categorie=str(row["categorie"]),
+                        statut=str(row["statut"]),
+                        cooperative_id=cooperative.id if cooperative else None,
+                        cooperative_nom=cooperative.sigle if cooperative else None,
+                        debarcadere_habituel_id=debarcadere.id if debarcadere else None,
+                        debarcadere_habituel_code=(
+                            debarcadere.code if debarcadere else None
+                        ),
+                        debarcadere_habituel_nom=(
+                            debarcadere.nom_local if debarcadere else None
+                        ),
+                    )
+                    pecheur = Pecheur(**pecheur_data.model_dump())
+                    db.add(pecheur)
+                    db.commit()
+                except Exception as e:
+                    db.rollback()
+                    error_row = row.to_dict()
+                    error_row["error_message"] = str(e)
+                    errors.append(error_row)
+
+        header = df.columns.tolist()
+        if errors:
+            save_errors(errors, header)
+
+        return {
+            "inserted": len(df) - len(errors),
+            "failed": len(errors),
+            "error_file": ERROR_FILE if errors else None,
+        }
 
     except pd.errors.EmptyDataError:
         raise HTTPException(

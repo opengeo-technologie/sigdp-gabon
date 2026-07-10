@@ -10,36 +10,83 @@
   <div class="card">
     <div class="card-content">
       <div class="row">
-        <div class="col s12 m4">
-          <div class="input-field">
-            <select [(ngModel)]="filters.type" (change)="applyFilters()">
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label for="province">Province (Strate majeure)</label>
+            <select
+              class="browser-default"
+              id="province"
+              [(ngModel)]="filters.province"
+              (change)="applyFilters()"
+            >
+              <option value="">Toutes les provinces</option>
+              <option value="ESTUAIRE">Estuaire</option>
+              <option value="OGOOUE MARITIME">Ogooué-Maritime</option>
+              <option value="HAUT OGOOUE">Haut-Ogooué</option>
+              <option value="NYANGA">Nyanga</option>
+              <option value="NGOUNIE">Ngounié</option>
+              <option value="MOYEN OGOOUE">Moyen-Ogooué</option>
+              <option value="OGOOUE IVINDO">Ogooué-Ivindo</option>
+              <option value="OGOOUE LOLO">Ogooué-Lolo</option>
+              <option value="WOLEU-NTEM">Woleu-Ntem</option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label for="type_site">Localité (Strate mineure)</label>
+            <select
+              #selectLocalite
+              class="browser-default"
+              [(ngModel)]="filters.localite"
+              id="type_site"
+              (change)="applyFilters()"
+            >
+              <option value="">Toutes les localités</option>
+              <option *ngFor="let item of localites" [value]="item.localite">
+                {{ item.localite }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label>Type d'affiliation</label>
+            <select
+              [(ngModel)]="filters.type"
+              class="browser-default"
+              (change)="applyFilters()"
+            >
               <option value="">Tous les types</option>
               <option value="Armement">Armement</option>
               <option value="Cooperative">Coopérative</option>
             </select>
-            <label>Type d'affiliation</label>
           </div>
         </div>
-        <div class="col s12 m4">
-          <div class="input-field">
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (keyup.enter)="search()"
-              placeholder="Rechercher..."
-            />
+        <div class="col s12 m2">
+          <div class="form-input">
             <label>Nom ou sigle</label>
+            <div class="input-field">
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                (keyup.enter)="search()"
+                placeholder="Rechercher..."
+              />
+            </div>
           </div>
         </div>
         <div class="col s12 m4">
-          <a
-            routerLink="/armements-cooperatives/create"
-            class="btn btn-primary waves-effect waves-light"
-            style="margin-top: 1.5rem"
-          >
-            <i class="material-icons left">add</i>
-            Nouveau armement/coopérative
-          </a>
+          <div class="form-input">
+            <a
+              routerLink="/armements-cooperatives/create"
+              class="btn btn-primary waves-effect waves-light"
+              style="margin-top: 1.5rem"
+            >
+              <i class="material-icons left">add</i>
+              Nouveau armement/coopérative
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -55,18 +102,18 @@
         <table class="highlight responsive-table">
           <thead>
             <tr>
-              <th>Code</th>
               <th>Nom</th>
               <th>Type</th>
               <th>Sigle</th>
               <th>Siège</th>
+              <th>Nombre embarcations</th>
+              <th>Nombre adhérants</th>
               <th>Date création</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let armement of paginatedData">
-              <td>{{ armement.code }}</td>
               <td>{{ armement.denomination || "Sans nom" }}</td>
               <td *ngIf="armement.type_association == 'Cooperative'">
                 <span class="badge blue lighten-4 blue-text text-darken-4">
@@ -82,34 +129,39 @@
               <td>
                 {{ armement.siege || "Non renseigné" }}
               </td>
+              <td class="center">{{ armement.count_bateaux }}</td>
+              <td class="center">{{ armement.count_pecheurs }}</td>
+
               <td>
                 {{ armement.date_creation | date: "dd/MM/yyyy" }}
               </td>
               <td>
-                <a
-                  [routerLink]="['/armements-cooperatives', armement.id]"
-                  class="btn-small btn-flat waves-effect"
-                  title="Voir détails"
-                >
-                  <i class="material-icons">visibility</i>
-                </a>
-                <a
-                  [routerLink]="[
-                    '/armements-cooperatives',
-                    armement.id,
-                    'edit',
-                  ]"
-                  class="btn-small btn-flat waves-effect"
-                  title="Modifier"
-                >
-                  <i class="material-icons">edit</i>
-                </a>
-                <a
-                  class="btn-small btn-flat waves-effect red-text"
-                  title="Supprimer"
-                >
-                  <i class="material-icons">delete</i>
-                </a>
+                <div class="btn-group" role="group">
+                  <a
+                    [routerLink]="['/armements-cooperatives', armement.id]"
+                    class="btn-small btn green white-text btn-flat waves-effect"
+                    title="Voir détails"
+                  >
+                    <i class="material-icons">visibility</i>
+                  </a>
+                  <a
+                    [routerLink]="[
+                      '/armements-cooperatives',
+                      armement.id,
+                      'edit',
+                    ]"
+                    class="btn-small btn blue white-text btn-flat waves-effect"
+                    title="Modifier"
+                  >
+                    <i class="material-icons">edit</i>
+                  </a>
+                  <a
+                    class="btn-small btn red white-text btn-flat waves-effect"
+                    title="Supprimer"
+                  >
+                    <i class="material-icons">delete</i>
+                  </a>
+                </div>
               </td>
             </tr>
             <tr *ngIf="armements.length === 0">

@@ -40,6 +40,7 @@ export interface Pecheur {
 
   // Débarcadère habituel
   debarcadere_habituel_code?: string;
+  cooperative_nom?: string;
 
   // Contacts d'urgence
   contact_urgence_nom?: string;

@@ -133,11 +133,11 @@
                 </div>
                 <div class="input-field col s12 m6">
                   <select
+                    #siteSelect
                     id="site_obligatoire"
                     name="site_obligatoire"
                     (change)="onSelectSiteDebarquement($event)"
                     multiple
-                    #siteSelect
                     required
                   >
                     <option value="" disabled>

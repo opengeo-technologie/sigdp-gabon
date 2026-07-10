@@ -18,6 +18,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private sidenavInstance: any;
   private dropdownInstance: any;
   showNavigation = false;
+  showSidebar = false;
+  currentRoute: string = "";
   currentUser: User | null = null;
   private subscriptions: Subscription[] = [];
 
@@ -33,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
         .pipe(filter((event) => event instanceof NavigationEnd))
         .subscribe(() => {
           this.updateNavigationVisibility();
+          this.updateSidebarVisibility();
         }),
     );
 
@@ -41,11 +44,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.authService.currentUser$.subscribe((user) => {
         this.currentUser = user;
         this.updateNavigationVisibility();
+        this.updateSidebarVisibility();
       }),
     );
 
     // Initialiser
     this.updateNavigationVisibility();
+    this.updateSidebarVisibility();
     this.initializeMaterialize();
   }
 
@@ -68,6 +73,30 @@ export class AppComponent implements OnInit, OnDestroy {
       this.authService.isAuthenticated();
 
     // Réinitialiser Materialize après changement de visibilité
+    setTimeout(() => this.initializeMaterialize(), 100);
+  }
+
+  private updateSidebarVisibility() {
+    const publicRoutes = ["/public", "/login"];
+    const currentRoute = this.router.url.split("?")[0];
+
+    this.currentRoute = currentRoute;
+
+    const surveillanceRoutes = [
+      "/surveillance",
+      "/missions",
+      "/infractions",
+      "/agent-de-controle",
+    ];
+
+    const isPublicRoute = publicRoutes.includes(currentRoute);
+    const isSurveillanceRoute = surveillanceRoutes.includes(currentRoute);
+
+    this.showSidebar =
+      !isPublicRoute &&
+      isSurveillanceRoute &&
+      this.authService.isAuthenticated();
+
     setTimeout(() => this.initializeMaterialize(), 100);
   }
 

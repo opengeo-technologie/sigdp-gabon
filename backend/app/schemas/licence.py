@@ -30,6 +30,7 @@ class LicencePecheBase(BaseModel):
 
     types_peche_autorises: Optional[str] = None
     especes_autorisees: Optional[str] = None
+    autres_especes: Optional[str] = None
 
     quota_annuel_kg: Optional[Decimal] = None
     taille_minimale_maille: Optional[Decimal] = None
@@ -73,26 +74,26 @@ class LicencePecheCreate(LicencePecheBase):
     #     return v
 
 
-class LicencePecheUpdate(BaseModel):
+class LicencePecheUpdate(LicencePecheBase):
     """Mise à jour d'une licence"""
 
-    numero_licence: Optional[str] = None
-    type_licence: Optional[str] = None
-    categorie: Optional[str] = None
+    # numero_licence: Optional[str] = None
+    # type_licence: Optional[str] = None
+    # categorie: Optional[str] = None
 
-    date_expiration: Optional[date] = None
+    # date_expiration: Optional[date] = None
 
-    zone_peche: Optional[str] = None
-    types_peche_autorises: Optional[str] = None
-    especes_autorisees: Optional[str] = None
+    # zone_peche: Optional[str] = None
+    # types_peche_autorises: Optional[str] = None
+    # especes_autorisees: Optional[str] = None
 
-    quota_annuel_kg: Optional[Decimal] = None
+    # quota_annuel_kg: Optional[Decimal] = None
 
-    statut: Optional[str] = None
-    raison_suspension: Optional[str] = None
+    # statut: Optional[str] = None
+    # raison_suspension: Optional[str] = None
 
-    remarques: Optional[str] = None
-    actif: Optional[bool] = None
+    # remarques: Optional[str] = None
+    # actif: Optional[bool] = None
 
 
 class LicencePecheInDB(LicencePecheBase):
@@ -133,6 +134,11 @@ class LicencePecheResponse(LicencePecheInDB):
 
     # Info proprietaire
     proprietaire_info: Optional[dict] = None
+
+    # Info signataire
+    signataire_info: Optional[dict] = None
+    espece1: Optional[list[dict]] = None
+    espece2: Optional[list[dict]] = None
 
     model_config = ConfigDict(from_attributes=True, frozen=False)
 

@@ -32,6 +32,10 @@ class PecheurBase(BaseModel):
 
     # Débarcadère habituel
     debarcadere_habituel_code: Optional[str] = Field(None, max_length=50)
+    debarcadere_habituel_nom: Optional[str] = None
+    debarcadere_habituel_id: Optional[int] = None
+    cooperative_id: Optional[int] = None
+    cooperative_nom: Optional[str] = None
 
     # Licence
     # licence_numero: Optional[str] = Field(None, max_length=50)
@@ -64,7 +68,7 @@ class PecheurUpdate(BaseModel):
     categorie: Optional[CategoriePecheur] = None
     # type_peche: Optional[TypePeche] = None
     debarcadere_habituel_code: Optional[str] = None
-    licence_numero: Optional[str] = None
+
     licence_date_delivrance: Optional[date] = None
     licence_date_expiration: Optional[date] = None
     contact_urgence_nom: Optional[str] = None

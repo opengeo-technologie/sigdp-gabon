@@ -28,10 +28,12 @@ declare var M: any;
         <div class="card-content">
           <div class="row">
             <div class="col s12 m3">
-              <div class="input-field">
+              <div class="form-input">
+                <label>Type de bateau</label>
                 <select
                   [(ngModel)]="filters.type_bateau"
                   (change)="applyFilters()"
+                  class="browser-default"
                 >
                   <option value="">Tous les types</option>
                   <option value="Pirogue">Pirogue</option>
@@ -42,42 +44,50 @@ declare var M: any;
                     Chalutier artisanal
                   </option>
                 </select>
-                <label>Type de bateau</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
-                <select [(ngModel)]="filters.statut" (change)="applyFilters()">
+              <div class="form-input">
+                <label>Statut</label>
+                <select
+                  [(ngModel)]="filters.statut"
+                  (change)="applyFilters()"
+                  class="browser-default"
+                >
                   <option value="">Tous les statuts</option>
                   <option value="Actif">Actif</option>
                   <option value="Inactif">Inactif</option>
                   <option value="En réparation">En réparation</option>
                   <option value="Retiré">Retiré</option>
                 </select>
-                <label>Statut</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
-                <input
-                  type="text"
-                  [(ngModel)]="searchTerm"
-                  (keyup.enter)="search()"
-                  placeholder="Rechercher..."
-                />
-                <label>Immatriculation ou nom</label>
+              <div class="form-input">
+                <label for="search-input">Immatriculation ou nom</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="searchTerm"
+                    (keyup.enter)="search()"
+                    placeholder="Rechercher..."
+                    id="search-input"
+                  />
+                </div>
               </div>
             </div>
             <div class="col s12 m3">
-              <a
-                routerLink="/bateaux/new"
-                class="btn btn-primary waves-effect waves-light"
-                style="margin-top: 1.5rem;"
-                *appHasPermission="'bateau.create'"
-              >
-                <i class="material-icons left">add</i>
-                Nouveau bateau
-              </a>
+              <div class="form-input">
+                <a
+                  routerLink="/bateaux/new"
+                  class="btn btn-primary waves-effect waves-light"
+                  style="margin-top: 1.5rem;"
+                  *appHasPermission="'bateau.create'"
+                >
+                  <i class="material-icons left">add</i>
+                  Nouveau bateau
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -99,6 +109,7 @@ declare var M: any;
                   <th>Propulsion</th>
                   <th>Propriétaire</th>
                   <th>Site d'attache / port d'attache</th>
+                  <th>Site de débarquement</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
@@ -148,6 +159,11 @@ declare var M: any;
                     </span>
                   </td>
                   <td>
+                    <span>
+                      {{ listSiteDebarquement(bateau.site_obligatoire_info) }}
+                    </span>
+                  </td>
+                  <td>
                     <span
                       class="badge"
                       [ngClass]="getStatutClass(bateau.statut)"
@@ -156,29 +172,31 @@ declare var M: any;
                     </span>
                   </td>
                   <td>
-                    <a
-                      [routerLink]="['/bateaux', bateau.id]"
-                      class="btn-small btn-flat waves-effect"
-                      title="Voir détails"
-                    >
-                      <i class="material-icons">visibility</i>
-                    </a>
-                    <a
-                      [routerLink]="['/bateaux', bateau.id, 'edit']"
-                      class="btn-small btn-flat waves-effect"
-                      *appHasPermission="'bateau.update'"
-                      title="Modifier"
-                    >
-                      <i class="material-icons">edit</i>
-                    </a>
-                    <a
-                      (click)="deleteBateau(bateau)"
-                      *appHasPermission="'bateau.delete'"
-                      class="btn-small btn-flat waves-effect red-text"
-                      title="Supprimer"
-                    >
-                      <i class="material-icons">delete</i>
-                    </a>
+                    <div class="btn-group" role="group">
+                      <a
+                        [routerLink]="['/bateaux', bateau.id]"
+                        class="btn-small btn green white-text btn-flat waves-effect"
+                        title="Voir détails"
+                      >
+                        <i class="material-icons">visibility</i>
+                      </a>
+                      <a
+                        [routerLink]="['/bateaux', bateau.id, 'edit']"
+                        class="btn-small btn blue white-text btn-flat waves-effect"
+                        *appHasPermission="'bateau.update'"
+                        title="Modifier"
+                      >
+                        <i class="material-icons">edit</i>
+                      </a>
+                      <a
+                        (click)="deleteBateau(bateau)"
+                        *appHasPermission="'bateau.delete'"
+                        class="btn-small btn red white-text btn-flat waves-effect"
+                        title="Supprimer"
+                      >
+                        <i class="material-icons">delete</i>
+                      </a>
+                    </div>
                   </td>
                 </tr>
                 <tr *ngIf="bateaux.length === 0">
@@ -387,5 +405,12 @@ export class BateauListComponent implements OnInit {
       const elems = document.querySelectorAll("select");
       M.FormSelect.init(elems, {});
     }
+  }
+
+  listSiteDebarquement(site_obligatoire: any[] | undefined): string {
+    if (!site_obligatoire || site_obligatoire.length === 0) {
+      return "N/A";
+    }
+    return site_obligatoire.map((s) => s.nom).join(", ");
   }
 }

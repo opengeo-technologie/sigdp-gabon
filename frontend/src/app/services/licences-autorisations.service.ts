@@ -49,6 +49,10 @@ export class LicencesAutorisationsService {
     return this.http.get<any>(`${this.apiUrl}/bateau/${id}`);
   }
 
+  getStatistiquesLicence(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/statistiques/captures/${id}`);
+  }
+
   createLicence(licenceData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/`, licenceData);
   }
@@ -62,16 +66,46 @@ export class LicencesAutorisationsService {
   }
 
   // Méthodes pour les signatures
-  getSignataires(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrlSignataires}/`);
+  getSignataires(filters?: {
+    status?: boolean;
+    exclure_ministre?: boolean;
+  }): Observable<any[]> {
+    let params = new HttpParams();
+    if (filters) {
+      if (filters.status !== undefined)
+        params = params.set("statut", filters.status);
+      if (filters.exclure_ministre !== undefined)
+        params = params.set("exclure_ministre", filters.exclure_ministre);
+    }
+    return this.http.get<any[]>(`${this.apiUrlSignataires}/`, { params });
   }
 
   getSignataire(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrlSignataires}/${id}`);
   }
 
+  getSignataireByRole(filters?: {
+    status?: boolean;
+    role?: string;
+  }): Observable<any> {
+    let params = new HttpParams();
+
+    if (filters) {
+      if (filters.status !== undefined)
+        params = params.set("statut", filters.status);
+      if (filters.role !== undefined) params = params.set("role", filters.role);
+    }
+    return this.http.get<any>(`${this.apiUrlSignataires}/signataire/by-role`, {
+      params,
+    });
+  }
+
   createSignataire(signataireData: any): Observable<any> {
     return this.http.post(`${this.apiUrlSignataires}/`, signataireData);
+  }
+
+  setSignataireLicence(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/signataire-licence`, data);
   }
 
   updateSignataire(id: number, signataireData: any): Observable<any> {

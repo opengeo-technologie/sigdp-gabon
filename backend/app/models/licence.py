@@ -39,6 +39,7 @@ class LicenceAutorisationPeche(Base):
     # Types de pêche autorisés
     types_peche_autorises = Column(Text)  # JSON: ["chalut", "filet", "ligne"]
     especes_autorisees = Column(Text)  # JSON: liste des espèces ou "toutes"
+    autres_especes = Column(Text)  # JSON: liste des espèces ou "toutes"
 
     # Quotas et limitations
     quota_annuel_kg = Column(Numeric(10, 2))  # Quota en kg
@@ -164,7 +165,7 @@ class SignataireLicence(Base):
     )
     signataire_id = Column(Integer, ForeignKey("signataires.id"), nullable=False)
     date_signature = Column(Date, nullable=False)
-    remarques = Column(Text)
+    remarques = Column(Text, nullable=True)
 
 
 # class InspectionLicence(Base):

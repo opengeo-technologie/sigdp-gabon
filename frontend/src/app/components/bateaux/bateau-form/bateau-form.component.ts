@@ -44,8 +44,13 @@ export class BateauFormComponent implements OnInit {
     longueur_hors_tout: 0,
     largeur: 0,
     tirant_eau: 0,
+    moteur_marque: "",
     puissance_moteur: 0,
+    moteur_type_carburant: "",
+    moteur_numero_serie: "",
     jauge_brute: 0,
+    zone_peche_habituelle: "",
+    zone_peche_coordonnees: "",
     site_port_attache: null,
     site_obligatoire: [],
     engins_peche_principal: null,
@@ -162,12 +167,14 @@ export class BateauFormComponent implements OnInit {
     M.FormSelect.init(el);
   }
 
-  preselectionnerSites() {
+  preselectionnerSites(bateau: any) {
     // convertir la chaîne "2270, 2099" en tableau ["2270", "2099"]
-    const idsSelectionnes = (this.bateau.site_obligatoire ?? "")
+    const idsSelectionnes = (bateau.site_obligatoire ?? "")
       .split(",")
       .map((s: string) => s.trim())
       .filter((s: string) => s !== "");
+
+    console.log(idsSelectionnes);
 
     const el = this.siteSelect.nativeElement as HTMLSelectElement;
 
@@ -231,12 +238,13 @@ export class BateauFormComponent implements OnInit {
   loadDebarcaderes() {
     this.debarcadereService.getDebarcaderes().subscribe({
       next: (data) => {
-        // console.log(data);
-        this.sites = data;
+        // console.log(data.result);
+        this.sites = data.result;
+        setTimeout(() => this.initializeMaterialize(), 100);
       },
       error: (error) => {
-        console.error("Erreur chargement pêcheurs:", error);
-        M.toast({ html: "Erreur chargement pêcheurs", classes: "red" });
+        console.error("Erreur chargement des sites:", error);
+        M.toast({ html: "Erreur chargement des sites", classes: "red" });
       },
     });
   }
@@ -247,7 +255,7 @@ export class BateauFormComponent implements OnInit {
         // console.log(data);
         this.bateau = data;
 
-        this.preselectionnerSites();
+        this.preselectionnerSites(this.bateau);
         // Charger les engins de pêche
         // if (data.engins_peche_secondaires) {
         //   this.bateau.engins_peche_secondaires = (
@@ -276,6 +284,7 @@ export class BateauFormComponent implements OnInit {
     }).subscribe({
       next: ({ engins, bateau }) => {
         this.engins_peche = engins;
+        // console.log(bateau);
 
         if (bateau) {
           // --- MODE ÉDITION : pré-remplir ---
@@ -287,7 +296,7 @@ export class BateauFormComponent implements OnInit {
           };
 
           // pré-sélection du select Materialize (les checkboxes se gèrent seules)
-          setTimeout(() => this.preselectionnerSites(), 0);
+          setTimeout(() => this.preselectionnerSites(bateau), 0);
         }
         // --- MODE CRÉATION : on garde l'objet vierge initial ---
       },
@@ -376,7 +385,18 @@ export class BateauFormComponent implements OnInit {
     formData.append("longueur_hors_tout", this.bateau.longueur_hors_tout);
     formData.append("largeur", String(this.bateau.largeur));
     formData.append("tirant_eau", String(this.bateau.tirant_eau));
+    formData.append("moteur_marque", this.bateau.moteur_marque);
+    formData.append("moteur_type_carburant", this.bateau.moteur_type_carburant);
+    formData.append("moteur_numero_serie", this.bateau.moteur_numero_serie);
     formData.append("puissance_moteur", String(this.bateau.puissance_moteur));
+    formData.append(
+      "zone_peche_habituelle",
+      String(this.bateau.zone_peche_habituelle),
+    );
+    formData.append(
+      "zone_peche_coordonnees",
+      String(this.bateau.zone_peche_coordonnees),
+    );
     formData.append("statut", this.bateau.statut);
     formData.append(
       "equipement_gilets_sauvetage",

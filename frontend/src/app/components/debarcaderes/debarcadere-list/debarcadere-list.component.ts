@@ -9,13 +9,14 @@ import {
   Milieu,
   StatutOperationnel,
 } from "../../../models/debarcadere.model";
+import { HasPermissionDirective } from "../../../directives/has-permission.directive";
 
 declare var M: any;
 
 @Component({
   selector: "app-debarcadere-list",
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, HasPermissionDirective],
   templateUrl: "./debarcadere-list.component.html",
   styleUrls: ["./debarcadere-list.component.css"],
 })
@@ -40,7 +41,7 @@ export class DebarcadereListComponent implements OnInit {
   constructor(private debarcadereService: DebarcadereService) {}
 
   ngOnInit() {
-    // this.filterParams.limit = this.filters.limit;
+    this.filterParams.limit = this.filters.limit;
     // Initialiser les selects Materialize après le chargement
     setTimeout(() => this.initializeSelects(), 100);
   }
@@ -83,7 +84,7 @@ export class DebarcadereListComponent implements OnInit {
 
     this.debarcadereService.getDebarcaderes(this.filterParams).subscribe({
       next: (data) => {
-        console.log(data);
+        // console.log(data);
         this.debarcaderes = data.result;
         this.totalData = data.total;
         this.debarcaderes.sort((a, b) => {
@@ -178,16 +179,16 @@ export class DebarcadereListComponent implements OnInit {
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;
-      // this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
-      // this.loadDebarcaderes();
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadDebarcaderes();
     }
   }
 
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
-      // this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
-      // this.loadDebarcaderes();
+      this.filterParams.skip = (this.currentPage - 1) * this.filters.limit;
+      this.loadDebarcaderes();
     }
   }
 

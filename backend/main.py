@@ -21,6 +21,8 @@ from app.api import (
     armement_coorperative,
     engin_peche,
     signataire,
+    licence_signature,
+    mareyeur,
 )
 
 # Créer les tables
@@ -51,8 +53,10 @@ app.add_middleware(
 )
 
 # Inclusion des routers
+app.include_router(mareyeur.router)
 app.include_router(signataire.router)
 app.include_router(licence2.router)
+app.include_router(licence_signature.router)
 app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(permissions.router)

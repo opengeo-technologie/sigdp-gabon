@@ -46,6 +46,10 @@ export class DebarcadereService {
     return this.http.get<Debarcadere>(`${this.apiUrl}/code/${code}`);
   }
 
+  getStatistiquesDebarcadere(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/statistiques/${id}`);
+  }
+
   createDebarcadere(
     debarcadere: Partial<Debarcadere>,
   ): Observable<Debarcadere> {

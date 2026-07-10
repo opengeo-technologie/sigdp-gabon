@@ -326,6 +326,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "licences/:id/edit",
+    loadComponent: () =>
+      import("./components/licences/licence-autorisation-form/licence-autorisation-form.component").then(
+        (m) => m.LicenceAutorisationFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "licences/:id/details",
+    loadComponent: () =>
+      import("./components/licences/licence-details/licence-details.component").then(
+        (m) => m.LicenceDetailsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "armements-cooperatives",
     loadComponent: () =>
       import("./components/armement-cooperative/armement-cooperative.component").then(
@@ -354,6 +370,70 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./components/armement-cooperative/armement-cooperative-form/armement-cooperative-form.component").then(
         (m) => m.ArmementCooperativeFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "missions",
+    loadComponent: () =>
+      import("./components/surveillance/missions/missions.component").then(
+        (m) => m.MissionsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "infractions",
+    loadComponent: () =>
+      import("./components/surveillance/infractions/infractions.component").then(
+        (m) => m.InfractionsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "agent-de-controle",
+    loadComponent: () =>
+      import("./components/surveillance/agent-controle/agent-controle.component").then(
+        (m) => m.AgentControleComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "surveillance",
+    loadComponent: () =>
+      import("./components/surveillance/surveillance.component").then(
+        (m) => m.SurveillanceComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "mareyeurs",
+    loadComponent: () =>
+      import("./components/mareyeurs/mareyeurs.component").then(
+        (m) => m.MareyeursComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "mareyeurs/add",
+    loadComponent: () =>
+      import("./components/mareyeurs/mareyeur-form/mareyeur-form.component").then(
+        (m) => m.MareyeurFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "mareyeurs/edit/:id",
+    loadComponent: () =>
+      import("./components/mareyeurs/mareyeur-form/mareyeur-form.component").then(
+        (m) => m.MareyeurFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "mareyeurs/details/:id",
+    loadComponent: () =>
+      import("./components/mareyeurs/mareyeur-details/mareyeur-details.component").then(
+        (m) => m.MareyeurDetailsComponent,
       ),
     canActivate: [authGuard],
   },

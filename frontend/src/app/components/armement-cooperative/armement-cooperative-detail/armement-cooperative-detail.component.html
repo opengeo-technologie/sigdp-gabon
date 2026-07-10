@@ -9,22 +9,27 @@
 <div class="container-fluid" *ngIf="armementCooperative">
   <div class="row">
     <div class="col s12">
-      <a routerLink="/armements-cooperatives" class="btn btn-flat waves-effect">
-        <i class="material-icons left">arrow_back</i>Retour
-      </a>
-      <a
-        [routerLink]="[
-          '/armements-cooperatives',
-          armementCooperative.id,
-          'edit',
-        ]"
-        class="btn btn-primary waves-effect"
-      >
-        <i class="material-icons left">edit</i>Modifier
-      </a>
-      <a class="btn red waves-effect">
-        <i class="material-icons left">delete</i>Supprimer
-      </a>
+      <div class="btn-group" role="group">
+        <a
+          routerLink="/armements-cooperatives"
+          class="btn btn-flat waves-effect"
+        >
+          <i class="material-icons left">arrow_back</i>Retour
+        </a>
+        <a
+          [routerLink]="[
+            '/armements-cooperatives',
+            armementCooperative.id,
+            'edit',
+          ]"
+          class="btn btn-primary waves-effect"
+        >
+          <i class="material-icons left">edit</i>Modifier
+        </a>
+        <a class="btn red waves-effect">
+          <i class="material-icons left">delete</i>Supprimer
+        </a>
+      </div>
     </div>
   </div>
 
@@ -98,6 +103,174 @@
                     "Non renseigné"
                 }}
               </p>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <h6><b>Liste des embarcations</b></h6>
+            <div class="col s12 l12">
+              <table class="highlight responsive-table">
+                <thead>
+                  <tr>
+                    <th>Immatriculation</th>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Propiétaire</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let bateau of paginatedData">
+                    <td>
+                      <strong>{{ bateau.numero_immatriculation }}</strong>
+                    </td>
+                    <td>{{ bateau.nom_bateau || "Sans nom" }}</td>
+                    <td>
+                      <span
+                        class="badge blue lighten-4 blue-text text-darken-4"
+                      >
+                        {{ bateau.type_bateau }}
+                      </span>
+                    </td>
+                    <td>
+                      <span *ngIf="bateau.proprietaire_info">
+                        {{ bateau.proprietaire_info.nom }}
+                        {{ bateau.proprietaire_info.prenom }}
+                        <br />
+                        <small class="grey-text">{{
+                          bateau.proprietaire_info.numero_carte
+                        }}</small>
+                      </span>
+                      <span
+                        *ngIf="
+                          !bateau.proprietaire_info && bateau.proprietaire_nom
+                        "
+                      >
+                        {{ bateau.proprietaire_nom }}
+                      </span>
+                      <span
+                        *ngIf="
+                          !bateau.proprietaire_info && !bateau.proprietaire_nom
+                        "
+                        class="grey-text"
+                      >
+                        Non renseigné
+                      </span>
+                    </td>
+                    <td>
+                      <a
+                        [routerLink]="['/bateaux', bateau.id]"
+                        class="btn-small btn-flat waves-effect"
+                        title="Voir détails"
+                      >
+                        <i class="material-icons">visibility</i>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr *ngIf="bateaux.length === 0">
+                    <td colspan="8" class="center-align">
+                      <p class="grey-text">
+                        Aucun bateau trouvé avec ces critères
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="center" style="padding-top: 20px">
+                <button
+                  (click)="prevPage()"
+                  class="btn waves-effect waves-light white darken-4 btn-small"
+                  [disabled]="currentPage === 1"
+                >
+                  <i class="material-icons" style="color: #000000"
+                    >chevron_left</i
+                  >
+                </button>
+                <span
+                  class="page-number"
+                  style="margin-left: 10px; margin-right: 10px"
+                  >page {{ currentPage }} / {{ totalPages() }}</span
+                >
+                <button
+                  (click)="nextPage()"
+                  class="btn waves-effect waves-light white btn-small"
+                  [disabled]="currentPage === totalPages()"
+                >
+                  <i class="material-icons" style="color: #000000"
+                    >chevron_right</i
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Statistiques</span>
+          <hr />
+          <div class="stat-item">
+            <i class="material-icons blue-text">assessment</i>
+            <div>
+              @if (captures) {
+                <strong> {{ captures.quantite_tonnes }}t</strong>
+              } @else {
+                <strong>0 t</strong>
+              }
+
+              <p>Total capture de la coopérative</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <i class="material-icons orange-text">directions_boat</i>
+            <div>
+              <strong>{{ armementCooperative.count_bateaux }}</strong>
+
+              <p>Bateaux actifs</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <i class="material-icons green-text">people</i>
+            <div>
+              <strong>{{ armementCooperative.count_pecheurs }}</strong>
+              <p>Pêcheurs rattachés</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title center" style="font-size: 18px">
+            <i class="material-icons left">trending_up</i>
+            Repartition des pecheurs par type (Nationaux / Etrangers)
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                class="pie-container"
+                *ngIf="repartition_par_type && repartition_par_type.length != 0"
+              >
+                <canvas id="pieChart"></canvas>
+              </div>
+              <div
+                *ngIf="repartition_par_type && repartition_par_type.length == 0"
+              >
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
             </div>
           </div>
         </div>

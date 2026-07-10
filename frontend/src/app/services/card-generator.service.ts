@@ -48,14 +48,16 @@ export class CardGeneratorService {
     // const licenceStatus = pecheur.licence_active ? "VALIDE" : "EXPIRÉE";
     // const licenceColor = pecheur.licence_active ? "#4caf50" : "#f44336";
 
+    // console.log(pecheur);
+
     return `
       <div id="pecheur-card" style="
         width: 1011px;
         height: 638px;
-        background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f5f6f9 100%);
         position: relative;
         font-family: Arial, sans-serif;
-        color: white;
+        color: black;
         box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         border-radius: 20px;
         overflow: hidden;
@@ -67,19 +69,110 @@ export class CardGeneratorService {
           text-align: center;
           border-bottom: 3px solid rgba(255,255,255,0.3);
         ">
-          <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">
-            RÉPUBLIQUE GABONAISE
+          <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <span>RÉPUBLIQUE</span> <span><img src="../../assets/logo1.png" style="width: 80px; height: auto;"></span> <span>GABONAISE</span>
           </div>
-          <div style="font-size: 18px; margin-top: 5px; letter-spacing: 1px;">
-            Ministère de la mer, de la Pêche et de l'Economie Bleue
+          <div style="font-size: 18px; margin-top: 5px; font-weight: bold; letter-spacing: 2px;">
+            <span style="color: #009E60;">Union</span> - <span style="color: #FCD116;">Travail</span> - <span style="color: #3A75C4;">Justice</span>
           </div>
-          <div style="font-size: 28px; font-weight: bold; margin-top: 10px; color: #ffd54f;">
-            CARTE NATIONALE DE PÊCHEUR
+          <div style="
+          background: rgba(6, 93, 144, 0.9);
+          padding: 15px 30px;
+          text-align: center;
+          border-bottom: 3px solid rgba(255,255,255,0.3);
+          ">
+            <div style="font-size: 20px; margin-top: 5px; letter-spacing: 1px; text-transform: uppercase; font-weight: bolder">
+              Ministère de la mer, de la Pêche et de l'Economie Bleue
+            </div>
+            <div style="font-size: 20px; font-weight: bold; margin-top: 10px; color: #ffffff;">
+              DIRECTION GENERALE DES PECHES ET DE L'AQUACULTURE
+            </div>
           </div>
         </div>
 
         <!-- Contenu principal -->
-        <div style="display: flex; padding: 30px; gap: 30px;">
+        <div style="display: flex; padding: 2px 30px 30px 30px; gap: 30px;">
+
+          <!-- Informations -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+            
+
+            <div style="
+              background: rgba(255,255,255,0.15);
+              padding: 2px 5px 5px 5px;
+              border-radius: 8px;
+            ">
+              <div style="font-size: 26px; font-weight: bold; text-transform: uppercase;">
+                ${pecheur.nom} ${pecheur.prenom}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+              <div style="
+                flex: 1;
+                background: rgba(255,255,255,0.15);
+                padding: 2px 5px 5px 5px;
+                border-radius: 8px;
+              ">
+                <div style="font-size: 20px; opacity: 0.9;">Né le : 
+                  <span style="font-size: 22px; font-weight: bold; margin-top: 2px;">
+                    ${new Date(pecheur.date_naissance).toLocaleDateString("fr-FR")}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div style="
+              background: rgba(255,255,255,0.15);
+              padding: 2px 5px 5px 5px;
+              border-radius: 8px;
+            ">
+              <div style="font-size: 20px; opacity: 0.9;">Nationalité : 
+                <span style="font-size: 22px; font-weight: bold; margin-top: 2px;">${pecheur.nationalite}</span>
+              </div>
+            </div>
+            <div style="
+              background: rgba(255,255,255,0.15);
+              padding: 2px 5px 5px 5px;
+              border-radius: 8px;
+            ">
+              <div style="font-size: 20px; opacity: 0.9;">Coopérative : 
+                <span style="font-size: 22px; font-weight: bold; margin-top: 2px;">${pecheur.cooperative_nom}</span>
+              </div>
+              <div >
+                
+              </div>
+            </div>
+            <div style="
+              background: rgba(255,255,255,0.15);
+              padding: 2px 5px 5px 5px;
+              border-radius: 8px;
+            ">
+              <div style="font-size: 20px; opacity: 0.9;">Nom/Imma : 
+                <span style="font-size: 22px; font-weight: bold; margin-top: 2px;"></span>
+              </div>
+            </div>
+            <div style="
+              background: rgba(255,255,255,0.15);
+              padding: 2px 5px 5px 5px;
+              border-radius: 8px;
+            ">
+              <div style="font-size: 20px; opacity: 0.9;">IDC : 
+                <span style="font-size: 22px; font-weight: bold; margin-top: 2px;">${pecheur.type_carte} - ${pecheur.numero_piece_identite}</span>
+              </div>
+            </div>
+            <div style="
+              background: rgba(6, 93, 144, 0.9);
+              padding: 12px 20px;
+              border-radius: 8px;
+              border-left: 4px solid #ffd54f;
+            ">
+              <div style="font-size: 24px; font-weight: bold; opacity: 0.9;">CARTE DE PECHEUR N° 
+                <span style="font-size: 24px; font-weight: bold; margin-top: 2px;">${pecheur.numero_carte}</span>
+              </div>
+              
+            </div>
+            
+          </div>
           <!-- Photo -->
           <div style="flex-shrink: 0;">
             <div style="
@@ -108,67 +201,31 @@ export class CardGeneratorService {
                 </div>`
               }
             </div>
+            <div style="
+              width: 50px;
+              height: 50px;
+              background: white;
+              border-radius: 10px;
+              padding: 10px;
+              margin-top: 10px;
+              margin-left: 80px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            ">
+              <img src="${qrCodeUrl}" style="width: 100%; height: 100%;" alt="QR Code">
+            </div>
+            <div style="
+              text-align: center;
+              margin-top: 10px;
+              font-size: 12px;
+              opacity: 0.8;
+            ">
+              Scanner pour vérifier
+            </div>
           </div>
-
-          <!-- Informations -->
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
-            <div style="
-              background: rgba(255,255,255,0.15);
-              padding: 12px 20px;
-              border-radius: 8px;
-              border-left: 4px solid #ffd54f;
-            ">
-              <div style="font-size: 14px; opacity: 0.9;">N° CNP</div>
-              <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">
-                ${pecheur.numero_carte}
-              </div>
-            </div>
-
-            <div style="
-              background: rgba(255,255,255,0.15);
-              padding: 12px 20px;
-              border-radius: 8px;
-            ">
-              <div style="font-size: 14px; opacity: 0.9;">Nom et Prénom</div>
-              <div style="font-size: 26px; font-weight: bold; margin-top: 5px; text-transform: uppercase;">
-                ${pecheur.nom} ${pecheur.prenom}
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 15px;">
-              <div style="
-                flex: 1;
-                background: rgba(255,255,255,0.15);
-                padding: 12px 20px;
-                border-radius: 8px;
-              ">
-                <div style="font-size: 14px; opacity: 0.9;">Date de naissance</div>
-                <div style="font-size: 18px; font-weight: bold; margin-top: 5px;">
-                  ${new Date(pecheur.date_naissance).toLocaleDateString("fr-FR")}
-                </div>
-                <div style="font-size: 16px; margin-top: 5px; color: #ffd54f;">
-                  ${age} ans
-                </div>
-              </div>
-
-              <div style="
-                flex: 1;
-                background: rgba(255,255,255,0.15);
-                padding: 12px 20px;
-                border-radius: 8px;
-              ">
-                <div style="font-size: 14px; opacity: 0.9;">Catégorie</div>
-                <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">
-                  ${pecheur.categorie}
-                </div>
-              </div>
-            </div>
-
-            
           </div>
 
           <!-- QR Code -->
-          <div style="flex-shrink: 0;">
+         <!-- <div style="flex-shrink: 0;">
             <div style="
               width: 200px;
               height: 200px;
@@ -188,7 +245,7 @@ export class CardGeneratorService {
               Scanner pour vérifier
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Pied de page -->
         <div style="
@@ -202,7 +259,7 @@ export class CardGeneratorService {
           text-align: center;
           opacity: 0.9;
         ">
-          <div>Émise par la Direction des Pêches et de l'Aquaculture (DPA)</div>
+          <div>Émise par la Direction Générale des Pêches et de l'Aquaculture (DGPA)</div>
           <div style="margin-top: 5px;">
             Cette carte est la propriété de la République Gabonaise • Document officiel
           </div>

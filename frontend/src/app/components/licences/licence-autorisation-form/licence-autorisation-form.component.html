@@ -18,21 +18,33 @@
         </div>
       </div>
       <div class="row license-form">
-        <div class="input-field col s12 form-input">
-          <select
-            name="type_peche"
-            required
-            (change)="onChangeType($event)"
-            [(ngModel)]="type_peche"
-          >
-            <option value="" disabled>Choisir le type</option>
-            <option value="Autorisation">Artisanale</option>
-            <option value="Licence">Industrielle</option>
-          </select>
+        <div class="form-input col s12">
           <label>Type de pêche <i class="required_field">* </i></label>
+          <div class="input-field">
+            <select
+              name="type_peche"
+              required
+              (change)="onChangeType($event)"
+              [(ngModel)]="type_peche"
+              class="browser-default"
+            >
+              <option value="" disabled>Choisir le type</option>
+              <option value="Autorisation">Artisanale</option>
+              <option value="Licence">Industrielle</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="form-container">
+      <div class="form-container" *ngIf="isEditMode && editData">
+        <app-autorisation-form
+          [type_peche]="type_peche"
+          [data]="editData"
+          [isEdit]="isEditMode"
+          (formChange)="onFormChange($event)"
+          *ngIf="type_peche == 'Autorisation'"
+        ></app-autorisation-form>
+      </div>
+      <div class="form-container" *ngIf="!isEditMode">
         <app-autorisation-form
           [type_peche]="type_peche"
           (formChange)="onFormChange($event)"
@@ -59,7 +71,13 @@
             <p class="center autorisation-title">
               AUTORISATION DE PECHE ARTISANALE
             </p>
-            <p class="center autorisation-title">Nº ______</p>
+            @if (editData && editData.numero_licence) {
+              <p class="center autorisation-title">
+                Nº {{ formatedImmatrication(editData.numero_licence) }}
+              </p>
+            } @else {
+              <p class="center autorisation-title">Nº ______</p>
+            }
             @if (data.annee_validite) {
               <p class="autorisation-subtitle">
                 ANNEE DE VALIDITE {{ data.annee_validite }}
@@ -279,7 +297,7 @@
                   <p>
                     Engin de pêche 2 :
                     <span>
-                      @if (bateau.engin_peche1) {
+                      @if (bateau.engin_peche2) {
                         {{ bateau.engin_peche2.libelle }}
                       } @else {
                         N/A
@@ -325,14 +343,24 @@
           </div>
         </div>
         <div class="row">
-          <div class="col s8 m8"></div>
-          <div class="col s4 m4">
-            <p style="font-size: 10px">P. Le Ministre</p>
-            <p style="font-size: 10px">
-              P.O Le Directeur Général desPêches et de l'Aquaculture
+          <div class="col s8 m7"></div>
+          <div class="col s4 m5" *ngIf="data.pour_ordre">
+            <p style="font-size: 12px">P. Le Ministre,</p>
+            <p style="font-size: 12px">
+              @if (data.signataire) {
+                P.O {{ data.signataire.role.nom_role }}
+              }
             </p>
-            <p style="padding-top: 50px; font-size: 10px">
-              <b>Brice Didier Celce KOUMBA MABERT</b>
+            <p style="padding-top: 50px; font-size: 13px">
+              @if (data.signataire) {
+                <b>{{ data.signataire.nom_complet }}</b>
+              }
+            </p>
+          </div>
+          <div class="col s4 m5" *ngIf="!data.pour_ordre">
+            <p style="font-size: 12px">Le Ministre,</p>
+            <p style="padding-top: 50px; font-size: 13px">
+              <b *ngIf="data.signataire">{{ data.signataire.nom_complet }}</b>
             </p>
           </div>
         </div>

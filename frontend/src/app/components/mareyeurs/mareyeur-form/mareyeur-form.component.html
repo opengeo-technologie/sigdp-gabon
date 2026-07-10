@@ -1,0 +1,295 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{
+        modeEdition ? "edit" : "person_add"
+      }}</i>
+      {{
+        modeEdition
+          ? "Modifier le mareyeur " + (codeMareyeur || "")
+          : "Nouveau mareyeur"
+      }}
+    </h1>
+  </div>
+</div>
+<div class="container">
+  <div class="row" style="margin-bottom: 0">
+    <div class="col s4 m4">
+      <a class="btn-flat waves-effect" [routerLink]="['/mareyeurs']">
+        <i class="material-icons left">arrow_back</i>Retour à la liste
+      </a>
+    </div>
+  </div>
+
+  <form [formGroup]="formulaire" (ngSubmit)="enregistrer()">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Identité</span>
+        <div class="row">
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label>Type de personne <span>*</span></label>
+              <div class="input-field">
+                <select
+                  id="type_personne"
+                  (change)="onTypePersonneChange($event)"
+                  class="browser-default"
+                >
+                  <option
+                    value="physique"
+                    [selected]="typePersonne === 'physique'"
+                  >
+                    Personne physique
+                  </option>
+                  <option value="morale" [selected]="typePersonne === 'morale'">
+                    Personne morale
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personne morale -->
+          <div class="col s12 m8" *ngIf="typePersonne === 'morale'">
+            <div class="form-input">
+              <label for="raison_sociale">Raison sociale <span>*</span></label>
+              <div class="input-field">
+                <input
+                  id="raison_sociale"
+                  type="text"
+                  formControlName="raison_sociale"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Personne physique -->
+          <ng-container *ngIf="typePersonne === 'physique'">
+            <div class="col s12 m4">
+              <div class="form-input">
+                <label for="nom">Nom *</label>
+                <div class="input-field">
+                  <input id="nom" type="text" formControlName="nom" />
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m4">
+              <div class="form-input">
+                <label for="prenom">Prénom</label>
+                <div class="input-field">
+                  <input id="prenom" type="text" formControlName="prenom" />
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="row" *ngIf="typePersonne === 'physique'">
+          <div class="col s12 m3">
+            <div class="form-input">
+              <label>Sexe</label>
+              <div class="input-field">
+                <select
+                  id="sexe"
+                  (change)="onSexeChange($event)"
+                  class="browser-default"
+                >
+                  <option value="" [selected]="!sexe">
+                    -- Sélectionner --
+                  </option>
+                  <option value="M" [selected]="sexe === 'M'">Masculin</option>
+                  <option value="F" [selected]="sexe === 'F'">Féminin</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12 m3">
+            <div class="form-input">
+              <label for="date_naissance" class="active"
+                >Date de naissance</label
+              >
+              <div class="input-field">
+                <input
+                  id="date_naissance"
+                  type="date"
+                  formControlName="date_naissance"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12 m3">
+            <div class="form-input">
+              <label for="lieu_naissance">Lieu de naissance</label>
+              <div class="input-field">
+                <input
+                  id="lieu_naissance"
+                  type="text"
+                  formControlName="lieu_naissance"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12 m3">
+            <div class="form-input">
+              <label for="nationalite">Nationalité</label>
+              <div class="input-field">
+                <input
+                  id="nationalite"
+                  type="text"
+                  formControlName="nationalite"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="card-title">Informations administratives</span>
+        <div class="row">
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="nif">NIF</label>
+              <div class="input-field">
+                <input id="nif" type="text" formControlName="nif" />
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="rccm">RCCM</label>
+              <div class="input-field">
+                <input id="rccm" type="text" formControlName="rccm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="card-title">Contacts</span>
+        <div class="row">
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="telephone">Téléphone</label>
+              <div class="input-field">
+                <input id="telephone" type="text" formControlName="telephone" />
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="email">Email</label>
+              <div class="input-field">
+                <input id="email" type="email" formControlName="email" />
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="adresse">Adresse</label>
+              <div class="input-field">
+                <input id="adresse" type="text" formControlName="adresse" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="card-title">Activité</span>
+        <div class="row">
+          <div class="col s12 m6">
+            <div class="form-input">
+              <label>Zones d'activité (provinces)</label>
+              <div class="input-field">
+                <select
+                  id="zones_activite"
+                  multiple
+                  (change)="onZonesChange($event)"
+                >
+                  <option value="" disabled>Sélectionner les provinces</option>
+                  <option
+                    *ngFor="let p of provinces"
+                    [value]="p"
+                    [selected]="zonesSelectionnees.includes(p)"
+                  >
+                    {{ p }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12 m6">
+            <div class="form-input">
+              <label>Sites de débarquement rattachés</label>
+              <div class="input-field">
+                <select
+                  id="sites_debarquement"
+                  multiple
+                  (change)="onSitesChange($event)"
+                >
+                  <option value="" disabled>Sélectionner les sites</option>
+                  <option
+                    *ngFor="let s of sites"
+                    [value]="s"
+                    [selected]="sitesSelectionnes.includes(s)"
+                  >
+                    {{ s }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" *ngIf="modeEdition">
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label>Statut</label>
+              <div class="input-field">
+                <select id="statut" (change)="onStatutChange($event)">
+                  <option value="actif" [selected]="statut === 'actif'">
+                    Actif
+                  </option>
+                  <option value="suspendu" [selected]="statut === 'suspendu'">
+                    Suspendu
+                  </option>
+                  <option value="radie" [selected]="statut === 'radie'">
+                    Radié
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12">
+            <textarea
+              id="observations"
+              class="materialize-textarea"
+              formControlName="observations"
+            ></textarea>
+            <label for="observations">Observations</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-action right-align">
+        <a class="btn-flat waves-effect" [routerLink]="['/mareyeurs']"
+          >Annuler</a
+        >
+        <button
+          type="submit"
+          class="btn waves-effect waves-light"
+          [disabled]="enregistrement"
+        >
+          <i class="material-icons left">save</i>
+          {{
+            modeEdition ? "Enregistrer les modifications" : "Créer le mareyeur"
+          }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

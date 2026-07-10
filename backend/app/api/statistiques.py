@@ -514,13 +514,6 @@ def get_evolution_captures(
     Liste des captures par mois
     """
 
-    # Récupérer toutes les provinces
-    provinces_query = (
-        db.query(Debarcadere.province)
-        .filter(Debarcadere.province.isnot(None))
-        .distinct()
-    )
-
     # if filtre == "province":
     evolution_data = []
 

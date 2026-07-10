@@ -14,7 +14,9 @@ declare var M: any;
   template: `
     <div class="page-header">
       <div class="container-fluid">
-        <h1><i class="material-icons left">inventory</i> Captures</h1>
+        <h1>
+          <i class="material-icons left">inventory</i> Débarquements et Captures
+        </h1>
         <p>Enregistrements des captures de pêche</p>
       </div>
     </div>
@@ -25,47 +27,55 @@ declare var M: any;
         <div class="card-content">
           <div class="row">
             <div class="col s12 m3">
-              <div class="input-field">
-                <input
-                  id="date_debut"
-                  type="date"
-                  [(ngModel)]="filters.date_debut"
-                  (change)="applyFilters()"
-                />
+              <div class="form-input">
                 <label for="date_debut" class="active">Date début</label>
-              </div>
-            </div>
-            <div class="col s12 m3">
-              <div class="input-field">
-                <input
-                  id="date_fin"
-                  type="date"
-                  [(ngModel)]="filters.date_fin"
-                  (change)="applyFilters()"
-                />
-                <label for="date_fin" class="active">Date fin</label>
-              </div>
-            </div>
-            <div class="col s12 m3">
-              <p style="margin-top: 1.5rem;">
-                <label>
+                <div class="input-field">
                   <input
-                    type="checkbox"
-                    [(ngModel)]="filters.avec_alertes"
+                    id="date_debut"
+                    type="date"
+                    [(ngModel)]="filters.date_debut"
                     (change)="applyFilters()"
                   />
-                  <span>Uniquement les alertes</span>
-                </label>
-              </p>
+                </div>
+              </div>
             </div>
             <div class="col s12 m3">
-              <a
-                routerLink="/debarquements/new"
-                class="btn btn-primary waves-effect"
-                style="margin-top: 1.5rem;"
-              >
-                <i class="material-icons left">add</i>Nouveau
-              </a>
+              <div class="form-input">
+                <label for="date_fin" class="active">Date fin</label>
+                <div class="input-field">
+                  <input
+                    id="date_fin"
+                    type="date"
+                    [(ngModel)]="filters.date_fin"
+                    (change)="applyFilters()"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m3">
+              <div class="form-input">
+                <p style="margin-top: 2.5rem;">
+                  <label>
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="filters.avec_alertes"
+                      (change)="applyFilters()"
+                    />
+                    <span>Uniquement les alertes</span>
+                  </label>
+                </p>
+              </div>
+            </div>
+            <div class="col s12 m3">
+              <div class="form-input">
+                <a
+                  routerLink="/debarquements/new"
+                  class="btn btn-primary waves-effect"
+                  style="margin-top: 1.5rem;"
+                >
+                  <i class="material-icons left">add</i>Nouveau
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -74,7 +84,7 @@ declare var M: any;
       <!-- Résultats -->
       <div class="card" *ngIf="!loading">
         <div class="card-content">
-          <span class="card-title">{{ totalData }} Capture(s)</span>
+          <span class="card-title">{{ totalData }} débarquement(s)</span>
           <div class="table-responsive">
             <table class="highlight responsive-table">
               <thead>
@@ -82,8 +92,8 @@ declare var M: any;
                   <th>N° Débarquement</th>
                   <th>Date</th>
                   <th>Débarcadère</th>
-                  <th>Pêcheur</th>
-                  <th>Bateau</th>
+                  <!-- <th>Pêcheur</th>
+                  <th>Bateau</th> -->
                   <th>Quantité</th>
                   <th>Valeur</th>
                   <th>Alertes</th>
@@ -99,8 +109,8 @@ declare var M: any;
                     {{ deb.date_debarquement | date: "dd/MM/yyyy HH:mm" }}
                   </td>
                   <td>{{ deb.debarcadere_nom }}</td>
-                  <td>{{ deb.pecheur_nom }}</td>
-                  <td>{{ deb.bateau_immatriculation }}</td>
+                  <!-- <td>{{ deb.pecheur_nom }}</td>
+                  <td>{{ deb.bateau_immatriculation }}</td> -->
                   <td>{{ deb.total_quantite_kg }} kg</td>
                   <td>{{ deb.total_valeur || 0 | number: "1.0-0" }} FCFA</td>
                   <td>
@@ -218,6 +228,7 @@ export class DebarquementListComponent implements OnInit {
         // console.log(data);
         this.debarquements = data.result;
         this.totalData = data.total;
+        this.sortByDate();
         this.loading = false;
       },
       error: (err) => {
@@ -226,6 +237,14 @@ export class DebarquementListComponent implements OnInit {
         M.toast({ html: "Erreur", classes: "red" });
       },
     });
+  }
+
+  sortByDate() {
+    this.debarquements.sort(
+      (a, b) =>
+        new Date(a.date_debarquement).getTime() -
+        new Date(b.date_debarquement).getTime(),
+    );
   }
 
   // get paginatedData() {

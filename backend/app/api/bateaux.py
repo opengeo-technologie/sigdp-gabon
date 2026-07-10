@@ -1,5 +1,6 @@
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import time
@@ -16,6 +17,7 @@ from fastapi import (
     Query,
 )
 import pandas as pd
+from sqlalchemy import and_, asc, desc, extract, func, or_
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import date
@@ -36,8 +38,24 @@ from app.schemas.bateau import (
     EquipageCreate,
 )
 from app.models.engin_peche import EnginPeche
+from app.models.debarquement import Debarquement, DetailDebarquement
 
 router = APIRouter(prefix="/api/bateaux", tags=["Bateaux"])
+
+LIST_MONTHS = [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Decembre",
+]
 
 # Configuration upload
 UPLOAD_DIR = Path("uploads/bateaux")
@@ -45,6 +63,12 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Taille max photo: 5MB
 MAX_PHOTO_SIZE = 5 * 1024 * 1024
+
+# Configuration upload
+ERRORS_DIR = Path("errors/bateaux")
+ERRORS_DIR.mkdir(parents=True, exist_ok=True)
+
+ERROR_FILE = ERRORS_DIR / "errors.xlsx"
 
 
 def save_photo(photo: UploadFile, bateau_id: int) -> str:
@@ -218,6 +242,23 @@ def build_bateau_response(bateau: BateauBase, db: Session) -> BateauResponse:
     return BateauResponse(**bateau_dict)
 
 
+def save_errors(errors: list[dict], header: list[str]):
+    new_df = pd.DataFrame(errors)
+    new_df = (
+        new_df[header + ["error_message"]]
+        if all(h in new_df.columns for h in header)
+        else new_df
+    )
+
+    if os.path.exists(ERROR_FILE):
+        existing_df = pd.read_excel(ERROR_FILE)
+        final_df = pd.concat([existing_df, new_df], ignore_index=True)
+    else:
+        final_df = new_df
+
+    final_df.to_excel(ERROR_FILE, index=False, header=True)
+
+
 @router.post("/upload-excel")
 async def upload_bateau_excel(
     file: UploadFile = File(...), db: Session = Depends(get_db)
@@ -273,7 +314,7 @@ async def upload_bateau_excel(
             "puissance_cv",
             "nombre_equipage",
             "nom_proprietaire",
-            "prenom_propriétaire",
+            "prenom_proprietaire",
             "type_bateau",
             "propulseur",
             "cooperative_armement",
@@ -305,97 +346,134 @@ async def upload_bateau_excel(
         # Insérer les données dans la base de données
         for _, row in df.iterrows():
 
-            cooperative_armement = (
-                db.query(ArmementCooperative)
+            bateau = (
+                db.query(Bateau)
                 .filter(
-                    ArmementCooperative.sigle.ilike(
-                        f"%{row['cooperative_armement'].strip().lower()}%"
-                    ),
+                    Bateau.numero_immatriculation == str(row["immatriculation"]).strip()
                 )
                 .first()
             )
 
-            proprietaire = (
-                db.query(Pecheur)
-                .filter(
-                    Pecheur.nom.ilike(f"%{row['nom_proprietaire'].strip().lower()}%"),
-                    Pecheur.prenom.ilike(
-                        f"%{row['prenom_propriétaire'].strip().lower()}%"
-                    ),
-                )
-                .first()
-            )
+            if not bateau:
 
-            site_attache = (
-                db.query(Debarcadere)
-                .filter(
-                    Debarcadere.denomination.ilike(f"%{row['site_attache'].strip()}%")
-                )
-                .first()
-            )
-            liste_sites_obligatoires = [
-                s.strip() for s in row["site_obligatoire"].split("/") if s.strip()
-            ]
-
-            site_obligatoires = []
-            for site in liste_sites_obligatoires:
-                site_obligatoire = (
-                    db.query(Debarcadere)
-                    .filter(Debarcadere.denomination.ilike(f"%{site.strip()}%"))
+                cooperative_armement = (
+                    db.query(ArmementCooperative)
+                    .filter(
+                        or_(
+                            func.lower(func.trim(ArmementCooperative.sigle))
+                            == str(row["cooperative_armement"]).strip().lower(),
+                            func.lower(func.trim(ArmementCooperative.denomination))
+                            == str(row["cooperative_armement"]).strip().lower(),
+                        )
+                    )
                     .first()
                 )
-                if site_obligatoire:
-                    site_obligatoires.append(site_obligatoire.id)
 
-            engin_peche_principal = (
-                db.query(EnginPeche)
-                .filter(EnginPeche.libelle == row["engin_peche1"].strip())
-                .first()
-            )
+                proprietaire = (
+                    db.query(Pecheur)
+                    .filter(
+                        and_(
+                            func.lower(func.trim(Pecheur.nom))
+                            == str(row["nom_proprietaire"]).strip().lower(),
+                            func.lower(func.trim(Pecheur.prenom))
+                            == str(row["prenom_proprietaire"]).strip().lower(),
+                        ),
+                    )
+                    .first()
+                )
 
-            engin_peche_secondaire = (
-                db.query(EnginPeche)
-                .filter(EnginPeche.libelle == row["engin_peche2"].strip())
-                .first()
-            )
+                site_attache = (
+                    db.query(Debarcadere)
+                    .filter(
+                        func.lower(func.trim(Debarcadere.denomination))
+                        == str(row["site_attache"]).strip().lower()
+                    )
+                    .first()
+                )
+                liste_sites_obligatoires = [
+                    s.strip() for s in row["site_obligatoire"].split("/") if s.strip()
+                ]
 
-            bateau_data = BateauCreate(
-                numero_immatriculation=row["immatriculation"].strip(),
-                nom_bateau=row["nom"].strip(),
-                type_bateau=row["type_bateau"],
-                propulsion=row["propulseur"],
-                longueur_hors_tout=0,
-                largeur=0,
-                tirant_eau=0,
-                jauge_brute=0,
-                moteur_marque=None,
-                moteur_puissance_cv=row["puissance_cv"],
-                moteur_type_carburant=None,
-                moteur_numero_serie=None,
-                materiau_coque=row["materiau_coque"].strip(),
-                annee_construction=row["annee_construction"],
-                chantier_construction=None,
-                proprietaire_pecheur_id=proprietaire.id if proprietaire else None,
-                cooperative_armement_id=(
-                    cooperative_armement.id if cooperative_armement else None
-                ),
-                proprietaire_nom=row["nom_proprietaire"],
-                nombre_equipage=row["nombre_equipage"],
-                site_port_attache=site_attache.id if site_attache else None,
-                site_obligatoire=",".join(str(s) for s in site_obligatoires),
-                engins_peche_principal=(
-                    engin_peche_principal.id if engin_peche_principal else None
-                ),
-                engins_peche_secondaires=(
-                    str(engin_peche_secondaire.id) if engin_peche_secondaire else None
-                ),
-            )
+                site_obligatoires = []
+                for site in liste_sites_obligatoires:
+                    site_obligatoire = (
+                        db.query(Debarcadere)
+                        .filter(
+                            func.lower(func.trim(Debarcadere.denomination))
+                            == str(site).strip().lower()
+                        )
+                        .first()
+                    )
+                    if site_obligatoire:
+                        site_obligatoires.append(site_obligatoire.id)
 
-            bateau = Bateau(**bateau_data.model_dump())
-            db.add(bateau)
-            db.commit()
+                engin_peche_principal = (
+                    db.query(EnginPeche)
+                    .filter(EnginPeche.libelle == row["engin_peche1"].strip())
+                    .first()
+                )
 
-        return {"message": "Fichier Excel traité avec succès"}
+                engin_peche_secondaire = (
+                    db.query(EnginPeche)
+                    .filter(EnginPeche.libelle == row["engin_peche2"].strip())
+                    .first()
+                )
+
+                try:
+                    bateau_data = BateauCreate(
+                        numero_immatriculation=row["immatriculation"].strip(),
+                        nom_bateau=row["nom"].strip(),
+                        type_bateau=row["type_bateau"],
+                        propulsion=row["propulseur"],
+                        longueur_hors_tout=0,
+                        largeur=0,
+                        tirant_eau=0,
+                        jauge_brute=0,
+                        moteur_marque=None,
+                        moteur_puissance_cv=row["puissance_cv"],
+                        moteur_type_carburant=None,
+                        moteur_numero_serie=None,
+                        materiau_coque=row["materiau_coque"].strip(),
+                        annee_construction=row["annee_construction"],
+                        chantier_construction=None,
+                        proprietaire_pecheur_id=(
+                            proprietaire.id if proprietaire else None
+                        ),
+                        cooperative_armement_id=(
+                            cooperative_armement.id if cooperative_armement else None
+                        ),
+                        proprietaire_nom=row["nom_proprietaire"],
+                        nombre_equipage=row["nombre_equipage"],
+                        site_port_attache=site_attache.id if site_attache else None,
+                        site_obligatoire=",".join(str(s) for s in site_obligatoires),
+                        engins_peche_principal=(
+                            engin_peche_principal.id if engin_peche_principal else None
+                        ),
+                        engins_peche_secondaires=(
+                            str(engin_peche_secondaire.id)
+                            if engin_peche_secondaire
+                            else None
+                        ),
+                    )
+
+                    bateau = Bateau(**bateau_data.model_dump())
+                    db.add(bateau)
+                    db.commit()
+                except Exception as e:
+                    db.rollback()
+                    error_row = row.to_dict()
+                    error_row["error_message"] = str(e)
+                    errors.append(error_row)
+
+        header = df.columns.tolist()
+        if errors:
+            save_errors(errors, header)
+
+        return {
+            "inserted": len(df) - len(errors),
+            "failed": len(errors),
+            "error_file": ERROR_FILE if errors else None,
+        }
 
     except pd.errors.EmptyDataError:
         raise HTTPException(
@@ -456,52 +534,31 @@ def get_bateau(bateau_id: int, db: Session = Depends(get_db)):
     return build_bateau_response(bateau, db)
 
 
-@router.get("/immatriculation/{numero}", response_model=BateauResponse)
+@router.get("/dropdown-list/list/data")
+def get_bateau_simple_list(db: Session = Depends(get_db)):
+    bateaux = db.query(Bateau).all()
+    result = []
+    for bateau in bateaux:
+        result.append(
+            {
+                "id": bateau.id,
+                "numero_immatriculation": bateau.numero_immatriculation,
+                "nom_bateau": bateau.nom_bateau,
+            }
+        )
+    return result
+
+
+@router.get("/immatriculation/{numero}")
 def get_bateau_by_immatriculation(numero: str, db: Session = Depends(get_db)):
     """
     Récupérer un bateau par son numéro d'immatriculation
     """
-    bateau = db.query(Bateau).filter(Bateau.numero_immatriculation == numero).first()
+    bateaux = db.query(Bateau).filter(Bateau.numero_immatriculation.ilike(numero)).all()
 
-    if not bateau:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bateau avec immatriculation {numero} introuvable",
-        )
+    result = [build_bateau_response(l, db) for l in bateaux]
 
-    bateau_dict = BateauInDB.from_orm(bateau).model_dump()
-    bateau_dict["certificat_valide"] = is_certificat_valide(
-        bateau.certificat_navigabilite_date_expiration
-    )
-
-    if bateau.proprietaire_pecheur_id:
-        proprietaire = (
-            db.query(Pecheur)
-            .filter(Pecheur.id == bateau.proprietaire_pecheur_id)
-            .first()
-        )
-        if proprietaire:
-            bateau_dict["proprietaire_info"] = {
-                "id": proprietaire.id,
-                "nom": proprietaire.nom,
-                "prenom": proprietaire.prenom,
-                "numero_carte": proprietaire.numero_carte,
-            }
-
-    if bateau.cooperative_armement_id:
-        cooperative_armement = (
-            db.query(ArmementCooperative)
-            .filter(ArmementCooperative.id == bateau.cooperative_armement_id)
-            .first()
-        )
-        if cooperative_armement:
-            bateau_dict["cooperative_armement_info"] = {
-                "id": cooperative_armement.id,
-                "denomination": cooperative_armement.denomination,
-                "code": cooperative_armement.code,
-            }
-
-    return BateauResponse(**bateau_dict)
+    return result
 
 
 @router.post("", response_model=BateauResponse, status_code=status.HTTP_201_CREATED)
@@ -1076,6 +1133,86 @@ def update_bateau_with_photo(
         addEquipage(bateau_id, len(equipage_list), equipage_list, db)
 
     return BateauResponse(**bateau_dict)
+
+
+@router.get("/statistiques/{bateau_id}")
+def get_statistiques_bateau(
+    bateau_id: int, annee: int = Query(2020, ge=1), db: Session = Depends(get_db)
+):
+    """
+    Liste des captures par mois
+    """
+
+    # if filtre == "province":
+    evolution_data = []
+
+    resultats = (
+        db.query(
+            extract("year", Debarquement.date_debarquement).label("annee"),
+            extract("month", Debarquement.date_debarquement).label("mois"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+                Debarquement.bateau_id == bateau_id,
+            )
+        )
+        .group_by("annee", "mois")
+        .order_by("annee", "mois")
+        .all()
+    )
+
+    periodes = [
+        {
+            "mois": LIST_MONTHS[int(r.mois) - 1],
+            "periode": f"{int(r.annee)}-{int(r.mois):02d}",
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats
+    ]
+
+    # evolution_data.append({"evolution": periodes})
+
+    resultats_par_zone = (
+        db.query(
+            Debarquement.zone_peche_nom.label("zone_peche"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+                Debarquement.bateau_id == bateau_id,
+            )
+        )
+        .group_by("zone_peche")
+        .order_by(asc("zone_peche"), desc("quantite_kg"))
+        .all()
+    )
+
+    data = [
+        {
+            "zone_peche": r.zone_peche,
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats_par_zone
+    ]
+
+    return {"evolution": periodes, "par_zone": data}
 
 
 def addEquipage(

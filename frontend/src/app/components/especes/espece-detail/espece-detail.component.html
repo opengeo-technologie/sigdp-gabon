@@ -1,0 +1,203 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">set_meal</i> Détails de l'espèce</h1>
+  </div>
+</div>
+
+<div class="container-fluid" *ngIf="espece">
+  <div class="row">
+    <div class="col s12">
+      <div class="btn-group" role="group">
+        <a routerLink="/especes" class="btn btn-flat waves-effect">
+          <i class="material-icons left">arrow_back</i>Retour
+        </a>
+        <a
+          [routerLink]="['/especes', espece.id, 'edit']"
+          class="btn btn-primary waves-effect"
+        >
+          <i class="material-icons left">edit</i>Modifier
+        </a>
+        <a (click)="deleteEspece()" class="btn red waves-effect">
+          <i class="material-icons left">delete</i>Supprimer
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 l8">
+      <div class="card">
+        <div
+          class="card-image"
+          *ngIf="espece.photo_url"
+          style="max-height: 200px"
+        >
+          <img
+            [src]="url + espece.photo_url"
+            alt="{{ espece.nom_commun_francais }}"
+            onerror="this.style.display = 'none'"
+            style="max-height: 200px; object-fit: contain"
+          />
+        </div>
+        <div class="card-content">
+          <span class="card-title">
+            {{ espece.nom_commun_francais }}
+            <span class="badge" [ngClass]="getStatutClass()">{{
+              espece.statut_reglementaire
+            }}</span>
+          </span>
+
+          <p>
+            <strong>Nom scientifique:</strong>
+            <em>{{ espece.nom_scientifique }}</em>
+          </p>
+          <p><strong>Code:</strong> {{ espece.code_espece }}</p>
+          <p><strong>Catégorie:</strong> {{ espece.categorie }}</p>
+
+          <div
+            class="divider"
+            *ngIf="espece.nom_commun_fang || espece.nom_commun_myene"
+          ></div>
+
+          <div *ngIf="espece.nom_commun_fang || espece.nom_commun_myene">
+            <h6>Noms locaux</h6>
+            <p *ngIf="espece.nom_commun_fang">
+              <strong>Fang:</strong> {{ espece.nom_commun_fang }}
+            </p>
+            <p *ngIf="espece.nom_commun_myene">
+              <strong>Myènè:</strong> {{ espece.nom_commun_myene }}
+            </p>
+          </div>
+
+          <div class="divider"></div>
+
+          <h6>Réglementation</h6>
+          <p *ngIf="espece.taille_minimale_legale_cm">
+            <strong>Taille minimale légale:</strong>
+            {{ espece.taille_minimale_legale_cm }} cm
+          </p>
+          <p *ngIf="espece.quota_mensuel_tonnes">
+            <strong>Quota mensuel:</strong>
+            {{ espece.quota_mensuel_tonnes }} tonnes
+          </p>
+          <p *ngIf="espece.quota_annuel_tonnes">
+            <strong>Quota annuel:</strong>
+            {{ espece.quota_annuel_tonnes }} tonnes
+          </p>
+
+          <div class="divider" *ngIf="espece.prix_reference_kg_min"></div>
+
+          <div *ngIf="espece.prix_reference_kg_min">
+            <h6>Valeur commerciale</h6>
+            <p>
+              <strong>Prix de référence:</strong>
+              {{ espece.prix_reference_kg_min }} -
+              {{ espece.prix_reference_kg_max }} FCFA/kg
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 l4">
+      <div class="card" *ngIf="espece.statut_reglementaire === 'Protégé'">
+        <div class="card-content red lighten-5">
+          <span class="card-title red-text">
+            <i class="material-icons left">warning</i>Espèce protégée
+          </span>
+          <p>La capture de cette espèce est strictement interdite.</p>
+        </div>
+      </div>
+
+      <div class="card" *ngIf="espece.statut_reglementaire === 'Sous quota'">
+        <div class="card-content orange lighten-5">
+          <span class="card-title orange-text">
+            <i class="material-icons left">info</i>Sous quota
+          </span>
+          <p>Captures limitées par un système de quotas.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Informations système</span>
+          <p>
+            <small
+              ><strong>Créé le:</strong>
+              {{ espece.created_at | date: "dd/MM/yyyy" }}</small
+            >
+          </p>
+          <p *ngIf="espece.updated_at">
+            <small
+              ><strong>Modifié le:</strong>
+              {{ espece.updated_at | date: "dd/MM/yyyy" }}</small
+            >
+          </p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title center">
+            <i class="material-icons left">trending_up</i>
+            Production par zone de pêche de l'espèce
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYear"
+                (change)="refreshPieChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="captureZoneData && captureZoneData.length != 0"
+              >
+                <canvas id="pieChart"></canvas>
+              </div>
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="captureZoneData && captureZoneData.length == 0"
+              >
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="spinner-container" *ngIf="!espece">
+  <div class="preloader-wrapper big active">
+    <div class="spinner-layer spinner-blue-only">
+      <div class="circle-clipper left"><div class="circle"></div></div>
+      <div class="gap-patch"><div class="circle"></div></div>
+      <div class="circle-clipper right"><div class="circle"></div></div>
+    </div>
+  </div>
+</div>

@@ -22,4 +22,6 @@ export interface ArmementCooperative {
   province: string;
   departement: string;
   localite: string;
+  count_bateaux: number;
+  count_pecheurs: number;
 }

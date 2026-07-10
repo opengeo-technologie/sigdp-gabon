@@ -1,0 +1,19 @@
+h6 {
+  color: #0d47a1;
+  font-weight: 500;
+}
+.divider {
+  margin: 1.5rem 0;
+}
+.badge.Libre {
+  background-color: #4caf50;
+  color: white;
+}
+.badge.Protégé {
+  background-color: #f44336;
+  color: white;
+}
+.badge.Sous-quota {
+  background-color: #ff9800;
+  color: white;
+}

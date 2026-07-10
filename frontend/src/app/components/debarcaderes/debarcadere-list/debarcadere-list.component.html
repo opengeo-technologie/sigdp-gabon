@@ -83,6 +83,7 @@
         <div class="col s12 m3">
           <a
             routerLink="/debarcaderes/new"
+            *appHasPermission="['debarcadere.create']"
             class="btn btn-primary waves-effect waves-light"
             style="margin-top: 1.5rem"
           >
@@ -113,7 +114,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let deb of paginatedData">
+            <tr *ngFor="let deb of debarcaderes">
               <td>
                 {{ deb.denomination }}
                 <br />
@@ -139,24 +140,28 @@
                 </span>
               </td>
               <td>
-                <a
-                  [routerLink]="['/debarcaderes', deb.id]"
-                  class="btn-small btn-flat waves-effect"
-                >
-                  <i class="material-icons">visibility</i>
-                </a>
-                <a
-                  [routerLink]="['/debarcaderes', deb.id, 'edit']"
-                  class="btn-small btn-flat waves-effect"
-                >
-                  <i class="material-icons">edit</i>
-                </a>
-                <a
-                  (click)="deleteDebarcadere(deb)"
-                  class="btn-small btn-flat waves-effect red-text"
-                >
-                  <i class="material-icons">delete</i>
-                </a>
+                <div class="btn-group" role="group">
+                  <a
+                    [routerLink]="['/debarcaderes', deb.id]"
+                    class="btn-small btn green white-text btn-flat waves-effect"
+                  >
+                    <i class="material-icons">visibility</i>
+                  </a>
+                  <a
+                    [routerLink]="['/debarcaderes', deb.id, 'edit']"
+                    *appHasPermission="['debarcadere.update']"
+                    class="btn-small btn blue white-text btn-flat waves-effect"
+                  >
+                    <i class="material-icons">edit</i>
+                  </a>
+                  <a
+                    (click)="deleteDebarcadere(deb)"
+                    *appHasPermission="['debarcadere.delete']"
+                    class="btn-small btn red white-text btn-flat waves-effect"
+                  >
+                    <i class="material-icons">delete</i>
+                  </a>
+                </div>
               </td>
             </tr>
             <tr *ngIf="debarcaderes.length === 0">

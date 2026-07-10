@@ -9,6 +9,7 @@ class DebarcadereType(str, enum.Enum):
     OFFICIEL = "Officiel"
     INFORMEL = "Informel"
     SAISONNIER = "Saisonnier"
+    CAPA = "Centre d'Appui à la Pêche Artisanale"
 
 
 class Milieu(str, enum.Enum):

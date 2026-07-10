@@ -1,0 +1,287 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">storefront</i>Détails mareyeur</h1>
+  </div>
+</div>
+<div class="container" style="width: 95%; max-width: none" *ngIf="mareyeur">
+  <div class="row" style="margin-bottom: 0">
+    <div class="col s12 m12">
+      <a
+        class="btn waves-effect orange"
+        [routerLink]="['/mareyeurs/edit', mareyeur.id]"
+      >
+        <i class="material-icons left">edit</i>Modifier
+      </a>
+      <a
+        class="btn waves-effect green"
+        (click)="imprimerCarte()"
+        style="margin-left: 5px"
+        *ngIf="checkAgrementDelivre()"
+      >
+        <i class="material-icons left">print</i>Imprimer carte
+      </a>
+      <a
+        class="btn waves-effect green disabled-link"
+        (click)="imprimerCarte()"
+        style="margin-left: 5px"
+        *ngIf="!checkAgrementDelivre()"
+      >
+        <i class="material-icons left">print</i>Imprimer carte
+      </a>
+      <a
+        class="btn-flat waves-effect red white-text"
+        [routerLink]="['/mareyeurs']"
+        style="margin-left: 5px"
+      >
+        <i class="material-icons left">arrow_back</i>Liste
+      </a>
+    </div>
+  </div>
+
+  <!-- Fiche -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m12">
+          <h5>
+            {{ nomAffiche() }}
+            <span class="grey-text" style="font-size: 1rem"
+              >— {{ mareyeur.code }}</span
+            >
+          </h5>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m4">
+          <p>
+            <strong>Type :</strong>
+            {{
+              mareyeur.type_personne === "morale"
+                ? "Personne morale"
+                : "Personne physique"
+            }}
+          </p>
+          <p>
+            <strong>Statut :</strong>
+            <span class="badge-statut" [ngClass]="'statut-' + mareyeur.statut">
+              {{ LIBELLES_STATUT_MAREYEUR[mareyeur.statut] || mareyeur.statut }}
+            </span>
+          </p>
+          <p *ngIf="mareyeur.nif"><strong>NIF :</strong> {{ mareyeur.nif }}</p>
+          <p *ngIf="mareyeur.rccm">
+            <strong>RCCM :</strong> {{ mareyeur.rccm }}
+          </p>
+        </div>
+        <div class="col s12 m4">
+          <p *ngIf="mareyeur.telephone">
+            <strong>Téléphone :</strong> {{ mareyeur.telephone }}
+          </p>
+          <p *ngIf="mareyeur.email">
+            <strong>Email :</strong> {{ mareyeur.email }}
+          </p>
+          <p *ngIf="mareyeur.adresse">
+            <strong>Adresse :</strong> {{ mareyeur.adresse }}
+          </p>
+        </div>
+        <div class="col s12 m4">
+          <p *ngIf="mareyeur.zones_activite">
+            <strong>Zones d'activité :</strong> {{ mareyeur.zones_activite }}
+          </p>
+          <p *ngIf="mareyeur.sites_debarquement">
+            <strong>Sites de débarquement :</strong>
+            {{ mareyeur.sites_debarquement }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agréments -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row valign-wrapper" style="margin-bottom: 0">
+        <div class="col s8">
+          <span class="card-title">
+            <i class="material-icons left">verified</i>Agréments de mareyage
+          </span>
+        </div>
+        <div class="col s4 right-align">
+          <button
+            class="btn waves-effect waves-light"
+            (click)="afficherFormAgrement = !afficherFormAgrement"
+          >
+            <i class="material-icons left">add</i>Nouvelle demande
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulaire de demande d'agrément -->
+      <div
+        class="row grey lighten-4"
+        *ngIf="afficherFormAgrement"
+        style="padding: 10px; border-radius: 4px; margin-top: 10px"
+      >
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label>Catégorie</label>
+            <div class="input-field">
+              <select
+                id="nouvelle-categorie"
+                (change)="onCategorieChange($event)"
+                class="browser-default"
+              >
+                <option value="mareyeur_simple" selected>
+                  Mareyeur artisan
+                </option>
+                <option value="mareyeur_grossiste">Mareyeur-grossiste</option>
+                <option value="mareyeur_exportateur">
+                  Mareyeur-exportateur
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="nouvelle-duree" class="active"
+              >Durée de validité (mois)</label
+            >
+            <div class="input-field">
+              <input
+                id="nouvelle-duree"
+                type="number"
+                min="1"
+                [(ngModel)]="nouvelAgrement.duree_validite_mois"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="nouvelle-redevance" class="active"
+              >Redevance (FCFA)</label
+            >
+            <div class="input-field">
+              <input
+                id="nouvelle-redevance"
+                type="number"
+                min="0"
+                [(ngModel)]="nouvelAgrement.montant_redevance"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m2" style="margin-top: 25px">
+          <button class="btn waves-effect green" (click)="creerAgrement()">
+            <i class="material-icons">check</i>
+          </button>
+        </div>
+      </div>
+
+      <table class="striped responsive-table" *ngIf="agrements.length > 0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Catégorie</th>
+            <th>Délivrance</th>
+            <th>Expiration</th>
+            <th>Redevance</th>
+            <th>Statut</th>
+            <th class="center-align">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of agrements">
+            <td>
+              <strong>{{ a.code }}</strong>
+            </td>
+            <td>
+              {{ LIBELLES_CATEGORIE_AGREMENT[a.categorie] || a.categorie }}
+            </td>
+            <td>{{ a.date_delivrance || "-" }}</td>
+            <td>{{ a.date_expiration || "-" }}</td>
+            <td>
+              {{
+                a.montant_redevance
+                  ? (a.montant_redevance | number: "1.0-0") + " FCFA"
+                  : "-"
+              }}
+            </td>
+            <td>
+              <span class="badge-statut" [ngClass]="'agrement-' + a.statut">
+                {{ LIBELLES_STATUT_AGREMENT[a.statut || ""] || a.statut }}
+              </span>
+            </td>
+            <td class="center-align" style="white-space: nowrap">
+              <!-- en_instruction -> délivrer ou supprimer -->
+              <button
+                *ngIf="a.statut === 'en_instruction'"
+                class="btn-small waves-effect green"
+                title="Délivrer l'agrément"
+                (click)="delivrer(a)"
+              >
+                <i class="material-icons">verified</i>
+              </button>
+              <button
+                class="btn-small waves-effect green"
+                title="Imprimer l'agrément"
+                (click)="imprimerAgrement(a)"
+                style="margin-right: 5px"
+              >
+                <i class="material-icons">print</i>
+              </button>
+              <button
+                *ngIf="a.statut === 'en_instruction'"
+                class="btn-small waves-effect red"
+                title="Supprimer la demande"
+                (click)="supprimerAgrement(a)"
+                style="margin-left: 5px"
+              >
+                <i class="material-icons">delete</i>
+              </button>
+
+              <!-- delivre -> suspendre / retirer / renouveler -->
+              <button
+                *ngIf="a.statut === 'delivre'"
+                class="btn-small waves-effect orange"
+                title="Suspendre"
+                (click)="suspendre(a)"
+              >
+                <i class="material-icons">pause</i>
+              </button>
+              <button
+                *ngIf="a.statut === 'delivre' || a.statut === 'suspendu'"
+                class="btn-small waves-effect red"
+                title="Retirer"
+                (click)="retirer(a)"
+                style="margin-left: 5px"
+              >
+                <i class="material-icons">block</i>
+              </button>
+              <button
+                *ngIf="a.statut === 'delivre' || a.statut === 'expire'"
+                class="btn-small waves-effect blue"
+                title="Renouveler"
+                (click)="renouveler(a)"
+                style="margin-left: 5px"
+              >
+                <i class="material-icons">autorenew</i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p
+        class="grey-text center-align"
+        *ngIf="agrements.length === 0"
+        style="padding: 20px"
+      >
+        Aucun agrément. Cliquez sur « Nouvelle demande » pour en créer un.
+      </p>
+    </div>
+  </div>
+</div>

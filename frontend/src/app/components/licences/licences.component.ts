@@ -24,18 +24,28 @@ export class LicencesComponent {
     statut: "",
     limit: 10,
   };
+  years: number[] = [];
 
   filterParams: any = {};
 
   currentPage = 1;
   rowsPerPage = 10;
   totalData = 0;
+  selectedYear: any;
 
   constructor(
     private licenceService: LicencesAutorisationsService,
     private pdf: AutorisationPechePdfService,
     private imageHelper: ImageHelperService,
-  ) {}
+  ) {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2024; // année de début pour les licences
+    this.selectedYear = startYear;
+    this.years = Array.from(
+      { length: currentYear - startYear + 1 },
+      (_, i) => currentYear - i, // ordre décroissant
+    );
+  }
 
   ngOnInit() {
     this.filterParams.limit = this.filters.limit;
@@ -139,6 +149,13 @@ export class LicencesComponent {
     return type === "Gabonaise" ? "NATIONAL" : "ETRANGER";
   }
 
+  addClassToEditLicenceButton(licence: any): boolean {
+    if (licence.est_active == false || licence.document_scan != null) {
+      return true;
+    }
+    return false;
+  }
+
   async generatePDf(licenceId: number) {
     const logoBase64 = await this.imageHelper.getBase64ImageFromURL(
       "../../../assets/logo.jpg",
@@ -149,7 +166,7 @@ export class LicencesComponent {
         // console.log("Données de la licence:", data);
         // this.pdfService.generateLicencePDF(data);
         this.pdf.open({
-          numero: data.numero_licence.padStart(3, "0"),
+          numero: data.numero_licence,
           anneeValidite: data.annee_validite,
           proprietaireType: this.checkProprietaireType(
             data.proprietaire_info.nationalite,
@@ -176,8 +193,23 @@ export class LicencesComponent {
             cooperative: data.bateau_info.cooperative.denomination || "N/A",
           },
           engins: {
-            engin1: "Senne tournante",
-            especes1: "Sardine",
+            engin1: data.bateau_info.engin_peche_principal
+              ? data.bateau_info.engin_peche_principal.libelle
+              : "N/A",
+            especes1:
+              Array.isArray(data.espece1) && data.espece1.length
+                ? data.espece1.map((e: any) => e.nom_commun).join(", ")
+                : "N/A",
+
+            engin2: data.bateau_info.engin_peche_secondaire
+              ? data.bateau_info.engin_peche_secondaire
+                  .map((e: any) => e.libelle)
+                  .join(", ")
+              : "N/A",
+            especes2:
+              Array.isArray(data.espece2) && data.espece2.length
+                ? data.espece2.map((e: any) => e.nom_commun).join(", ")
+                : "N/A",
             codeBarre: "SIGDP-AUTH-452-2026",
           },
           periodeDebut: data.date_debut
@@ -194,8 +226,8 @@ export class LicencesComponent {
                 year: "numeric",
               })
             : "N/A",
-          montantFcfa: 200000,
-          quittanceTresor: "2419",
+          montantFcfa: data.montant_paye,
+          quittanceTresor: data.reference_paiement,
           faitA: "Libreville",
           dateFait: data.date_emission
             ? new Date(data.date_emission).toLocaleDateString("fr-FR", {
@@ -204,7 +236,9 @@ export class LicencesComponent {
                 year: "numeric",
               })
             : "N/A",
-          signataire: "Brice Didier Celce KOUMBA MABERT",
+          signataire: data.signataire_info.nom_complet,
+          role_signataire: data.signataire_info.role.nom_role,
+          pour_ordre: data.pour_ordre,
           logoBase64: logoBase64,
         });
       },

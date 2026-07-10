@@ -46,6 +46,13 @@ export class DebarcadereFormComponent implements OnInit {
     photo: null,
   };
 
+  types: DebarcadereType[] = [
+    DebarcadereType.OFFICIEL,
+    DebarcadereType.INFORMEL,
+    DebarcadereType.SAISONNIER,
+    DebarcadereType.CAPA,
+  ];
+
   constructor(
     private debarcadereService: DebarcadereService,
     private router: Router,

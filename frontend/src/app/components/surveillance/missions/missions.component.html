@@ -1,0 +1,138 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">dashboard</i> Missions</h1>
+    <p>Missions de surveillance des embarcations</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- Filtres et actions -->
+  <div class="card">
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Type de mission</label>
+            <select
+              [(ngModel)]="filters.type_mission"
+              (change)="applyFilters()"
+              class="browser-default"
+            >
+              <option value="">Type de mission</option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Moyen de contrôle </label>
+            <select
+              [(ngModel)]="filters.moyen_controle"
+              (change)="applyFilters()"
+              class="browser-default"
+            >
+              <option value="">Moyen de contrôle</option>
+            </select>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Date de départ</label>
+            <div class="input-field">
+              <input
+                type="date"
+                [(ngModel)]="filters.date_depart"
+                (change)="applyFilters()"
+                class="browser-default"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <a
+              routerLink="/missions/new"
+              class="btn btn-primary waves-effect waves-light"
+              style="margin-top: 1.5rem"
+            >
+              <i class="material-icons left">add</i>
+              Nouvelle mission
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-content">
+      <span class="card-title">
+        {{ missions.length }} mission(s) trouvé(s)
+      </span>
+      <div class="table-responsive">
+        <table class="highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Date de départ</th>
+              <th>Date de retour</th>
+              <th>Lieu de mission</th>
+              <th>Moyen de contrôle</th>
+              <th>Type de mission</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mission of paginatedData"></tr>
+            <tr *ngIf="missions.length === 0">
+              <td colspan="8" class="center-align">
+                <p class="grey-text">
+                  Aucune mission trouvée avec ces critères
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center" style="padding-top: 20px">
+          <div class="btn-group" role="group">
+            <button
+              (click)="prevPage()"
+              class="btn waves-effect waves-light white darken-4 btn-small"
+              [disabled]="currentPage === 1"
+            >
+              <i class="material-icons" style="color: #000000">chevron_left</i>
+            </button>
+            <span
+              class="page-number"
+              style="margin-left: 10px; margin-right: 10px"
+              >page {{ currentPage }} / {{ totalPages() }}</span
+            >
+            <button
+              (click)="nextPage()"
+              class="btn waves-effect waves-light white btn-small"
+              [disabled]="currentPage === totalPages()"
+            >
+              <i class="material-icons" style="color: #000000">chevron_right</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

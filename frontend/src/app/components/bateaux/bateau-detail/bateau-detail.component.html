@@ -1,0 +1,387 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">directions_boat</i> Détails du bateau
+    </h1>
+  </div>
+</div>
+
+<div class="container-fluid" *ngIf="bateau">
+  <div class="row">
+    <div class="col s12">
+      <div class="btn-group" role="group">
+        <a routerLink="/bateaux" class="btn btn-flat waves-effect">
+          <i class="material-icons left">arrow_back</i>Retour
+        </a>
+        <a
+          [routerLink]="['/bateaux', bateau.id, 'edit']"
+          class="btn btn-primary waves-effect"
+          *appHasPermission="'bateau.update'"
+        >
+          <i class="material-icons left">edit</i>Modifier
+        </a>
+        <a
+          class="btn amber waves-effect"
+          *appHasPermission="'bateau.export'"
+          (click)="printInfoBateau()"
+        >
+          <i class="material-icons left">print</i>imprimer la fiche du bateau
+        </a>
+        <a
+          (click)="deleteBateau()"
+          class="btn red waves-effect"
+          *appHasPermission="'bateau.delete'"
+        >
+          <i class="material-icons left">delete</i>Supprimer
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 l8">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            {{ bateau.nom_bateau || bateau.numero_immatriculation }}
+            <span class="badge" [ngClass]="bateau.statut">{{
+              bateau.statut
+            }}</span>
+          </span>
+
+          <div class="row">
+            <div class="col s12 m6">
+              <p>
+                <strong>Immatriculation:</strong>
+                {{ bateau.numero_immatriculation }}
+              </p>
+              <p><strong>Type:</strong> {{ bateau.type_bateau }}</p>
+              <p><strong>Propulsion:</strong> {{ bateau.propulsion }}</p>
+              <p><strong>Matériau:</strong> {{ bateau.materiau_coque }}</p>
+            </div>
+            <div class="col s12 m6">
+              <p>
+                <strong>Longueur:</strong> {{ bateau.longueur_hors_tout }} m
+              </p>
+              <p><strong>Largeur:</strong> {{ bateau.largeur }} m</p>
+              <p><strong>Jauge:</strong> {{ bateau.jauge_brute }} t</p>
+            </div>
+          </div>
+
+          <div class="divider" *ngIf="bateau.proprietaire_info"></div>
+          <div class="row">
+            <div class="col s12 m6" *ngIf="bateau.proprietaire_info">
+              <h6>Propriétaire</h6>
+              <p>
+                {{ bateau.proprietaire_info.nom }}
+                {{ bateau.proprietaire_info.prenom }}
+              </p>
+              <p>
+                <small>{{ bateau.proprietaire_info.numero_carte }}</small>
+              </p>
+              <a
+                [routerLink]="['/pecheurs', bateau.proprietaire_info.id]"
+                class="btn-small"
+                *appHasPermission="'pecheur.read'"
+              >
+                Voir fiche pêcheur
+              </a>
+            </div>
+            <div class="col s12 m6" *ngIf="bateau.cooperative_armement_info">
+              <h6>Coopérative / Armement</h6>
+              <p>{{ bateau.cooperative_armement_info.denomination }}</p>
+              <p>
+                <small>{{ bateau.cooperative_armement_info.code }}</small>
+              </p>
+              <a
+                [routerLink]="[
+                  '/armements-cooperatives',
+                  bateau.cooperative_armement_info.id,
+                ]"
+                class="btn-small"
+                *appHasPermission="'armement.update'"
+              >
+                Voir fiche de la coopérative ou armement
+              </a>
+            </div>
+          </div>
+
+          <div class="divider" *ngIf="bateau.site_port_attache_info"></div>
+
+          <div class="row">
+            <div class="col s12 m6" *ngIf="bateau.site_port_attache_info">
+              <h6>Site d'attache / Port d'attache</h6>
+              <p>
+                {{ bateau.site_port_attache_info.nom }} -
+                {{ bateau.site_port_attache_info.localisation }}
+              </p>
+            </div>
+            <div
+              class="col s12 m6"
+              *ngIf="
+                bateau.site_obligatoire_info &&
+                bateau.site_obligatoire_info.length > 0
+              "
+            >
+              <h6>Site de débarquement</h6>
+              @for (site of bateau.site_obligatoire_info; track site.id) {
+                <p>{{ site.nom }} - {{ site.localisation }}</p>
+              }
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="row">
+            <div class="col s12 m12" *ngIf="bateau.photo_url">
+              <h6 class="mt-2">Photo bateau</h6>
+              <div *ngIf="bateau.photo_url">
+                <img
+                  [src]="url + bateau.photo_url"
+                  alt="Photo de {{ bateau.numero_immatriculation }}"
+                  class="responsive-img"
+                  style="max-width: 200px; border-radius: 8px"
+                />
+              </div>
+            </div>
+            <div class="col s12 m12">
+              <h6 class="mt-2">Engins de pêche</h6>
+              <div class="row">
+                <p *ngFor="let item of listEnginsPeche" class="col s12 m4">
+                  <i
+                    class="material-icons tiny"
+                    *ngIf="
+                      item.id == bateau.engins_peche_principal ||
+                      item.id == bateau.engins_peche_secondaires
+                    "
+                    [class.green-text]="true"
+                  >
+                    check_circle</i
+                  >
+                  <i
+                    class="material-icons tiny"
+                    *ngIf="
+                      item.id != bateau.engins_peche_principal &&
+                      item.id != bateau.engins_peche_secondaires
+                    "
+                    [class.grey-text]="true"
+                  >
+                    cancel</i
+                  >
+                  {{ item.libelle }}
+                  @if (item.id == bateau.engins_peche_principal) {
+                    <span class="blue-text">(Engin principal)</span>
+                  }
+                  @if (item.id == bateau.engins_peche_secondaires) {
+                    <span class="red-text">(Engin secondaire)</span>
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Evolution des captures mensuelles
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYear"
+                (change)="refreshLineChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="evolutionData && evolutionData.evolution.length != 0"
+              >
+                <canvas id="lineChart"></canvas>
+              </div>
+              <div
+                style="max-width: 600px; margin: 20px auto"
+                *ngIf="evolutionData && evolutionData.evolution.length == 0"
+              >
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col s12 l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Licences</span>
+          <table>
+            <thead>
+              <tr>
+                <th>Numéro</th>
+                <th>Année</th>
+                <th>Etat</th>
+                <th>Montant</th>
+                <th>Détail</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let licence of licences">
+                <td>{{ licence.numero_licence }}</td>
+                <td>{{ licence.annee }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="
+                      licence.est_active ? 'green white-text' : 'red white-text'
+                    "
+                  >
+                    {{ licence.est_active ? "Valide" : "Expiré" }}
+                  </span>
+                </td>
+                <td>{{ licence.montant || 0 }}</td>
+                <td>
+                  <a
+                    (click)="generatePDf(licence.id)"
+                    class="btn-small btn-flat waves-effect"
+                    title="Voir détails"
+                  >
+                    <i class="material-icons">visibility</i>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Sécurité</span>
+          <p>
+            <i
+              class="material-icons tiny"
+              [class.green-text]="bateau.equipement_gilets_sauvetage"
+            >
+              {{
+                bateau.equipement_gilets_sauvetage ? "check_circle" : "cancel"
+              }}</i
+            >
+            Gilets
+          </p>
+          <p>
+            <i
+              class="material-icons tiny"
+              [class.green-text]="bateau.equipement_extincteur"
+            >
+              {{ bateau.equipement_extincteur ? "check_circle" : "cancel" }}</i
+            >
+            Extincteur
+          </p>
+          <p>
+            <i
+              class="material-icons tiny"
+              [class.green-text]="bateau.equipement_radio_vhf"
+            >
+              {{ bateau.equipement_radio_vhf ? "check_circle" : "cancel" }}</i
+            >
+            Radio VHF
+          </p>
+          <p>
+            <i
+              class="material-icons tiny"
+              [class.green-text]="bateau.equipement_gps"
+            >
+              {{ bateau.equipement_gps ? "check_circle" : "cancel" }}</i
+            >
+            GPS
+          </p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons left">trending_up</i>
+            Distribution des Captures par Zone de Pêche
+          </span>
+          <div class="row" *ngIf="loading">
+            <div class="col s12 center-align">
+              <div class="preloader-wrapper active">
+                <div class="spinner-layer spinner-blue-only">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="grey-text">Chargement...</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-input col s12 m12 l12">
+              <label for="year">Année </label>
+              <select
+                class="browser-default"
+                id="year"
+                name="annee_validite"
+                [(ngModel)]="selectedYearCapture"
+                (change)="refreshPieChart()"
+                required
+              >
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12 m12 l12">
+              <div
+                class="pie-container"
+                *ngIf="captureZoneData && captureZoneData.length != 0"
+              >
+                <canvas id="pieChart"></canvas>
+              </div>
+              <div *ngIf="captureZoneData && captureZoneData.length == 0">
+                <h6 class="center red-text">Aucune donnée disponible</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="spinner-container" *ngIf="!bateau">
+  <div class="preloader-wrapper big active">
+    <div class="spinner-layer spinner-blue-only">
+      <div class="circle-clipper left"><div class="circle"></div></div>
+      <div class="gap-patch"><div class="circle"></div></div>
+      <div class="circle-clipper right"><div class="circle"></div></div>
+    </div>
+  </div>
+</div>

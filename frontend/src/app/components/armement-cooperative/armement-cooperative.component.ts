@@ -16,10 +16,13 @@ declare var M: any;
 export class ArmementCooperativeComponent {
   armements: any[] = [];
   cooperatives: any[] = [];
+  localites: any[] = [];
   loading = true;
   searchTerm = "";
   filters = {
     type: "",
+    province: "",
+    localite: "",
     statut: "",
   };
 
@@ -29,6 +32,7 @@ export class ArmementCooperativeComponent {
 
   ngOnInit() {
     this.loadData();
+    this.loadLocalites();
     setTimeout(() => this.initializeMaterialize(), 100);
   }
 
@@ -49,6 +53,8 @@ export class ArmementCooperativeComponent {
 
     if (this.filters.type) filterParams.type_association = this.filters.type;
     if (this.filters.statut) filterParams.statut = this.filters.statut;
+    if (this.filters.province) filterParams.province = this.filters.province;
+    if (this.filters.localite) filterParams.localite = this.filters.localite;
 
     this.armementCooperativeService
       .getArmementsCooperatives(filterParams)
@@ -66,6 +72,20 @@ export class ArmementCooperativeComponent {
             "Erreur lors du chargement des armements coopératives:",
             error,
           );
+          this.loading = false;
+        },
+      });
+  }
+
+  loadLocalites() {
+    this.armementCooperativeService
+      .getLocalitesArmementCooperative()
+      .subscribe({
+        next: (data) => {
+          this.localites = data;
+        },
+        error: (error) => {
+          console.error("Erreur lors du chargement des localités:", error);
           this.loading = false;
         },
       });

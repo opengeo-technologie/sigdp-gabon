@@ -1,0 +1,65 @@
+.mini-map {
+  height: 300px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-item i {
+  font-size: 2.5rem;
+  margin-right: 1rem;
+}
+
+.stat-item div {
+  flex: 1;
+}
+
+.stat-item strong {
+  font-size: 1.8rem;
+  display: block;
+  color: #0d47a1;
+}
+
+.stat-item p {
+  margin: 0;
+  color: #757575;
+  font-size: 0.9rem;
+}
+
+.mt-2 {
+  margin-top: 1rem;
+}
+
+.divider {
+  margin: 1.5rem 0;
+}
+
+h6 {
+  color: #0d47a1;
+  font-weight: 500;
+}
+
+.badge.Maritime {
+  background-color: #2196f3;
+}
+
+.badge.Fluvial {
+  background-color: #4caf50;
+}
+
+.badge.Lagunaire {
+  background-color: #00bcd4;
+}

@@ -12,10 +12,13 @@
       <form (ngSubmit)="onSubmit()" #debarquementForm="ngForm">
         <h5>Informations générales</h5>
         <div class="row">
-          <div class="input-field col s12 m4">
+          <div class="form-input col s12 m4">
+            <label>Débarcadère *</label>
             <select
+              #selectSite
               [(ngModel)]="formData.debarcadere_id"
               name="debarcadere"
+              id="select_debarcadere"
               required
             >
               <option value="" disabled>Choisir</option>
@@ -23,30 +26,37 @@
                 {{ d.denomination }}
               </option>
             </select>
-            <label>Débarcadère *</label>
           </div>
-          <div class="input-field col s12 m4">
+          <div class="form-input col s12 m4">
+            <label>Pêcheur principal *</label>
             <select
+              #selectPecheur
               [(ngModel)]="formData.pecheur_principal_id"
               name="pecheur"
+              id="select_pecheur"
               required
               (change)="onPecheurChange()"
             >
               <option value="" disabled>Choisir</option>
-              <option *ngFor="let p of pecheurs" [value]="p.id">
+              <option *ngFor="let p of filterdPecheurs" [value]="p.id">
                 {{ p.nom }} {{ p.prenom }}
               </option>
             </select>
-            <label>Pêcheur principal *</label>
           </div>
-          <div class="input-field col s12 m4">
-            <select [(ngModel)]="formData.bateau_id" name="bateau" required>
+          <div class="form-input col s12 m4">
+            <label>Bateau *</label>
+            <select
+              #selectBateau
+              [(ngModel)]="formData.bateau_id"
+              id="select_pecheur"
+              name="bateau"
+              required
+            >
               <option value="" disabled>Choisir</option>
               <option *ngFor="let b of bateauxFiltered" [value]="b.id">
                 {{ b.numero_immatriculation }}
               </option>
             </select>
-            <label>Bateau *</label>
           </div>
         </div>
 

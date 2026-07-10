@@ -1,0 +1,11 @@
+h6 {
+  color: #0d47a1;
+  font-weight: 500;
+}
+.divider {
+  margin: 1.5rem 0;
+}
+.badge.Actif {
+  background-color: #4caf50;
+  color: white;
+}

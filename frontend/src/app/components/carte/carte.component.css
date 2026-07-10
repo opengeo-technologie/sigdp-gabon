@@ -3,6 +3,29 @@
   border-radius: 8px;
 }
 
+.total-debarcaderes {
+  font-size: 1.1rem;
+  border: 2px solid #0d47a1;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  color: #000000;
+}
+
+.legende {
+  border: 2px solid #0d47a1;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.legende .card-title {
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+  color: #000000;
+}
+
 .legend-items {
   display: flex;
   gap: 2rem;
@@ -14,11 +37,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .marker-icon {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 3px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -34,6 +58,23 @@
 
 .marker-icon.lagunaire {
   background-color: #00bcd4;
+}
+
+.marker-icon.capal {
+  background-color: #ff0000;
+}
+
+.filtres {
+  border: 2px solid #0d47a1;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.filtres .card-title {
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+  color: #000000;
 }
 
 :host ::ng-deep .leaflet-popup-content-wrapper {
@@ -117,4 +158,46 @@
 
 .modal-content h4 {
   font-size: 15px;
+}
+
+.sidebar-right {
+  position: absolute;
+  top: 0;
+  right: -400px; /* caché hors écran */
+  width: 400px;
+  height: 100%;
+  background: #dae9f8;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s ease;
+  z-index: 1000; /* au-dessus des tuiles Leaflet (400) */
+  overflow-y: auto;
+}
+
+.sidebar-right.open {
+  right: 0; /* glisse en position visible */
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #414851;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.close-btn {
+  cursor: pointer;
+  color: #616161;
+}
+
+.sidebar-content {
+  padding: 16px;
+}
+
+.sidebar-right .sidebar-content tr td {
+  padding: 5px !important;
+  font-size: 12px !important;
 }

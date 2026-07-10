@@ -1,9 +1,11 @@
 import io
+import os
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Query
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import desc, func, or_
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 import secrets
@@ -25,6 +27,12 @@ from app.schemas.debarquement import (
 from app.services.numeric_cleaner import clean_numeric_string, safe_float, safe_int
 
 router = APIRouter(prefix="/api/debarquements", tags=["Débarquements"])
+
+# Configuration upload
+ERRORS_DIR = Path("errors/captures")
+ERRORS_DIR.mkdir(parents=True, exist_ok=True)
+
+ERROR_FILE = ERRORS_DIR / "errors.xlsx"
 
 
 def generate_numero_debarquement() -> str:
@@ -92,17 +100,17 @@ async def upload_captures_excel(
         # Précharger les données de référence pour éviter les requêtes répétées
         especes = db.query(Espece).all()
 
+        errors = []
         # Insérer les données dans la base de données
         for _, row in df.iterrows():
 
-            print(f"Traitement de la ligne: {row.to_dict()}")  # Debug
+            # print(f"Traitement de la ligne: {row.to_dict()}")  # Debug
 
             bateau = (
                 db.query(Bateau)
                 .filter(
-                    Bateau.numero_immatriculation.ilike(
-                        f"%{row['immatriculation_pirogue'].strip()}%"
-                    )
+                    Bateau.numero_immatriculation
+                    == str(row["immatriculation_pirogue"]).strip()
                 )
                 .first()
             )
@@ -110,7 +118,12 @@ async def upload_captures_excel(
             debarquement = (
                 db.query(Debarcadere)
                 .filter(
-                    Debarcadere.nom_local.ilike(f"%{row['sitedebarquement'].strip()}%")
+                    or_(
+                        func.lower(func.trim(Debarcadere.nom_local))
+                        == str(row["sitedebarquement"]).strip().lower(),
+                        func.lower(func.trim(Debarcadere.denomination))
+                        == str(row["sitedebarquement"]).strip().lower(),
+                    )
                 )
                 .first()
             )
@@ -135,41 +148,58 @@ async def upload_captures_excel(
                     }
                     details_selected.append(espece_chosen)
 
-            debarquement_data = DebarquementCreate(
-                # numero_debarquement=generate_numero_debarquement(),
-                bateau_id=bateau.id if bateau else None,
-                pecheur_principal_id=bateau.proprietaire_pecheur_id if bateau else None,
-                date_debarquement=row["retour"],
-                date_depart_peche=row["depart"],
-                zone_peche_nom=row["zone_de_peche"],
-                debarcadere_id=debarquement.id if debarquement else None,
-                details=details_selected,
-            )
+            try:
 
-            # Créer le débarquement
-            deb_data = debarquement_data.model_dump(exclude={"details"})
-            deb_data["numero_debarquement"] = generate_numero_debarquement()
-
-            debarquement = Debarquement(**deb_data)
-            db.add(debarquement)
-            db.flush()
-
-            # Créer les détails
-            details_list = []
-            for detail_data in debarquement_data.details:
-                detail = DetailDebarquement(
-                    debarquement_id=debarquement.id, **detail_data.model_dump()
+                debarquement_data = DebarquementCreate(
+                    # numero_debarquement=generate_numero_debarquement(),
+                    bateau_id=bateau.id if bateau else None,
+                    pecheur_principal_id=(
+                        bateau.proprietaire_pecheur_id if bateau else None
+                    ),
+                    date_debarquement=row["retour"],
+                    date_depart_peche=row["depart"],
+                    zone_peche_nom=row["zone_de_peche"],
+                    debarcadere_id=debarquement.id if debarquement else None,
+                    details=details_selected,
                 )
-                db.add(detail)
-                details_list.append(detail)
 
-            # Vérifier les alertes
-            check_alertes(debarquement, details_list, db)
+                # Créer le débarquement
+                deb_data = debarquement_data.model_dump(exclude={"details"})
+                deb_data["numero_debarquement"] = generate_numero_debarquement()
 
-            db.commit()
-            db.refresh(debarquement)
+                debarquement = Debarquement(**deb_data)
+                db.add(debarquement)
+                db.flush()
 
-        return {"message": "Fichier Excel traité avec succès"}
+                # Créer les détails
+                details_list = []
+                for detail_data in debarquement_data.details:
+                    detail = DetailDebarquement(
+                        debarquement_id=debarquement.id, **detail_data.model_dump()
+                    )
+                    db.add(detail)
+                    details_list.append(detail)
+
+                # Vérifier les alertes
+                check_alertes(debarquement, details_list, db)
+
+                db.commit()
+                db.refresh(debarquement)
+            except Exception as e:
+                db.rollback()
+                error_row = row.to_dict()
+                error_row["error_message"] = str(e)
+                errors.append(error_row)
+
+        header = df.columns.tolist()
+        if errors:
+            save_errors(errors, header)
+
+        return {
+            "inserted": len(df) - len(errors),
+            "failed": len(errors),
+            "error_file": ERROR_FILE if errors else None,
+        }
 
     except pd.errors.EmptyDataError:
         raise HTTPException(
@@ -179,6 +209,23 @@ async def upload_captures_excel(
         raise HTTPException(
             status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
         )
+
+
+def save_errors(errors: list[dict], header: list[str]):
+    new_df = pd.DataFrame(errors)
+    new_df = (
+        new_df[header + ["error_message"]]
+        if all(h in new_df.columns for h in header)
+        else new_df
+    )
+
+    if os.path.exists(ERROR_FILE):
+        existing_df = pd.read_excel(ERROR_FILE)
+        final_df = pd.concat([existing_df, new_df], ignore_index=True)
+    else:
+        final_df = new_df
+
+    final_df.to_excel(ERROR_FILE, index=False, header=True)
 
 
 def check_alertes(debarquement: Debarquement, details: list, db: Session):
@@ -259,22 +306,32 @@ def get_debarquements(
     query = db.query(Debarquement)
 
     if debarcadere_id:
-        query = query.filter(Debarquement.debarcadere_id == debarcadere_id)
+        query = query.filter(Debarquement.debarcadere_id == debarcadere_id).order_by(
+            desc(Debarquement.date_debarquement)
+        )
     if pecheur_id:
-        query = query.filter(Debarquement.pecheur_principal_id == pecheur_id)
+        query = query.filter(Debarquement.pecheur_principal_id == pecheur_id).order_by(
+            desc(Debarquement.date_debarquement)
+        )
     if bateau_id:
-        query = query.filter(Debarquement.bateau_id == bateau_id)
+        query = query.filter(Debarquement.bateau_id == bateau_id).order_by(
+            desc(Debarquement.date_debarquement)
+        )
     if date_debut:
-        query = query.filter(Debarquement.date_debarquement >= date_debut)
+        query = query.filter(Debarquement.date_debarquement >= date_debut).order_by(
+            desc(Debarquement.date_debarquement)
+        )
     if date_fin:
-        query = query.filter(Debarquement.date_debarquement <= date_fin)
+        query = query.filter(Debarquement.date_debarquement <= date_fin).order_by(
+            desc(Debarquement.date_debarquement)
+        )
     if avec_alertes:
         query = query.filter(
             (Debarquement.alerte_espece_protegee == True)
             | (Debarquement.alerte_quota_depasse == True)
             | (Debarquement.alerte_taille_illegale == True)
             | (Debarquement.alerte_bateau_non_conforme == True)
-        )
+        ).order_by(desc(Debarquement.date_debarquement))
 
     # ✅ COMPTER LE TOTAL (AVANT PAGINATION)
     total = query.count()

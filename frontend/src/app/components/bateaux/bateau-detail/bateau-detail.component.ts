@@ -1,5 +1,6 @@
 import { TypeCooperative } from "./../../../models/armement-cooperative.model";
 import { Component, OnInit } from "@angular/core";
+import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { RouterModule, ActivatedRoute, Router } from "@angular/router";
 import { BateauService } from "../../../services/bateau.service";
@@ -8,325 +9,35 @@ import { environment } from "../../../../environments/environment";
 import { HasPermissionDirective } from "../../../directives/has-permission.directive";
 import { LicencesAutorisationsService } from "../../../services/licences-autorisations.service";
 import { AutorisationPechePdfService } from "../../../services/autorisation-pdf.service";
+import { PrintBateauInfoService } from "../../../services/print-bateau-info.service";
 import { ImageHelperService } from "../../../services/image-helper.service";
-
+import { Chart, registerables } from "chart.js";
 declare var M: any;
+
+Chart.register(...registerables);
 
 @Component({
   selector: "app-bateau-detail",
   standalone: true,
-  imports: [CommonModule, RouterModule, HasPermissionDirective],
-  template: `
-    <div class="page-header">
-      <div class="container-fluid">
-        <h1>
-          <i class="material-icons left">directions_boat</i> Détails du bateau
-        </h1>
-      </div>
-    </div>
-
-    <div class="container-fluid" *ngIf="bateau">
-      <div class="row">
-        <div class="col s12">
-          <a routerLink="/bateaux" class="btn btn-flat waves-effect">
-            <i class="material-icons left">arrow_back</i>Retour
-          </a>
-          <a
-            [routerLink]="['/bateaux', bateau.id, 'edit']"
-            class="btn btn-primary waves-effect"
-            *appHasPermission="'bateau.update'"
-          >
-            <i class="material-icons left">edit</i>Modifier
-          </a>
-          <a
-            (click)="deleteBateau()"
-            class="btn red waves-effect"
-            *appHasPermission="'bateau.delete'"
-          >
-            <i class="material-icons left">delete</i>Supprimer
-          </a>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col s12 l8">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                {{ bateau.nom_bateau || bateau.numero_immatriculation }}
-                <span class="badge" [ngClass]="bateau.statut">{{
-                  bateau.statut
-                }}</span>
-              </span>
-
-              <div class="row">
-                <div class="col s12 m6">
-                  <p>
-                    <strong>Immatriculation:</strong>
-                    {{ bateau.numero_immatriculation }}
-                  </p>
-                  <p><strong>Type:</strong> {{ bateau.type_bateau }}</p>
-                  <p><strong>Propulsion:</strong> {{ bateau.propulsion }}</p>
-                  <p><strong>Matériau:</strong> {{ bateau.materiau_coque }}</p>
-                </div>
-                <div class="col s12 m6">
-                  <p *ngIf="bateau.longueur_hors_tout">
-                    <strong>Longueur:</strong> {{ bateau.longueur_hors_tout }} m
-                  </p>
-                  <p *ngIf="bateau.largeur">
-                    <strong>Largeur:</strong> {{ bateau.largeur }} m
-                  </p>
-                  <p *ngIf="bateau.jauge_brute">
-                    <strong>Jauge:</strong> {{ bateau.jauge_brute }} t
-                  </p>
-                </div>
-              </div>
-
-              <div class="divider" *ngIf="bateau.proprietaire_info"></div>
-              <div class="row">
-                <div class="col s12 m6" *ngIf="bateau.proprietaire_info">
-                  <h6>Propriétaire</h6>
-                  <p>
-                    {{ bateau.proprietaire_info.nom }}
-                    {{ bateau.proprietaire_info.prenom }}
-                  </p>
-                  <p>
-                    <small>{{ bateau.proprietaire_info.numero_carte }}</small>
-                  </p>
-                  <a
-                    [routerLink]="['/pecheurs', bateau.proprietaire_info.id]"
-                    class="btn-small"
-                  >
-                    Voir fiche pêcheur
-                  </a>
-                </div>
-                <div
-                  class="col s12 m6"
-                  *ngIf="bateau.cooperative_armement_info"
-                >
-                  <h6>Coopérative / Armement</h6>
-                  <p>{{ bateau.cooperative_armement_info.denomination }}</p>
-                  <p>
-                    <small>{{ bateau.cooperative_armement_info.code }}</small>
-                  </p>
-                  <a
-                    [routerLink]="[
-                      '/armements-cooperatives',
-                      bateau.cooperative_armement_info.id,
-                    ]"
-                    class="btn-small"
-                  >
-                    Voir fiche de la coopérative ou armement
-                  </a>
-                </div>
-              </div>
-
-              <div class="divider" *ngIf="bateau.site_port_attache_info"></div>
-
-              <div class="row">
-                <div class="col s12 m6" *ngIf="bateau.site_port_attache_info">
-                  <h6>Site d'attache / Port d'attache</h6>
-                  <p>
-                    {{ bateau.site_port_attache_info.nom }} -
-                    {{ bateau.site_port_attache_info.localisation }}
-                  </p>
-                </div>
-                <div
-                  class="col s12 m6"
-                  *ngIf="
-                    bateau.site_obligatoire_info &&
-                    bateau.site_obligatoire_info.length > 0
-                  "
-                >
-                  <h6>Site de débarquement</h6>
-                  @for (site of bateau.site_obligatoire_info; track site.id) {
-                    <p>{{ site.nom }} - {{ site.localisation }}</p>
-                  }
-                </div>
-              </div>
-              <div class="divider"></div>
-
-              <div class="row">
-                <div class="col s12 m12" *ngIf="bateau.photo_url">
-                  <h6 class="mt-2">Photo bateau</h6>
-                  <div *ngIf="bateau.photo_url">
-                    <img
-                      [src]="url + bateau.photo_url"
-                      alt="Photo de {{ bateau.numero_immatriculation }}"
-                      class="responsive-img"
-                      style="max-width: 200px; border-radius: 8px;"
-                    />
-                  </div>
-                </div>
-                <div class="col s12 m12">
-                  <h6 class="mt-2">Engins de pêche</h6>
-                  <div class="row">
-                    <p *ngFor="let item of listEnginsPeche" class="col s12 m4">
-                      <i
-                        class="material-icons tiny"
-                        *ngIf="
-                          item.id == bateau.engins_peche_principal ||
-                          item.id == bateau.engins_peche_secondaires
-                        "
-                        [class.green-text]="true"
-                      >
-                        check_circle</i
-                      >
-                      <i
-                        class="material-icons tiny"
-                        *ngIf="
-                          item.id != bateau.engins_peche_principal &&
-                          item.id != bateau.engins_peche_secondaires
-                        "
-                        [class.grey-text]="true"
-                      >
-                        cancel</i
-                      >
-                      {{ item.libelle }}
-                      @if (item.id == bateau.engins_peche_principal) {
-                        <span class="blue-text">(Engin principal)</span>
-                      }
-                      @if (item.id == bateau.engins_peche_secondaires) {
-                        <span class="red-text">(Engin secondaire)</span>
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 l4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Licences</span>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Numéro</th>
-                    <th>Année</th>
-                    <th>Etat</th>
-                    <th>Montant</th>
-                    <th>Détail</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let licence of licences">
-                    <td>{{ licence.numero_licence }}</td>
-                    <td>{{ licence.annee }}</td>
-                    <td>
-                      <span
-                        class="badge"
-                        [ngClass]="
-                          licence.est_active
-                            ? 'green white-text'
-                            : 'red white-text'
-                        "
-                      >
-                        {{ licence.est_active ? "Valide" : "Expiré" }}
-                      </span>
-                    </td>
-                    <td>{{ licence.montant || 0 }}</td>
-                    <td>
-                      <a
-                        (click)="generatePDf(licence.id)"
-                        class="btn-small btn-flat waves-effect"
-                        title="Voir détails"
-                      >
-                        <i class="material-icons">visibility</i>
-                      </a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Sécurité</span>
-              <p>
-                <i
-                  class="material-icons tiny"
-                  [class.green-text]="bateau.equipement_gilets_sauvetage"
-                >
-                  {{
-                    bateau.equipement_gilets_sauvetage
-                      ? "check_circle"
-                      : "cancel"
-                  }}</i
-                >
-                Gilets
-              </p>
-              <p>
-                <i
-                  class="material-icons tiny"
-                  [class.green-text]="bateau.equipement_extincteur"
-                >
-                  {{
-                    bateau.equipement_extincteur ? "check_circle" : "cancel"
-                  }}</i
-                >
-                Extincteur
-              </p>
-              <p>
-                <i
-                  class="material-icons tiny"
-                  [class.green-text]="bateau.equipement_radio_vhf"
-                >
-                  {{
-                    bateau.equipement_radio_vhf ? "check_circle" : "cancel"
-                  }}</i
-                >
-                Radio VHF
-              </p>
-              <p>
-                <i
-                  class="material-icons tiny"
-                  [class.green-text]="bateau.equipement_gps"
-                >
-                  {{ bateau.equipement_gps ? "check_circle" : "cancel" }}</i
-                >
-                GPS
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="spinner-container" *ngIf="!bateau">
-      <div class="preloader-wrapper big active">
-        <div class="spinner-layer spinner-blue-only">
-          <div class="circle-clipper left"><div class="circle"></div></div>
-          <div class="gap-patch"><div class="circle"></div></div>
-          <div class="circle-clipper right"><div class="circle"></div></div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [
-    `
-      h6 {
-        color: #0d47a1;
-        font-weight: 500;
-      }
-      .divider {
-        margin: 1.5rem 0;
-      }
-      .badge.Actif {
-        background-color: #4caf50;
-        color: white;
-      }
-    `,
-  ],
+  imports: [CommonModule, RouterModule, HasPermissionDirective, FormsModule],
+  templateUrl: "./bateau-detail.component.html",
+  styleUrls: ["./bateau-detail.component.css"],
 })
 export class BateauDetailComponent implements OnInit {
   bateau?: Bateau;
   bateauId?: number;
   listEnginsPeche: any[] = [];
   licences: any[] = [];
+  loading = false;
+
+  years: number[] = [];
+  evolutionData: any = null;
+  captureZoneData: any = null;
+  selectedYear: any;
+  selectedYearCapture: any;
+
+  lineChart: Chart | null = null;
+  pieChartCaptureZone: Chart | null = null;
 
   url: any = `${environment.apiUrl}/uploads/bateaux/`;
 
@@ -334,10 +45,20 @@ export class BateauDetailComponent implements OnInit {
     private bateauService: BateauService,
     private licenceService: LicencesAutorisationsService,
     private pdf: AutorisationPechePdfService,
+    private pdfBateau: PrintBateauInfoService,
     private imageHelper: ImageHelperService,
     private route: ActivatedRoute,
     private router: Router,
-  ) {}
+  ) {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2024; // année de début pour les licences
+    this.selectedYear = startYear;
+    this.selectedYearCapture = startYear;
+    this.years = Array.from(
+      { length: currentYear - startYear + 1 },
+      (_, i) => currentYear - i, // ordre décroissant
+    );
+  }
 
   ngOnInit() {
     this.route.params.subscribe((params) => {
@@ -345,6 +66,7 @@ export class BateauDetailComponent implements OnInit {
       this.loadBateau();
       this.getLicencesByBateau();
       this.getEnginsPeche();
+      this.getStatistiquesBateau();
     });
   }
 
@@ -352,8 +74,9 @@ export class BateauDetailComponent implements OnInit {
     if (this.bateauId) {
       this.bateauService.getBateau(this.bateauId).subscribe({
         next: (d) => {
-          console.log("Données du bateau chargées:", d);
+          // console.log("Données du bateau chargées:", d);
           this.bateau = d;
+          // console.log("Données du bateau chargées:", this.bateau);
           // this.listEnginsPeche = d.engins_peche
           //   ? d.engins_peche.split(",").map((e) => e.trim())
           //   : [];
@@ -380,6 +103,30 @@ export class BateauDetailComponent implements OnInit {
           this.router.navigate(["/bateaux"]);
         },
       });
+    }
+  }
+
+  getStatistiquesBateau() {
+    if (this.bateauId) {
+      this.bateauService
+        .getStatistiquesBateau(this.bateauId, this.selectedYear)
+        .subscribe({
+          next: (d) => {
+            // console.log("Données du bateau chargées:", d);
+            this.evolutionData = d;
+            this.loading = false;
+
+            this.captureZoneData = d.par_zone;
+
+            setTimeout(() => this.initLineChartGlobale(), 300);
+            setTimeout(() => this.initPieCaptureParzone(), 300);
+          },
+          error: (e) => {
+            console.error(e);
+            M.toast({ html: "Erreur", classes: "red" });
+            this.router.navigate(["/bateaux"]);
+          },
+        });
     }
   }
 
@@ -428,6 +175,162 @@ export class BateauDetailComponent implements OnInit {
     return type === "Gabonaise" ? "NATIONAL" : "ETRANGER";
   }
 
+  /**
+   * ✅ Line chart évolution capture par année
+   */
+  initLineChartGlobale() {
+    const ctx = document.getElementById("lineChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const data = this.evolutionData.evolution || [];
+
+    this.lineChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map((d: any) => d.mois),
+        datasets: [
+          {
+            label: "Tonnage (t)",
+            data: data.map((d: any) => d.quantite_tonnes),
+            borderColor: "#2196F3",
+            backgroundColor: "rgba(33, 150, 243, 0.1)",
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            yAxisID: "y",
+          },
+          {
+            label: "Nombre captures (débarquements)",
+            data: data.map((d: any) => d.nombre_debarquements),
+            borderColor: "#FF9800",
+            backgroundColor: "rgba(255, 152, 0, 0.1)",
+            borderWidth: 2,
+            tension: 0.3,
+            yAxisID: "y1",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true, position: "top" },
+        },
+        scales: {
+          x: {
+            type: "category",
+            display: true,
+            title: {
+              display: true,
+              text: `Mois (${this.selectedYear})`,
+            },
+            ticks: {
+              color: "#333",
+              font: { size: 12 },
+              maxRotation: 45,
+              minRotation: 0,
+            },
+            grid: {
+              display: true,
+              color: "rgba(0, 0, 0, 0.05)",
+            },
+          },
+          y: {
+            type: "linear",
+            display: true,
+            position: "left",
+            title: { display: true, text: "Tonnage (t)" },
+          },
+          y1: {
+            type: "linear",
+            display: true,
+            position: "right",
+            title: { display: true, text: "Nombre captures (débarquements)" },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+  }
+
+  initPieCaptureParzone() {
+    const canvas = document.getElementById("pieChart") as HTMLCanvasElement;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      // ✅ Extraire données
+      const labels = this.captureZoneData.map((d: any) => d.zone_peche);
+      const values = this.captureZoneData.map((d: any) => d.quantite_tonnes);
+
+      // ✅ AJOUTER CECI
+      const total = values.reduce((a: any, b: any) => a + b, 0);
+      const percentages = values.map((v: any) =>
+        ((v / total) * 100).toFixed(1),
+      );
+
+      const labelsWithPercent = labels.map(
+        (label: any, i: any) => `${label} (${percentages[i]}%)`,
+      );
+
+      this.pieChartCaptureZone = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: labelsWithPercent,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: [
+                "#2196F3", // Bleu
+                "#FF9800", // Orange
+                "#4CAF50", // Vert
+                "#F44336", // Rouge
+                "#9C27B0", // Mauve
+                "#00BCD4", // Cyan
+                "#8BC34A", // Light Green
+                "#FF5722", // Deep Orange
+              ],
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "right", // right, top, bottom, left
+            },
+            title: {
+              display: true,
+              text: "Distribution des Captures par Zone",
+              font: { size: 16, weight: "bold" },
+            },
+          },
+        },
+      });
+    } else {
+      return;
+    }
+
+    //
+  }
+
+  refreshLineChart() {
+    if (this.lineChart) {
+      this.lineChart.destroy();
+      this.lineChart = null;
+    }
+    this.getStatistiquesBateau();
+  }
+
+  refreshPieChart() {
+    if (this.pieChartCaptureZone) {
+      this.pieChartCaptureZone.destroy();
+      this.pieChartCaptureZone = null;
+    }
+    this.getStatistiquesBateau();
+  }
+
   async generatePDf(licenceId: number) {
     const logoBase64 = await this.imageHelper.getBase64ImageFromURL(
       "../../../assets/logo.jpg",
@@ -465,8 +368,23 @@ export class BateauDetailComponent implements OnInit {
             cooperative: data.bateau_info.cooperative.denomination || "N/A",
           },
           engins: {
-            engin1: "Senne tournante",
-            especes1: "Sardine",
+            engin1: data.bateau_info.engin_peche_principal
+              ? data.bateau_info.engin_peche_principal.libelle
+              : "N/A",
+            especes1:
+              Array.isArray(data.espece1) && data.espece1.length
+                ? data.espece1.map((e: any) => e.nom_commun).join(", ")
+                : "N/A",
+
+            engin2: data.bateau_info.engin_peche_secondaire
+              ? data.bateau_info.engin_peche_secondaire
+                  .map((e: any) => e.libelle)
+                  .join(", ")
+              : "N/A",
+            especes2:
+              Array.isArray(data.espece2) && data.espece2.length
+                ? data.espece2.map((e: any) => e.nom_commun).join(", ")
+                : "N/A",
             codeBarre: "SIGDP-AUTH-452-2026",
           },
           periodeDebut: data.date_debut
@@ -493,7 +411,9 @@ export class BateauDetailComponent implements OnInit {
                 year: "numeric",
               })
             : "N/A",
-          signataire: "Brice Didier Celce KOUMBA MABERT",
+          signataire: data.signataire_info.nom_complet,
+          role_signataire: data.signataire_info.role.nom_role,
+          pour_ordre: data.pour_ordre,
           logoBase64: logoBase64,
         });
       },
@@ -504,6 +424,18 @@ export class BateauDetailComponent implements OnInit {
           classes: "red",
         });
       },
+    });
+  }
+
+  async printInfoBateau() {
+    const logoBase64 = await this.imageHelper.getBase64ImageFromURL(
+      "../../../assets/logo.jpg",
+    );
+
+    this.pdfBateau.open({
+      bateau: this.bateau,
+      licences: this.licences,
+      logoBase64: logoBase64,
     });
   }
 }

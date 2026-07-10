@@ -59,6 +59,8 @@ export interface AutorisationPeche {
   dateFait?: string; // ex: "02 Juin 2026"
 
   signataire: string; // ex: "Brice Didier Celce KOUMBA MABERT"
+  role_signataire: string;
+  pour_ordre: boolean;
 
   /** Logo / armoiries en base64 (data URI), optionnel. */
   logoBase64?: string;
@@ -164,6 +166,100 @@ export class AutorisationPechePdfService {
     };
   }
 
+  private formatXAF(amount: number): string {
+    return (
+      Math.round(amount)
+        .toLocaleString("fr-FR", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })
+        .replace(/\u202f/g, " ") + " FCFA"
+    );
+  }
+
+  private signatureLabel(data: any): Content {
+    if (data.pour_ordre) {
+      return {
+        columns: [
+          {
+            text: "",
+          },
+          {
+            text: "",
+          },
+          {
+            stack: [
+              {
+                text: "P. Le Ministre",
+                italics: true,
+                // bold: true,
+                fontSize: 11,
+                alignment: "center",
+                margin: [0, 20, 50, 0],
+              },
+              {
+                text: `P.O ${data.role_signataire}`,
+                italics: true,
+                // bold: true,
+                fontSize: 11,
+                alignment: "center",
+                margin: [0, 10, 20, 0],
+              },
+              {
+                text: data.signataire,
+                bold: true,
+                italics: true,
+                fontSize: 12,
+                alignment: "center",
+                margin: [0, 50, 20, 0],
+              },
+            ],
+          },
+        ],
+        margin: [0, 14, 0, 0],
+      };
+    } else {
+      return {
+        columns: [
+          {
+            text: "",
+          },
+          {
+            text: "",
+          },
+          {
+            stack: [
+              {
+                text: "Le Ministre",
+                italics: true,
+                fontSize: 11,
+                alignment: "center",
+                margin: [0, 20, 50, 0],
+              },
+              { text: "", margin: [0, 30, 0, 0] },
+              {
+                text: data.signataire,
+                bold: true,
+                italics: true,
+                fontSize: 12,
+                alignment: "center",
+                margin: [0, 30, 0, 0],
+              },
+            ],
+          },
+        ],
+        margin: [0, 14, 0, 0],
+      };
+    }
+  }
+
+  private formatedImmatrication(data: any) {
+    const parts = data.split("/");
+    // const padded = parts[0].padStart(3, "0") + "/" + parts[1];
+    const autorisation_number = parts[0].padStart(3, "0");
+    return autorisation_number;
+  }
+
   // ----------------------------------------------------------------------
   // Document
   // ----------------------------------------------------------------------
@@ -225,7 +321,7 @@ export class AutorisationPechePdfService {
           alignment: "center",
         },
         {
-          text: `N°${d.numero}`,
+          text: `N° ${this.formatedImmatrication(d.numero)}`,
           fontSize: 16,
           bold: true,
           color: BLEU,
@@ -497,7 +593,7 @@ export class AutorisationPechePdfService {
               text: [
                 { text: "MONTANT DE L'AUTORISATION : ", bold: true },
                 {
-                  text: `${d.montantFcfa.toLocaleString("fr-FR").replace(/\u202f/g, " ")} FCFA`,
+                  text: `${this.formatXAF(d.montantFcfa)}`,
                 },
               ],
               fontSize: 10,
@@ -534,37 +630,7 @@ export class AutorisationPechePdfService {
     };
 
     // -- Signature
-    const signature: Content = {
-      stack: [
-        {
-          text: "P. Le Ministre",
-          italics: true,
-          fontSize: 10,
-          alignment: "right",
-        },
-        {
-          text: "P.O Le Directeur Général des",
-          italics: true,
-          fontSize: 10,
-          alignment: "right",
-        },
-        {
-          text: "Pêches et de l'Aquaculture",
-          italics: true,
-          fontSize: 10,
-          alignment: "right",
-        },
-        {
-          text: d.signataire,
-          bold: true,
-          italics: true,
-          fontSize: 11,
-          alignment: "right",
-          margin: [0, 30, 0, 0],
-        },
-      ],
-      margin: [0, 14, 0, 0],
-    };
+    const signature: Content = this.signatureLabel(d);
 
     return {
       pageSize: "A4",

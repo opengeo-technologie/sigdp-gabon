@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule, ActivatedRoute, Router } from "@angular/router";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { PecheurService } from "../../../services/pecheur.service";
 import { BateauService } from "../../../services/bateau.service";
 import { CardGeneratorService } from "../../../services/card-generator.service";
@@ -28,18 +29,19 @@ declare var M: any;
     <div class="container-fluid" *ngIf="pecheur">
       <div class="row">
         <div class="col s12">
-          <a routerLink="/pecheurs" class="btn btn-flat waves-effect">
-            <i class="material-icons left">arrow_back</i>
-            Retour à la liste
-          </a>
-          <a
-            [routerLink]="['/pecheurs', pecheur.id, 'edit']"
-            class="btn btn-primary waves-effect waves-light"
-          >
-            <i class="material-icons left">edit</i>
-            Modifier
-          </a>
-          <!-- <a
+          <div class="btn-group" role="group">
+            <a routerLink="/pecheurs" class="btn btn-flat waves-effect">
+              <i class="material-icons left">arrow_back</i>
+              Retour à la liste
+            </a>
+            <a
+              [routerLink]="['/pecheurs', pecheur.id, 'edit']"
+              class="btn btn-primary waves-effect waves-light"
+            >
+              <i class="material-icons left">edit</i>
+              Modifier
+            </a>
+            <!-- <a
             (click)="downloadCarte()"
             class="btn teal waves-effect waves-light"
           >
@@ -53,14 +55,21 @@ declare var M: any;
             <i class="material-icons left">picture_as_pdf</i>
             Télécharger PDF
           </a> -->
-          <a (click)="printCarte()" class="btn orange waves-effect waves-light">
-            <i class="material-icons left">print</i>
-            Imprimer
-          </a>
-          <a (click)="deletePecheur()" class="btn red waves-effect waves-light">
-            <i class="material-icons left">delete</i>
-            Supprimer
-          </a>
+            <a
+              (click)="printCarte()"
+              class="btn orange waves-effect waves-light"
+            >
+              <i class="material-icons left">print</i>
+              Imprimer
+            </a>
+            <a
+              (click)="deletePecheur()"
+              class="btn red waves-effect waves-light"
+            >
+              <i class="material-icons left">delete</i>
+              Supprimer
+            </a>
+          </div>
         </div>
       </div>
 
@@ -197,6 +206,7 @@ declare var M: any;
               <span class="card-title">Aperçu de la carte</span>
               <div id="card-preview" class="carte-preview">
                 <!-- La carte sera générée dynamiquement -->
+                <!-- <div *ngIf="cardHtml" [innerHtml]="cardHtml"></div> -->
                 <div class="center-align" style="padding: 2rem;">
                   <i class="material-icons large grey-text">credit_card</i>
                   <p class="grey-text">
@@ -282,6 +292,26 @@ declare var M: any;
         margin: 1rem 0;
       }
 
+      .carte-preview > div {
+        /* Styles pour le contenu HTML généré à l'intérieur du conteneur */
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Si le contenu doit être mis à l'échelle pour s'adapter, utilisez transform: scale() */
+        /* transform: scale(0.8); */ /* Exemple de mise à l'échelle */
+        /* transform-origin: center center; */
+      }
+
+      /* Ajustements pour le HTML généré si nécessaire pour mieux s'adapter */
+      .carte-preview div > div {
+        max-width: 100%;
+        max-height: 100%;
+        overflow: auto; /* Permet le défilement si le contenu est trop grand même après scaling */
+        box-sizing: border-box; /* Inclut padding et border dans la largeur/hauteur */
+      }
+
       .mt-2 {
         margin-top: 1rem;
       }
@@ -316,6 +346,7 @@ export class PecheurDetailComponent implements OnInit {
   pecheur?: Pecheur;
   pecheurId?: number;
   bateaux: Bateau[] = [];
+  cardHtml: SafeHtml | undefined;
 
   url: any = `${environment.apiUrl}/`;
 
@@ -325,6 +356,7 @@ export class PecheurDetailComponent implements OnInit {
     private cardGeneratorService: CardGeneratorService,
     private route: ActivatedRoute,
     private router: Router,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit() {
@@ -339,12 +371,23 @@ export class PecheurDetailComponent implements OnInit {
     if (this.pecheurId) {
       this.pecheurService.getPecheur(this.pecheurId).subscribe({
         next: (data) => {
-          console.log("Pêcheur chargé:", data);
+          // console.log("Pêcheur chargé:", data);
           this.pecheur = data;
           this.pecheurService.getPecheurPhotoUrl(this.pecheur.id).subscribe({
-            next: (response) => {
+            next: async (response) => {
               if (response && this.pecheur) {
                 this.pecheur.photo_url = response.photo_path;
+                const qrCodeUrl =
+                  await this.cardGeneratorService.generateQRCode(this.pecheur);
+                const generatedHtml =
+                  this.cardGeneratorService.generateCardHTML(
+                    this.pecheur,
+                    qrCodeUrl,
+                    this.pecheur.photo_url,
+                  );
+                // Assainir le HTML pour le rendre sûr pour l'affichage
+                this.cardHtml =
+                  this.sanitizer.bypassSecurityTrustHtml(generatedHtml);
               }
             },
             error: (error) => {

@@ -69,10 +69,15 @@ class Pecheur(Base):
     # type_peche = Column(Enum(TypePeche), nullable=False)
 
     # Débarcadère habituel
+    debarcadere_habituel_id = Column(Integer, nullable=True)
     debarcadere_habituel_code = Column(
         String(50), nullable=True
     )  # Code du débarcadère habituel
     debarcadere_habituel_nom = Column(String(200), nullable=True)
+
+    # Cooperative ou armement
+    cooperative_id = Column(Integer, nullable=True)
+    cooperative_nom = Column(String(200), nullable=True)
 
     # Contacts d'urgence
     contact_urgence_nom = Column(String(100), nullable=True)

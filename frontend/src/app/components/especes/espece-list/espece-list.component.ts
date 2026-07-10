@@ -28,10 +28,12 @@ declare var M: any;
         <div class="card-content">
           <div class="row">
             <div class="col s12 m3">
-              <div class="input-field">
+              <div class="form-input">
+                <label>Catégorie</label>
                 <select
                   [(ngModel)]="filters.categorie"
                   (change)="applyFilters()"
+                  class="browser-default"
                 >
                   <option value="">Toutes les catégories</option>
                   <option value="Poissons pélagiques">
@@ -45,41 +47,49 @@ declare var M: any;
                   <option value="Mollusques">Mollusques</option>
                   <option value="Espèces protégées">Espèces protégées</option>
                 </select>
-                <label>Catégorie</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
-                <select [(ngModel)]="filters.statut" (change)="applyFilters()">
+              <div class="form-input">
+                <label>Statut réglementaire</label>
+                <select
+                  [(ngModel)]="filters.statut"
+                  (change)="applyFilters()"
+                  class="browser-default"
+                >
                   <option value="">Tous les statuts</option>
                   <option value="Libre">Libre</option>
                   <option value="Sous quota">Sous quota</option>
                   <option value="Protégé">Protégé</option>
                   <option value="Saisonnier">Saisonnier</option>
                 </select>
-                <label>Statut réglementaire</label>
               </div>
             </div>
             <div class="col s12 m3">
-              <div class="input-field">
-                <input
-                  type="text"
-                  [(ngModel)]="searchTerm"
-                  (keyup.enter)="search()"
-                  placeholder="Rechercher..."
-                />
-                <label>Nom ou code</label>
+              <div class="form-input">
+                <label for="search-input">Nom ou code</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="searchTerm"
+                    (keyup.enter)="search()"
+                    placeholder="Rechercher..."
+                    id="search-input"
+                  />
+                </div>
               </div>
             </div>
             <div class="col s12 m3">
-              <a
-                routerLink="/especes/new"
-                class="btn btn-primary waves-effect waves-light"
-                style="margin-top: 1.5rem;"
-              >
-                <i class="material-icons left">add</i>
-                Nouvelle espèce
-              </a>
+              <div class="form-input">
+                <a
+                  routerLink="/especes/new"
+                  class="btn btn-primary waves-effect waves-light"
+                  style="margin-top: 1.5rem;"
+                >
+                  <i class="material-icons left">add</i>
+                  Nouvelle espèce
+                </a>
+              </div>
             </div>
           </div>
         </div>

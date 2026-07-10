@@ -66,6 +66,12 @@ export class EspeceService {
     return this.http.get<Espece[]>(`${this.apiUrl}/proteges/list`);
   }
 
+  getStatistiquesEspece(id: number, annee: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/statistiques/${id}?annee=${annee}`,
+    );
+  }
+
   getEspecesSousQuota(): Observable<Espece[]> {
     return this.http.get<Espece[]>(`${this.apiUrl}/quotas/list`);
   }

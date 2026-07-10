@@ -2,12 +2,14 @@ export enum DebarcadereType {
   OFFICIEL = "Officiel",
   INFORMEL = "Informel",
   SAISONNIER = "Saisonnier",
+  CAPA = "Centre d'Appui à la Pêche Artisanale",
 }
 
 export enum Milieu {
   MARITIME = "Maritime",
   FLUVIAL = "Fluvial",
   LAGUNAIRE = "Lagunaire",
+  CONTINENTAL = "Continental",
 }
 
 export enum StatutOperationnel {

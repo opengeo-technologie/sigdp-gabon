@@ -20,6 +20,8 @@ export class ArmementCooperativeService {
     limit?: number;
     type_association?: string;
     statut?: string;
+    province?: string;
+    localite?: string;
     cooperative_id?: number;
   }): Observable<ArmementCooperative[]> {
     let params = new HttpParams();
@@ -32,6 +34,8 @@ export class ArmementCooperativeService {
       if (filters.type_association)
         params = params.set("type_association", filters.type_association);
       if (filters.statut) params = params.set("statut", filters.statut);
+      if (filters.province) params = params.set("province", filters.province);
+      if (filters.localite) params = params.set("localite", filters.localite);
       if (filters.cooperative_id)
         params = params.set(
           "cooperative_id",
@@ -44,6 +48,18 @@ export class ArmementCooperativeService {
 
   getArmementCooperative(id: number): Observable<ArmementCooperative> {
     return this.http.get<ArmementCooperative>(`${this.apiUrl}/${id}`);
+  }
+
+  getLocalitesArmementCooperative(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/list/localite`);
+  }
+
+  getBateauxArmementCooperative(
+    armement_cooperative_id: number,
+  ): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/bateaux/${armement_cooperative_id}`,
+    );
   }
 
   searchArmementsCooperatives(

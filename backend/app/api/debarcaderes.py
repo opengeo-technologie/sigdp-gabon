@@ -31,6 +31,9 @@ from app.schemas.debarcadere import (
     DebarcadereInDB,
 )
 from app.models.bateau import Bateau
+from app.models.pecheur import Pecheur
+from app.models.debarquement import Debarquement, DetailDebarquement
+from app.models.espece import Espece
 
 router = APIRouter(prefix="/api/debarcaderes", tags=["Débarcadères"])
 
@@ -694,3 +697,88 @@ def get_localite_site(db: Session = Depends(get_db)):
     localite_dict = [{"localite": l.localite} for l in localite_query]
 
     return localite_dict
+
+
+@router.get("/statistiques/{debarcadere_id}")
+def get_statistiques_debarcadere(debarcadere_id: int, db: Session = Depends(get_db)):
+    # retourner les statistiques sur les debarcadères
+    """
+    Classement des débarcadères par activité
+    """
+    embarcations = (
+        db.query(
+            func.count(Bateau.id).label("total"),
+            # Bateau.id.label("id"),
+        )
+        .filter(Bateau.site_port_attache == debarcadere_id)
+        .first()
+    )
+
+    count_pecheurs = (
+        db.query(
+            func.count(Pecheur.id).label("total"),
+        )
+        .filter(Pecheur.debarcadere_habituel_id == debarcadere_id)
+        .first()
+    )
+
+    count_debarquement = (
+        db.query(
+            func.count(Debarquement.id).label("nb_debarquements"),
+        )
+        .filter(Debarquement.debarcadere_id == debarcadere_id)
+        .first()
+    )
+
+    capture_quantite = (
+        db.query(
+            func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+        )
+        .select_from(Debarquement)
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .filter(Debarquement.debarcadere_id == debarcadere_id)
+        .first()
+    )
+
+    top_5_especes = (
+        db.query(
+            Espece.nom_commun_francais,
+            Espece.code_espece,
+            func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+            func.sum(DetailDebarquement.valeur_totale).label("total_valeur"),
+            func.count(DetailDebarquement.id).label("nb_captures"),
+        )
+        .select_from(Espece)
+        .join(DetailDebarquement, DetailDebarquement.espece_id == Espece.id)
+        .join(Debarquement, Debarquement.id == DetailDebarquement.debarquement_id)
+        .filter(Debarquement.debarcadere_id == debarcadere_id)
+        .group_by(Espece.id, Espece.nom_commun_francais, Espece.code_espece)
+        .order_by(func.sum(DetailDebarquement.quantite_kg).desc())
+        .limit(5)
+        .all()
+    )
+
+    top_5_especes_list = [
+        {
+            "nom_commun_francais": espece.nom_commun_francais,
+            "code_espece": espece.code_espece,
+            "total_kg": float(espece.total_kg or 0),
+            "quantite_tonnes": (round(float(espece.total_kg or 0) / 1000, 3)),
+            "total_valeur": float(espece.total_valeur or 0),
+            "nb_captures": espece.nb_captures,
+        }
+        for espece in top_5_especes
+    ]
+
+    return {
+        # "debarcadere": embarcation.nom_site,
+        "nb_embarcations": embarcations.total,
+        "nb_pecheurs": count_pecheurs.total if count_pecheurs else 0,
+        "nb_debarquements": count_debarquement.nb_debarquements,
+        "quantite_kg": (round(float(capture_quantite.total_kg or 0), 2)),
+        "quantite_tonnes": (round(float(capture_quantite.total_kg or 0) / 1000, 3)),
+        "top_5_especes": top_5_especes_list,
+    }

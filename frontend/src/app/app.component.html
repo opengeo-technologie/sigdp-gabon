@@ -99,6 +99,12 @@
       </a>
     </li>
     <li class="divider"></li>
+    <li>
+      <a routerLink="/mareyeurs" routerLinkActive="active">
+        <i class="material-icons left">storefront</i>Mareyeurs
+      </a>
+    </li>
+    <li class="divider"></li>
     <li *appHasPermission="'espece.read'">
       <a routerLink="/especes" routerLinkActive="active">
         <i class="material-icons left">set_meal</i>Espèces
@@ -114,6 +120,12 @@
     <li>
       <a routerLink="/licences" routerLinkActive="active">
         <i class="material-icons left">assignment</i>Licences & autorisations
+      </a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a routerLink="/surveillance" routerLinkActive="active">
+        <i class="material-icons left">visibility</i>Surveillance de pêche
       </a>
     </li>
   </ul>
@@ -250,13 +262,51 @@
 </div>
 
 <main>
-  <router-outlet></router-outlet>
+  <div class="sidebar" *ngIf="showSidebar">
+    <div class="logo">
+      <h2>Module de surveillance</h2>
+    </div>
+
+    <ul class="menu">
+      <li [class.active]="currentRoute === '/missions'">
+        <a routerLink="/missions">
+          <span class="material-icons">dashboard</span>
+          Missions
+        </a>
+      </li>
+      <li class="divider"></li>
+      <li [class.active]="currentRoute === '/agent-de-controle'">
+        <a routerLink="/agent-de-controle">
+          <span class="material-icons">groups</span>
+          Agents de controle
+        </a>
+      </li>
+      <li class="divider"></li>
+      <li [class.active]="currentRoute === '/infractions'">
+        <a routerLink="/infractions">
+          <span class="material-icons">warning</span>
+          Infractions
+        </a>
+      </li>
+      <li class="divider"></li>
+      <li [class.active]="currentRoute === '/surveillance'">
+        <a routerLink="/surveillance">
+          <span class="material-icons">visibility</span>
+          Surveillance
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="content" *ngIf="showSidebar">
+    <router-outlet></router-outlet>
+  </div>
+  <router-outlet *ngIf="!showSidebar"></router-outlet>
 </main>
 
 <footer
   class="page-footer"
   style="background-color: #0d47a1; margin-top: 3rem"
-  *ngIf="showNavigation"
+  *ngIf="showNavigation && !showSidebar"
 >
   <div class="container-fluid">
     <div class="row">

@@ -35,8 +35,10 @@ class ArmementCooperativeUpdate(ArmementCooperativeBase):
 
 class ArmementCooperativeResponse(ArmementCooperativeBase):
     id: int
+    count_pecheurs: Optional[int] = None
+    count_bateaux: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

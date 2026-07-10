@@ -11,78 +11,101 @@
         <hr />
       </div>
     </div>
-    <div class="input-field col s12 m6 form-input">
-      <select
-        name="pirogue"
-        [(ngModel)]="autorisation.bateau_id"
-        (ngModelChange)="emit()"
-        (change)="onChangeEmbarcation($event)"
-        required
-      >
-        <option value="" disabled>Choisir le embarcation</option>
-        <option *ngFor="let pirogue of pirogues" [value]="pirogue.id">
-          {{ pirogue.nom_bateau }}_{{ pirogue.numero_immatriculation }}
-        </option>
-      </select>
-      <label>Embarcation <i class="required_field">* </i></label>
+    <div class="row">
+      <div class="form-input col s12 m6">
+        <label>Pirogue <i class="required_field">* </i></label>
+        <select
+          #selectPirogue
+          id="select_pirogue"
+          name="pirogue"
+          [(ngModel)]="autorisation.bateau_id"
+          (ngModelChange)="emit()"
+          (change)="onChangeEmbarcation($event)"
+          required
+        >
+          <option value="" disabled>Choisir une pirogue</option>
+          <option *ngFor="let pirogue of pirogues" [value]="pirogue.id">
+            {{ pirogue.nom_bateau }}_{{ pirogue.numero_immatriculation }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-input col s12 m6">
+        <label>Année de validité <i class="required_field">* </i></label>
+        <div class="input-field">
+          <select
+            name="annee_validite"
+            [(ngModel)]="autorisation.annee_validite"
+            (ngModelChange)="emit()"
+            class="browser-default read-only"
+            required
+          >
+            <option value="" disabled>Choisir l'année de validité</option>
+            <option *ngFor="let year of years" [value]="year">
+              {{ year }}
+            </option>
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="input-field col s12 m6 form-input">
-      <select
-        name="annee_validite"
-        [(ngModel)]="autorisation.annee_validite"
-        (ngModelChange)="emit()"
-        required
-      >
-        <option value="" disabled>Choisir l'année de validité</option>
-        <option *ngFor="let year of years" [value]="year">
-          {{ year }}
-        </option>
-      </select>
-      <label>Année de validité <i class="required_field">* </i></label>
+
+    <div class="row">
+      <div class="form-input col s12 m6">
+        <label>Date de début <i class="required_field">* </i></label>
+        <div class="input-field">
+          <input
+            type="date"
+            name="date_debut"
+            [(ngModel)]="autorisation.date_debut"
+            (ngModelChange)="emit()"
+            required
+          />
+        </div>
+      </div>
+      <div class="form-input col s12 m6">
+        <label>Date d'expiration <i class="required_field">* </i></label>
+        <div class="input-field">
+          <input
+            type="date"
+            name="date_expiration"
+            [(ngModel)]="autorisation.date_expiration"
+            (change)="onSelectDateExpiration($event)"
+            (ngModelChange)="emit()"
+            required
+          />
+        </div>
+      </div>
     </div>
-    <div class="input-field col s12 m6 form-input">
-      <input
-        type="date"
-        name="date_debut"
-        [(ngModel)]="autorisation.date_debut"
-        (ngModelChange)="emit()"
-        required
-      />
-      <label>Date de début <i class="required_field">* </i></label>
-    </div>
-    <div class="input-field col s12 m6 form-input">
-      <input
-        type="date"
-        name="date_expiration"
-        [(ngModel)]="autorisation.date_expiration"
-        (ngModelChange)="emit()"
-        required
-      />
-      <label>Date d'expiration <i class="required_field">* </i></label>
-    </div>
-    <div class="input-field col s12 m6 form-input">
-      <input
-        type="number"
-        name="montant_a_payer"
-        [(ngModel)]="autorisation.montant_paye"
-        (ngModelChange)="emit()"
-        required
-        min="0"
-        placeholder="0.00"
-      />
-      <label>Montant à payer <i class="required_field">* </i></label>
-    </div>
-    <div class="input-field col s12 m6 form-input">
-      <input
-        type="text"
-        name="reference_paiement"
-        [(ngModel)]="autorisation.reference_paiement"
-        (ngModelChange)="emit()"
-        required
-        min="0"
-        placeholder="0.00"
-      />
-      <label>Numéro de quittance<i class="required_field">* </i></label>
+
+    <div class="row">
+      <div class="form-input col s12 m6">
+        <label>Montant à payer <i class="required_field">* </i></label>
+        <div class="input-field">
+          <input
+            type="number"
+            name="montant_a_payer"
+            [(ngModel)]="autorisation.montant_paye"
+            (ngModelChange)="emit()"
+            required
+            min="0"
+            placeholder="0.00"
+          />
+        </div>
+      </div>
+      <div class="form-input col s12 m6">
+        <label>Numéro de quittance<i class="required_field">* </i></label>
+        <div class="input-field">
+          <input
+            type="text"
+            name="reference_paiement"
+            [(ngModel)]="autorisation.reference_paiement"
+            (ngModelChange)="emit()"
+            required
+            min="0"
+            placeholder="0.00"
+          />
+        </div>
+      </div>
     </div>
   </div>
   <div class="row license-form">
@@ -96,11 +119,14 @@
       </div>
     </div>
 
-    <div class="col s12 m6">
-      <div class="input-field form-input">
+    <div class="col s12 m6 form-input">
+      <label>Espèce cible 1<i class="required_field">* </i></label>
+      <div class="input-field">
         <select
+          #selectEspece1
+          id="select_espece1"
           name="espece_cible"
-          [(ngModel)]="autorisation.espece_cible1"
+          [(ngModel)]="autorisation.especes_autorisees"
           (ngModelChange)="emit()"
           required
         >
@@ -109,14 +135,16 @@
             {{ espece.nom_commun_francais }} ({{ espece.nom_scientifique }})
           </option>
         </select>
-        <label>Espèce cible 1<i class="required_field">* </i></label>
       </div>
     </div>
-    <div class="col s12 m6">
-      <div class="input-field form-input">
+    <div class="col s12 m6 form-input">
+      <label>Espèce cible 2 </label>
+      <div class="input-field">
         <select
+          #selectEspece2
+          id="select_espece2"
           name="espece_cible"
-          [(ngModel)]="autorisation.espece_cible2"
+          [(ngModel)]="autorisation.autres_especes"
           (ngModelChange)="emit()"
         >
           <option value="" disabled>Choisir l'espèce cible 2</option>
@@ -124,7 +152,6 @@
             {{ espece.nom_commun_francais }} ({{ espece.nom_scientifique }})
           </option>
         </select>
-        <label>Espèce cible 2 </label>
       </div>
     </div>
   </div>
@@ -184,12 +211,14 @@
       </div>
     </div>
     <div class="col s12 m6" *ngIf="autorisation.pour_ordre">
-      <div class="input-field form-input">
+      <div class="form-input">
+        <label>Signataire </label>
         <select
           name="signataire"
-          [(ngModel)]="autorisation.signataire"
-          (ngModelChange)="emit()"
+          [(ngModel)]="autorisation.signataire_id"
+          (change)="selectedSignataire($event)"
           required
+          class="browser-default"
         >
           <option value="" disabled>Choisir le signataire</option>
           <option
@@ -199,7 +228,6 @@
             {{ signataire.nom_complet }} - {{ signataire.role.nom_role }}
           </option>
         </select>
-        <label>Signataire </label>
       </div>
     </div>
   </div>

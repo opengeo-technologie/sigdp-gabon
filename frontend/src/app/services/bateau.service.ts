@@ -40,6 +40,10 @@ export class BateauService {
     return this.http.get<Bateau[]>(this.apiUrl, { params });
   }
 
+  getBateauxDropdown() {
+    return this.http.get<any[]>(`${this.apiUrl}/dropdown-list/list/data`);
+  }
+
   getBateau(id: number): Observable<Bateau> {
     return this.http.get<Bateau>(`${this.apiUrl}/${id}`);
   }
@@ -48,12 +52,18 @@ export class BateauService {
     return this.http.get<Bateau>(`${this.apiUrl}/immatriculation/${numero}`);
   }
 
+  getStatistiquesBateau(id: number, annee: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/statistiques/${id}?annee=${annee}`,
+    );
+  }
+
   createBateau(bateau: Partial<Bateau>): Observable<Bateau> {
     return this.http.post<Bateau>(this.apiUrl, bateau);
   }
 
   updateBateau(id: number, bateau: Partial<Bateau>): Observable<Bateau> {
-    return this.http.put<Bateau>(`${this.apiUrl}/${id}`, bateau);
+    return this.http.put<Bateau>(`${this.apiUrl}/${id}/with-photo`, bateau);
   }
 
   createBateauWithPhoto(bateau: any): Observable<any> {

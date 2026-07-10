@@ -15,6 +15,7 @@ from fastapi import (
 from PIL import Image, ImageDraw, ImageFont
 from fastapi.responses import StreamingResponse
 import pandas as pd
+from sqlalchemy import and_, asc, desc, extract, func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import io
@@ -22,6 +23,7 @@ import io
 from app.database import get_db
 from app.models.espece import Espece
 from app.schemas.espece import EspeceCreate, EspeceUpdate, EspeceResponse, EspeceInDB
+from app.models.debarquement import Debarquement, DetailDebarquement
 
 router = APIRouter(prefix="/api/especes", tags=["Espèces"])
 
@@ -648,3 +650,47 @@ async def update_espece_with_photo(
     db.refresh(espece)
     espece_dict = EspeceInDB.from_orm(espece).model_dump()
     return EspeceResponse(**espece_dict)
+
+
+@router.get("/statistiques/{espece_id}")
+def get_statistiques_espece_par_zone(
+    espece_id: int, annee: int = Query(2020, ge=1), db: Session = Depends(get_db)
+):
+    """
+    Liste des captures par mois
+    """
+
+    # evolution_data.append({"evolution": periodes})
+
+    resultats_par_zone = (
+        db.query(
+            Debarquement.zone_peche_nom.label("zone_peche"),
+            func.count(Debarquement.id).label("nombre"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+                DetailDebarquement.espece_id == espece_id,
+            )
+        )
+        .group_by("zone_peche")
+        .order_by(asc("zone_peche"), desc("quantite_kg"))
+        .all()
+    )
+
+    data = [
+        {
+            "zone_peche": r.zone_peche,
+            "nombre_debarquements": r.nombre or 0,
+            "quantite_kg": float(r.quantite_kg or 0),
+            "quantite_tonnes": round(float(r.quantite_kg or 0) / 1000, 3),
+        }
+        for r in resultats_par_zone
+    ]
+
+    return {"par_zone": data}

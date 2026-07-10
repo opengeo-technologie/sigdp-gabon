@@ -1,73 +1,222 @@
-<div class="page-header">
-  <div class="container-fluid">
-    <h1><i class="material-icons left">map</i> Carte des débarcadères</h1>
-    <p>Visualisation géographique des débarcadères du Gabon</p>
+<div style="position: relative; overflow: hidden">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1><i class="material-icons left">map</i> Carte des débarcadères</h1>
+      <p>Visualisation géographique des débarcadères du Gabon</p>
+    </div>
   </div>
-</div>
 
-<div class="container-fluid">
-  <!-- Légende et filtres -->
-  <div class="card">
-    <div class="card-content">
-      <div class="row">
-        <div class="col s12 m8">
-          <span class="card-title">Légende</span>
-          <div class="legend-items">
-            <span class="legend-item">
-              <span class="marker-icon maritime"></span>
-              Maritime
-            </span>
-            <span class="legend-item">
-              <span class="marker-icon fluvial"></span>
-              Continental
-            </span>
-            <span class="legend-item">
-              <span class="marker-icon lagunaire"></span>
-              Lagunaire
-            </span>
+  <div class="container-fluid">
+    <!-- Filtres et actions -->
+    <div class="row">
+      <div class="col s12 m3">
+        <!-- Légende et filtres -->
+        <div class="card">
+          <div class="card-content">
+            <div class="row">
+              <div class="col s12 m12 center-align total-debarcaderes">
+                <p>
+                  <strong>Total:</strong>
+                  {{ debarcaderes.length }} débarcadère(s)
+                </p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12 m12 legende">
+                <span class="card-title">Légende</span>
+                <hr />
+                <div class="legend-items">
+                  <span class="legend-item">
+                    <span class="marker-icon maritime"></span>
+                    Maritime
+                  </span>
+                  <span class="legend-item">
+                    <span class="marker-icon fluvial"></span>
+                    Continental
+                  </span>
+                  <span class="legend-item">
+                    <span class="marker-icon lagunaire"></span>
+                    Lagunaire
+                  </span>
+                  <span class="legend-item">
+                    <span class="marker-icon capal"></span>
+                    Centre d'Appui à la Pêche Artisanale
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12 m12 filtres">
+                <span class="card-title">Filtres</span>
+                <hr />
+                <!-- Filtre par province -->
+                <div class="form-input">
+                  <label>Province</label>
+                  <select
+                    [(ngModel)]="filters.province"
+                    (change)="applyFilters()"
+                    class="browser-default"
+                  >
+                    <option value="">Toutes</option>
+                    <option
+                      *ngFor="let province of provinces"
+                      [value]="province"
+                    >
+                      {{ province }}
+                    </option>
+                  </select>
+                </div>
+                <!-- Filtre par statut opérationnel -->
+                <div class="form-input">
+                  <label>Statut opérationnel</label>
+                  <select
+                    [(ngModel)]="filters.statut"
+                    (change)="applyFilters()"
+                    class="browser-default"
+                  >
+                    <option value="">Tous</option>
+                    <option *ngFor="let statut of statuts" [value]="statut">
+                      {{ statut }}
+                    </option>
+                  </select>
+                </div>
+                <!-- Filtre par type -->
+                <div class="form-input">
+                  <label>Type</label>
+                  <select
+                    [(ngModel)]="filters.type"
+                    (change)="applyFilters()"
+                    class="browser-default"
+                  >
+                    <option value="">Tous</option>
+                    <option *ngFor="let type of types" [value]="type">
+                      {{ type }}
+                    </option>
+                  </select>
+                </div>
+                <!-- Filtre par milieu -->
+                <div class="form-input">
+                  <label>Milieu</label>
+                  <select
+                    [(ngModel)]="filters.milieu"
+                    (change)="applyFilters()"
+                    class="browser-default"
+                  >
+                    <option value="">Tous</option>
+                    <option *ngFor="let milieu of milieux" [value]="milieu">
+                      {{ milieu }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col s12 m4 right-align">
-          <p>
-            <strong>Total:</strong> {{ debarcaderes.length }} débarcadère(s)
-          </p>
+      </div>
+      <div class="col s12 m9">
+        <!-- Carte -->
+        <div class="card">
+          <div class="card-content">
+            <div id="map" class="map-container"></div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="changeLocalisation" class="modal">
+      <div class="modal-content">
+        <h4 class="center black-text">
+          Confirmez la modification de la localisation du site
+        </h4>
+        <p *ngIf="positionToUpdate" class="center teal-text darken-4">
+          {{ positionToUpdate.code }} | {{ positionToUpdate.denomination }} |
+          {{ positionToUpdate.milieu }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="modal-close waves-effect waves-green btn-flat red left white-text"
+        >
+          Fermer
+        </button>
+        <button
+          type="button"
+          class="modal-close waves-effect waves-green btn-flat right green white-text"
+          (click)="validateChange()"
+        >
+          Confirmer
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Carte -->
-  <div class="card">
-    <div class="card-content">
-      <div id="map" class="map-container"></div>
+  <!-- Sidebar droite -->
+  <div class="sidebar-right" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <h5>{{ selectedDebarcadere?.denomination }}</h5>
+      <a (click)="closeSidebar()" class="close-btn">
+        <i class="material-icons" style="color: #ffffff">close</i>
+      </a>
     </div>
-  </div>
-</div>
-
-<!-- Modal Structure -->
-<div id="changeLocalisation" class="modal">
-  <div class="modal-content">
-    <h4 class="center black-text">
-      Confirmez la modification de la localisation du site
-    </h4>
-    <p *ngIf="positionToUpdate" class="center teal-text darken-4">
-      {{ positionToUpdate.code }} | {{ positionToUpdate.denomination }} |
-      {{ positionToUpdate.milieu }}
-    </p>
-  </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="modal-close waves-effect waves-green btn-flat red left white-text"
-    >
-      Fermer
-    </button>
-    <button
-      type="button"
-      class="modal-close waves-effect waves-green btn-flat right green white-text"
-      (click)="validateChange()"
-    >
-      Confirmer
-    </button>
+    <div class="sidebar-content" *ngIf="selectedDebarcadere">
+      <table>
+        <tr>
+          <td><b>Type :</b></td>
+          <td>{{ selectedDebarcadere.type }}</td>
+        </tr>
+        <tr>
+          <td><b>Province :</b></td>
+          <td>{{ selectedDebarcadere.province }}</td>
+        </tr>
+        <tr>
+          <td><b>Milieu :</b></td>
+          <td>{{ selectedDebarcadere.milieu }}</td>
+        </tr>
+        <tr>
+          <td><b>Statut :</b></td>
+          <td>{{ selectedDebarcadere.statut_operationnel }}</td>
+        </tr>
+        <tr>
+          <td><b>Taille Flotte :</b></td>
+          <td>{{ selectedDebarcadere.taille_flottile }}</td>
+        </tr>
+        <tr>
+          <td><b>Lat / Long :</b></td>
+          <td>
+            {{ selectedDebarcadere.latitude.toFixed(3) }} /
+            {{ selectedDebarcadere.longitude.toFixed(3) }}
+          </td>
+        </tr>
+        <tr>
+          <td><b>Infrastructures :</b></td>
+          <td>
+            @if (infrastructures && infrastructures.length > 0) {
+              {{ infrastructures }}
+            } @else {
+              <p>Aucune infrastructure associée</p>
+            }
+          </td>
+        </tr>
+      </table>
+      <div class="row">
+        <div class="col s12 m12 l12">
+          <div
+            style="width: 300px; margin: 20px auto"
+            *ngIf="statistiques && statistiques.length != 0"
+          >
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div
+            style="max-width: 300px; margin: 20px auto"
+            *ngIf="statistiques && statistiques.length == 0"
+          >
+            <h6 class="center red-text">Aucune donnée disponible</h6>
+          </div>
+        </div>
+      </div>
+      <!-- ... -->
+    </div>
   </div>
 </div>

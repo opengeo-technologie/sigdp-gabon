@@ -1,0 +1,245 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">storefront</i>Gestion des mareyeurs</h1>
+    <p>Registre des mareyeurs, agréments et traçabilité des achats</p>
+  </div>
+</div>
+<div class="container" style="width: 95%; max-width: none">
+  <!-- <div class="row" style="margin-bottom: 0">
+    <div class="col s12 right-align">
+      <label style="margin-right: 10px">
+        <input
+          type="checkbox"
+          class="filled-in"
+          [(ngModel)]="exporterAvecFiltre"
+        />
+        <span style="font-size: 0.85rem">Appliquer le filtre à l'export</span>
+      </label>
+      <button
+        class="btn-flat waves-effect"
+        title="Exporter en Excel"
+        [disabled]="exportEnCours"
+        (click)="exporter('xlsx')"
+      >
+        <i class="material-icons left">table_view</i>Excel
+      </button>
+      <button
+        class="btn-flat waves-effect"
+        title="Exporter en CSV (texte)"
+        [disabled]="exportEnCours"
+        (click)="exporter('csv')"
+      >
+        <i class="material-icons left">description</i>CSV
+      </button>
+      <button
+        class="btn-flat waves-effect"
+        title="Exporter en JSON"
+        [disabled]="exportEnCours"
+        (click)="exporter('json')"
+      >
+        <i class="material-icons left">data_object</i>JSON
+      </button>
+    </div>
+  </div> -->
+  <!-- Filtres -->
+  <div class="card">
+    <div class="card-content" style="padding: 15px 20px">
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="recherche"
+              >Nom, raison sociale, code, NIF, téléphone...</label
+            >
+            <div class="input-field">
+              <!-- <i class="material-icons prefix">search</i> -->
+              <input
+                id="recherche"
+                type="text"
+                [(ngModel)]="filtre.recherche"
+                (keyup.enter)="rechercher()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Statut</label>
+            <div class="input-field">
+              <select
+                id="filtre-statut"
+                (change)="onStatutChange($event)"
+                class="browser-default"
+              >
+                <option value="" selected>Tous les statuts</option>
+                <option value="actif">Actif</option>
+                <option value="suspendu">Suspendu</option>
+                <option value="radie">Radié</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3" style="margin-top: 25px">
+          <button class="btn waves-effect waves-light" (click)="rechercher()">
+            <i class="material-icons left">filter_list</i>Filtrer
+          </button>
+          <button class="btn-flat waves-effect" (click)="reinitialiser()">
+            Réinitialiser
+          </button>
+        </div>
+        <div class="col s12 m3 right-align">
+          <a
+            class="btn btn-primary waves-effect waves-light"
+            style="margin-top: 1.5rem"
+            [routerLink]="['/mareyeurs/add']"
+          >
+            <i class="material-icons left">add</i>Nouveau mareyeur
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card">
+    <div class="card-content" style="padding: 15px">
+      <div class="progress" *ngIf="chargement">
+        <div class="indeterminate"></div>
+      </div>
+      <div class="row valign-wrapper">
+        <div class="col s8">
+          <span class="card-title" *ngIf="!chargement">
+            {{ total }} mareyeur(s) trouvé(s)
+          </span>
+        </div>
+        <div class="col s4 right-align">
+          <button
+            class="btn-flat waves-effect green white-text"
+            title="Exporter en Excel"
+            [disabled]="exportEnCours"
+            (click)="exporter('xlsx')"
+            style="margin-right: 5px"
+          >
+            <i class="material-icons left">table_view</i>Excel
+          </button>
+          <button
+            class="btn-flat waves-effect amber white-text"
+            title="Exporter en CSV (texte)"
+            [disabled]="exportEnCours"
+            (click)="exporter('csv')"
+            style="margin-right: 5px"
+          >
+            <i class="material-icons left">description</i>CSV
+          </button>
+          <button
+            class="btn-flat waves-effect blue white-text"
+            title="Exporter en JSON"
+            [disabled]="exportEnCours"
+            (click)="exporter('json')"
+          >
+            <i class="material-icons left">data_object</i>JSON
+          </button>
+        </div>
+      </div>
+
+      <table class="striped highlight responsive-table" *ngIf="!chargement">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Nom / Raison sociale</th>
+            <th>Type</th>
+            <th>Téléphone</th>
+            <th>Zones d'activité</th>
+            <th>Statut</th>
+            <th class="center-align">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of mareyeurs">
+            <td>
+              <strong>{{ m.code }}</strong>
+            </td>
+            <td>{{ nomAffiche(m) }}</td>
+            <td>
+              {{
+                m.type_personne === "morale"
+                  ? "Personne morale"
+                  : "Personne physique"
+              }}
+            </td>
+            <td>{{ m.telephone || "-" }}</td>
+            <td>{{ m.zones_activite || "-" }}</td>
+            <td>
+              <span class="badge-statut" [ngClass]="'statut-' + m.statut">
+                {{ libelleStatut(m.statut) }}
+              </span>
+            </td>
+            <td class="center-align" style="white-space: nowrap">
+              <a
+                class="btn-small waves-effect blue"
+                title="Détails et agréments"
+                [routerLink]="['/mareyeurs/details', m.id]"
+              >
+                <i class="material-icons">visibility</i>
+              </a>
+              <a
+                class="btn-small waves-effect orange"
+                title="Modifier"
+                [routerLink]="['/mareyeurs/edit', m.id]"
+                style="margin-left: 5px"
+              >
+                <i class="material-icons">edit</i>
+              </a>
+              <button
+                class="btn-small waves-effect red"
+                title="Supprimer"
+                (click)="supprimer(m)"
+                style="margin-left: 5px"
+              >
+                <i class="material-icons">delete</i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="mareyeurs.length === 0">
+            <td
+              colspan="7"
+              class="center-align grey-text"
+              style="padding: 30px"
+            >
+              Aucun mareyeur enregistré. Cliquez sur « Nouveau mareyeur » pour
+              en ajouter un.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div
+        class="row"
+        *ngIf="total > filtre.taille_page"
+        style="padding: 10px 20px; margin-bottom: 0"
+      >
+        <div class="col s6 grey-text" style="line-height: 36px">
+          {{ total }} mareyeur(s) — page {{ filtre.page }} / {{ nombrePages() }}
+        </div>
+        <div class="col s6 right-align">
+          <button
+            class="btn-flat waves-effect"
+            [disabled]="filtre.page <= 1"
+            (click)="changerPage(filtre.page - 1)"
+          >
+            <i class="material-icons">chevron_left</i>
+          </button>
+          <button
+            class="btn-flat waves-effect"
+            [disabled]="filtre.page >= nombrePages()"
+            (click)="changerPage(filtre.page + 1)"
+          >
+            <i class="material-icons">chevron_right</i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

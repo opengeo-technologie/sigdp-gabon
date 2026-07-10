@@ -165,7 +165,6 @@ export class DashboardComponent implements OnInit {
   }
 
   loadCaptureParAn() {
-    this.loading = true;
     this.http
       .get(
         `${environment.apiUrl}/api/statistiques/captures/yearly?filtre=province&annee=${this.selectedYear}`,
@@ -183,7 +182,6 @@ export class DashboardComponent implements OnInit {
   }
 
   loadAutorisationParProvince() {
-    this.loading = true;
     this.http
       .get(
         `${environment.apiUrl}/api/statistiques/autorisations/province?annee=${this.selectedYearAutorisation}`,
@@ -205,7 +203,6 @@ export class DashboardComponent implements OnInit {
   }
 
   loadCaptureParZone() {
-    // this.loading = true;
     this.http
       .get(
         `${environment.apiUrl}/api/statistiques/captures/zone?annee=${this.selectedYearCapture}`,

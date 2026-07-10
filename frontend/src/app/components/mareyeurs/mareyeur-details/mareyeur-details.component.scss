@@ -1,0 +1,30 @@
+.badge-statut {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: white;
+}
+.statut-actif {
+  background-color: #43a047;
+}
+.statut-suspendu {
+  background-color: #fb8c00;
+}
+.statut-radie {
+  background-color: #e53935;
+}
+.agrement-en_instruction {
+  background-color: #757575;
+}
+.agrement-delivre {
+  background-color: #43a047;
+}
+.agrement-expire {
+  background-color: #6d4c41;
+}
+.agrement-suspendu {
+  background-color: #fb8c00;
+}
+.agrement-retire {
+  background-color: #e53935;
+}

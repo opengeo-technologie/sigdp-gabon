@@ -79,9 +79,27 @@ def create_signataire(signataire_data: SignataireCreate, db: Session = Depends(g
 
 
 @router.get("/", response_model=List[SignataireResponse])
-def list_signataires(db: Session = Depends(get_db)):
+def list_signataires(
+    statut: Optional[bool] = False,
+    exclure_ministre: Optional[bool] = False,
+    db: Session = Depends(get_db),
+):
     """Lister tous les signataires actifs"""
-    signataires = db.query(Signataire).filter(Signataire.is_actif == True).all()
+    if exclure_ministre:
+        ministre_role = (
+            db.query(RoleSignataire)
+            .filter(func.lower(func.trim(RoleSignataire.abbreviation)) == "ministre")
+            .first()
+        )
+        signataires = (
+            db.query(Signataire)
+            .filter(
+                Signataire.is_actif == statut, Signataire.role_id != ministre_role.id
+            )
+            .all()
+        )
+    else:
+        signataires = db.query(Signataire).filter(Signataire.is_actif == statut).all()
     results = [build_signataire_response(s, db) for s in signataires]
     return results
 
@@ -90,6 +108,32 @@ def list_signataires(db: Session = Depends(get_db)):
 def get_signataire(signataire_id: int, db: Session = Depends(get_db)):
     """Obtenir les détails d'un signataire par son ID"""
     signataire = db.query(Signataire).filter(Signataire.id == signataire_id).first()
+    if not signataire:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Signataire non trouvé"
+        )
+    return build_signataire_response(signataire, db)
+
+
+@router.get("/signataire/by-role", response_model=SignataireResponse)
+def get_signataire_by_role(
+    statut: Optional[bool] = False,
+    role: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Obtenir les détails d'un signataire par son ID"""
+    roleSelection = (
+        db.query(RoleSignataire)
+        .filter(
+            func.lower(func.trim(RoleSignataire.abbreviation)) == role.strip().lower()
+        )
+        .first()
+    )
+    signataire = (
+        db.query(Signataire)
+        .filter(Signataire.is_actif == statut, Signataire.role_id == roleSelection.id)
+        .first()
+    )
     if not signataire:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Signataire non trouvé"

@@ -51,7 +51,8 @@ export interface Bateau {
   chantier_construction?: string;
 
   // Engins de pêche
-  engins_peche?: string;
+  engin_peche1?: any;
+  engin_peche2?: any;
   engins_peche_principal?: number;
   engins_peche_secondaires?: string;
 
@@ -91,6 +92,10 @@ export interface Bateau {
     nom: string;
     prenom: string;
     numero_carte: string;
+    nationalite?: string;
+    numero_piece?: string;
+    type_carte?: string;
+    residence?: string;
     telephone?: string;
   };
 
