@@ -1,0 +1,275 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">waves</i>Stations piscicoles</h1>
+    <p>Gestion des stations piscicoles</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- <div class="row valign-wrapper" style="margin-bottom: 0">
+    <div class="col s8">
+      <h5><i class="material-icons left">waves</i>Stations piscicoles</h5>
+    </div>
+    <div class="col s4 right-align">
+      <a routerLink="/stations-piscicoles/carte" class="btn-flat waves-effect">
+        <i class="material-icons left">map</i>Carte
+      </a>
+      <a
+        routerLink="/stations-piscicoles/add"
+        class="btn waves-effect waves-light green"
+      >
+        <i class="material-icons left">add</i>Nouvelle station
+      </a>
+    </div>
+  </div> -->
+
+  <!-- Filtres -->
+  <div class="card-panel">
+    <div class="row" style="margin-bottom: 0">
+      <div class="col s6 m3">
+        <div class="form-input">
+          <label for="recherche">Nom, code, promoteur, localité...</label>
+          <div class="input-field">
+            <!-- <i class="material-icons prefix">search</i> -->
+            <input
+              id="recherche"
+              type="text"
+              [(ngModel)]="filtres.search"
+              (keyup.enter)="rechercher()"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Province</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.province"
+              class="browser-default"
+              (ngModelChange)="rechercher()"
+            >
+              <option value="">Toutes</option>
+              <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Type</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.type_station"
+              class="browser-default"
+              (ngModelChange)="rechercher()"
+            >
+              <option value="">Tous</option>
+              <option *ngFor="let t of typesStation" [value]="t">
+                {{ typeLabels[t] }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Statut</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.statut"
+              class="browser-default"
+              (ngModelChange)="rechercher()"
+            >
+              <option value="">Tous</option>
+              <option *ngFor="let s of statuts" [value]="s">
+                {{ statutLabels[s] }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Espèce</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.espece"
+              class="browser-default"
+              (ngModelChange)="rechercher()"
+            >
+              <option value="">Toutes</option>
+              <option *ngFor="let e of especes" [value]="e">{{ e }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card">
+    <div class="card-content" style="padding: 15px">
+      <div *ngIf="chargement" class="progress">
+        <div class="indeterminate"></div>
+      </div>
+      <div class="row valign-wrapper" style="margin-bottom: 10px">
+        <div class="col s5">
+          <span class="card-title" *ngIf="!chargement">
+            {{ total }} station(s) piscicole(s) trouvé(s)
+          </span>
+        </div>
+        <div class="col s7 right-align">
+          <a
+            routerLink="/stations-piscicoles/rapports"
+            class="btn waves-effect grey white-text"
+            [class.disabled]="!hasPermission('stations.export')"
+            style="margin-right: 10px"
+          >
+            <i class="material-icons left">assessment</i>Générer rapport
+          </a>
+          <a
+            routerLink="/stations-piscicoles/exporter"
+            class="btn waves-effect orange white-text"
+            [class.disabled]="!hasPermission('stations.export')"
+            style="margin-right: 10px"
+          >
+            <i class="material-icons left">download</i>Exporter
+          </a>
+          <a
+            routerLink="/stations-piscicoles/importer"
+            class="btn-flat btn waves-effect green white-text"
+            [class.disabled]="!hasPermission('stations.import')"
+            style="margin-right: 10px"
+          >
+            <i class="material-icons left">upload</i>Importer
+          </a>
+          <a
+            routerLink="/stations-piscicoles/carte"
+            class="btn-flat btn waves-effect amber white-text"
+            style="margin-right: 10px"
+          >
+            <i class="material-icons left">map</i>Carte
+          </a>
+          <a
+            routerLink="/stations-piscicoles/add"
+            class="btn waves-effect waves-light blue"
+            [class.disabled]="!hasPermission('stations.create')"
+          >
+            <i class="material-icons left">add</i>Nouvelle station
+          </a>
+        </div>
+      </div>
+
+      <table class="striped highlight responsive-table" *ngIf="!chargement">
+        <thead>
+          <tr>
+            <!-- <th>Code</th> -->
+            <th>Nom</th>
+            <th>Province</th>
+            <th>Type</th>
+            <th>Espèces</th>
+            <th>Promoteur</th>
+            <th>Statut</th>
+            <th class="center-align">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let station of stations">
+            <!-- <td>
+              <strong>{{ station.code_station }}</strong>
+            </td> -->
+            <td>{{ station.nom }}</td>
+            <td>
+              {{ station.province }}<br />
+              <small class="grey-text">{{ station.localite }}</small>
+            </td>
+            <td>{{ typeLabels[station.type_station] }}</td>
+            <td>
+              <span
+                *ngFor="let e of splitEspeces(station.especes_elevees)"
+                class="chip"
+                style="font-size: 11px"
+                >{{ e }}</span
+              >
+            </td>
+            <td>{{ station.promoteur_nom }}</td>
+            <td>
+              <span
+                class="new badge {{ statutColors[station.statut] }}"
+                data-badge-caption=""
+                >{{ statutLabels[station.statut] }}</span
+              >
+            </td>
+            <td class="center-align" style="white-space: nowrap">
+              <div class="btn-group" role="btn">
+                <a
+                  [routerLink]="['/stations-piscicoles', station.id, 'details']"
+                  class="btn btn-small waves-effect blue"
+                  title="Voir la fiche"
+                  [class.disabled]="!hasPermission('stations.read')"
+                >
+                  <i class="material-icons">visibility</i>
+                </a>
+                <a
+                  [routerLink]="['/stations-piscicoles', station.id, 'edit']"
+                  class="btn btn-small waves-effect amber"
+                  [class.disabled]="!hasPermission('stations.update')"
+                  title="Modifier"
+                >
+                  <i class="material-icons">edit</i>
+                </a>
+                <a
+                  class="btn btn-small waves-effect red"
+                  title="Supprimer"
+                  [class.disabled]="!hasPermission('stations.delete')"
+                  (click)="supprimer(station)"
+                >
+                  <i class="material-icons">delete</i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="stations.length === 0">
+            <td
+              colspan="8"
+              class="center-align grey-text"
+              style="padding: 40px"
+            >
+              Aucune station ne correspond aux filtres.
+              <a routerLink="/stations-piscicoles/nouveau"
+                >Enregistrer une station</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-action center-align" *ngIf="total > filtres.page_size">
+      <ul class="pagination" style="margin: 0">
+        <li [class.disabled]="filtres.page === 1">
+          <a (click)="changerPage(filtres.page - 1)">
+            <i class="material-icons">chevron_left</i></a
+          >
+        </li>
+        <li
+          *ngFor="let p of pages()"
+          [class.active]="p === filtres.page"
+          [class.waves-effect]="p !== filtres.page"
+        >
+          <a (click)="changerPage(p)">{{ p }}</a>
+        </li>
+        <li [class.disabled]="filtres.page === nbPages()">
+          <a (click)="changerPage(filtres.page + 1)">
+            <i class="material-icons">chevron_right</i></a
+          >
+        </li>
+      </ul>
+      <span class="grey-text" style="margin-left: 16px">
+        {{ total }} station(s)
+      </span>
+    </div>
+  </div>
+</div>

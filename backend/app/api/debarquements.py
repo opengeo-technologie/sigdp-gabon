@@ -33,6 +33,41 @@ ERRORS_DIR = Path("errors/captures")
 ERRORS_DIR.mkdir(parents=True, exist_ok=True)
 
 ERROR_FILE = ERRORS_DIR / "errors.xlsx"
+ERROR_FILE_BATEAUX = ERRORS_DIR / "errors_bateaux.xlsx"
+
+
+FORMATS_DATE = ["%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"]
+
+
+def parser_date(valeur, nom_champ: str) -> date | None:
+    """Parse une date depuis Excel (str, datetime ou None) avec erreur explicite."""
+    if valeur is None or (isinstance(valeur, str) and not valeur.strip()):
+        return None
+
+    # openpyxl renvoie souvent directement un datetime pour les cellules date
+    if isinstance(valeur, datetime):
+        return valeur.date()
+    if isinstance(valeur, date):
+        return valeur
+
+    texte = str(valeur).strip()
+
+    # Détection des dates malformées type '18/10/10/2024'
+    if texte.count("/") > 2 or texte.count("-") > 2:
+        raise ValueError(
+            f"« {nom_champ} » : date invalide « {texte} » "
+            f"(trop de séparateurs — format attendu : JJ/MM/AAAA)"
+        )
+
+    for fmt in FORMATS_DATE:
+        try:
+            return datetime.strptime(texte, fmt).date()
+        except ValueError:
+            continue
+
+    raise ValueError(
+        f"« {nom_champ} » : date invalide « {texte} » (format attendu : JJ/MM/AAAA)"
+    )
 
 
 def generate_numero_debarquement() -> str:
@@ -91,16 +126,19 @@ async def upload_captures_excel(
         # Nettoyer les données
         df = df.fillna("")  # Remplacer NaN par chaîne vide
 
+        header = df.columns.tolist()
+        print(header)
+
         # Statistiques d'import
         total_rows = len(df)
         inserted_count = 0
         updated_count = 0
         errors = []
+        errors_bateaux = []
 
         # Précharger les données de référence pour éviter les requêtes répétées
         especes = db.query(Espece).all()
 
-        errors = []
         # Insérer les données dans la base de données
         for _, row in df.iterrows():
 
@@ -150,14 +188,24 @@ async def upload_captures_excel(
 
             try:
 
+                date_depart = parser_date(row.get("depart"), "Date de départ pêche")
+                date_debarq = parser_date(row.get("retour"), "Date de débarquement")
+
+                # Contrôle de cohérence métier tant qu'on y est
+                if date_depart and date_debarq and date_depart > date_debarq:
+                    raise ValueError(
+                        f"La date de départ ({date_depart.strftime('%d/%m/%Y')}) est supérieure "
+                        f"à la date de débarquement ({date_debarq.strftime('%d/%m/%Y')})"
+                    )
+
                 debarquement_data = DebarquementCreate(
                     # numero_debarquement=generate_numero_debarquement(),
                     bateau_id=bateau.id if bateau else None,
                     pecheur_principal_id=(
                         bateau.proprietaire_pecheur_id if bateau else None
                     ),
-                    date_debarquement=row["retour"],
-                    date_depart_peche=row["depart"],
+                    date_debarquement=date_debarq,
+                    date_depart_peche=date_depart,
                     zone_peche_nom=row["zone_de_peche"],
                     debarcadere_id=debarquement.id if debarquement else None,
                     details=details_selected,
@@ -185,19 +233,40 @@ async def upload_captures_excel(
 
                 db.commit()
                 db.refresh(debarquement)
+                inserted_count += 1
             except Exception as e:
                 db.rollback()
+                # print(e)
+
                 error_row = row.to_dict()
-                error_row["error_message"] = str(e)
+                error_row_bateau = {}
+                if not bateau:
+                    error_row_bateau["immatriculation"] = row["immatriculation_pirogue"]
+                    error_row_bateau["nom_pirroge"] = row["identifiant_pirogue"]
+                    error_row_bateau["error_message"] = (
+                        f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
+                    )
+                    error_row["error_message"] = (
+                        f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
+                    )
+                    errors_bateaux.append(error_row_bateau)
+                else:
+                    error_row["error_message"] = str(e)
                 errors.append(error_row)
 
         header = df.columns.tolist()
+        header_bateau = ["immatriculation", "nom_pirroge"]
         if errors:
-            save_errors(errors, header)
+            save_errors(errors, header, ERROR_FILE)
+
+        if errors_bateaux:
+            save_errors(errors_bateaux, header_bateau, ERROR_FILE_BATEAUX)
 
         return {
-            "inserted": len(df) - len(errors),
-            "failed": len(errors),
+            "total": len(df),
+            "inseres": inserted_count,
+            "echoues": len(errors),
+            "erreurs": errors,
             "error_file": ERROR_FILE if errors else None,
         }
 
@@ -211,7 +280,7 @@ async def upload_captures_excel(
         )
 
 
-def save_errors(errors: list[dict], header: list[str]):
+def save_errors(errors: list[dict], header: list[str], path_file: str):
     new_df = pd.DataFrame(errors)
     new_df = (
         new_df[header + ["error_message"]]
@@ -219,13 +288,13 @@ def save_errors(errors: list[dict], header: list[str]):
         else new_df
     )
 
-    if os.path.exists(ERROR_FILE):
-        existing_df = pd.read_excel(ERROR_FILE)
+    if os.path.exists(path_file):
+        existing_df = pd.read_excel(path_file)
         final_df = pd.concat([existing_df, new_df], ignore_index=True)
     else:
         final_df = new_df
 
-    final_df.to_excel(ERROR_FILE, index=False, header=True)
+    final_df.to_excel(path_file, index=False, header=True)
 
 
 def check_alertes(debarquement: Debarquement, details: list, db: Session):

@@ -1,0 +1,240 @@
+nav {
+  background-color: #0d47a1;
+}
+
+nav .brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  padding-left: 16px;
+}
+
+nav .brand-logo img {
+  height: 40px;
+}
+
+/* ---- Structure principale : panneau + carte ---- */
+.layout {
+  position: relative;
+  display: flex;
+  height: calc(100dvh - 64px);
+  overflow: hidden;
+}
+
+.side-panel {
+  flex: 0 0 360px;
+  width: 360px;
+  background-color: #10233f;
+  color: #e8eef7;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition:
+    flex-basis 0.28s ease,
+    width 0.28s ease;
+}
+
+/* Largeur figée du contenu : évite que le texte se réorganise pendant l'animation */
+.side-panel__inner {
+  width: 360px;
+  padding: 24px 20px 32px;
+  box-sizing: border-box;
+}
+
+.layout.is-collapsed .side-panel {
+  flex-basis: 0;
+  width: 0;
+}
+
+.side-panel__section + .side-panel__section {
+  margin-top: 32px;
+}
+
+.side-panel__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8fb4e8;
+  margin: 0 0 16px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #17304f;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.stat-card i {
+  font-size: 26px;
+}
+
+.stat-card__value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.stat-card__label {
+  font-size: 0.85rem;
+  color: #9fb6d4;
+}
+
+.empty-state {
+  font-size: 0.9rem;
+  color: #7f96b5;
+  margin: 0;
+}
+
+/* ---- Bouton de repli ---- */
+.panel-toggle {
+  position: absolute;
+  top: 16px;
+  left: 360px;
+  z-index: 1100; /* au-dessus des contrôles Leaflet (1000) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  background-color: #10233f;
+  color: #e8eef7;
+  cursor: pointer;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.25);
+  transition:
+    left 0.28s ease,
+    background-color 0.15s ease;
+}
+
+.panel-toggle:hover {
+  background-color: #17304f;
+}
+
+.panel-toggle:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.panel-toggle i {
+  transition: transform 0.28s ease;
+}
+
+/* Grand écran : seul le chevron est visible */
+.panel-toggle__show,
+.panel-toggle__hide {
+  display: none;
+}
+
+.layout.is-collapsed .panel-toggle {
+  left: 0;
+}
+
+.layout.is-collapsed .panel-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+/* ---- Carte ---- */
+#map {
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+  background-color: #dfe6ed;
+  z-index: 0;
+}
+
+/* ---- Responsive : empilement vertical ---- */
+@media (max-width: 992px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .side-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 45vh;
+    transition: max-height 0.28s ease;
+  }
+
+  .side-panel__inner {
+    width: 100%;
+  }
+
+  .layout.is-collapsed .side-panel {
+    max-height: 0;
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  #map {
+    height: 55vh;
+    flex: 0 0 auto;
+    transition: height 0.28s ease;
+  }
+
+  /* Panneau replié : la carte récupère toute la hauteur utile */
+  .layout.is-collapsed #map {
+    height: calc(100dvh - 64px);
+  }
+
+  /* Pastille flottante posée sur la carte, à l'opposé de l'attribution
+         Leaflet (bas-droite) et des contrôles de zoom (haut-gauche). */
+  .panel-toggle {
+    top: auto;
+    bottom: 20px;
+    left: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #0d47a1;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    transition: background-color 0.15s ease;
+  }
+
+  .panel-toggle:hover,
+  .panel-toggle:active {
+    background-color: #1565c0;
+  }
+
+  .layout.is-collapsed .panel-toggle {
+    left: 16px;
+  }
+
+  .panel-toggle__chevron {
+    display: none;
+  }
+
+  /* Panneau ouvert : croix pour le refermer.
+         Panneau replié : icône statistiques pour l'ouvrir. */
+  .panel-toggle__hide {
+    display: block;
+  }
+
+  .layout.is-collapsed .panel-toggle__hide {
+    display: none;
+  }
+
+  .layout.is-collapsed .panel-toggle__show {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-panel,
+  .panel-toggle,
+  .panel-toggle i {
+    transition: none;
+  }
+}

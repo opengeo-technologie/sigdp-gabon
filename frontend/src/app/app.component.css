@@ -25,7 +25,8 @@ nav ul a.active {
 }
 
 main {
-  min-height: calc(100vh - 64px - 200px);
+  flex: 1 0 auto;
+  min-height: calc(100vh - 64px);
   padding-bottom: 2rem;
 }
 

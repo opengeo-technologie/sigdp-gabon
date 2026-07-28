@@ -311,103 +311,127 @@
         *ngIf="afficherFormInstallation"
         style="padding: 10px; border-radius: 4px; margin-top: 10px"
       >
-        <div class="input-field col s12 m3">
-          <select id="inst-type" (change)="onTypeInstallationChange($event)">
-            <option
-              *ngFor="let t of typesInstallation"
-              [value]="t"
-              [selected]="formInstallation.type_installation === t"
-            >
-              {{ LIBELLES_TYPE_INSTALLATION[t] }}
-            </option>
-          </select>
+        <div class="form-input col s12 m2">
           <label>Type *</label>
+          <div class="input-field">
+            <select id="inst-type" (change)="onTypeInstallationChange($event)">
+              <option
+                *ngFor="let t of typesInstallation"
+                [value]="t"
+                [selected]="formInstallation.type_installation === t"
+              >
+                {{ LIBELLES_TYPE_INSTALLATION[t] }}
+              </option>
+            </select>
+          </div>
         </div>
-        <div class="input-field col s12 m4">
-          <input
-            id="inst-designation"
-            type="text"
-            [(ngModel)]="formInstallation.designation"
-          />
+
+        <div class="form-input col s12 m3">
           <label
             for="inst-designation"
             [class.active]="!!formInstallation.designation"
             >Désignation *</label
           >
+          <div class="input-field">
+            <input
+              id="inst-designation"
+              type="text"
+              [(ngModel)]="formInstallation.designation"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="inst-capacite"
-            type="number"
-            min="0"
-            step="0.1"
-            [(ngModel)]="formInstallation.capacite_tonnes"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="inst-capacite" class="active">Capacité (t)</label>
+          <div class="input-field">
+            <input
+              id="inst-capacite"
+              type="number"
+              min="0"
+              step="0.1"
+              [(ngModel)]="formInstallation.capacite_tonnes"
+            />
+          </div>
         </div>
+
         <div
-          class="input-field col s12 m3"
+          class="form-input col s12 m3"
           *ngIf="formInstallation.type_installation === 'vehicule_frigorifique'"
         >
-          <input
-            id="inst-immat"
-            type="text"
-            [(ngModel)]="formInstallation.immatriculation"
-          />
           <label
             for="inst-immat"
             [class.active]="!!formInstallation.immatriculation"
             >Immatriculation</label
           >
+          <div class="input-field">
+            <input
+              id="inst-immat"
+              type="text"
+              [(ngModel)]="formInstallation.immatriculation"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m4">
-          <input
-            id="inst-adresse"
-            type="text"
-            [(ngModel)]="formInstallation.adresse"
-          />
+
+        <div class="form-input col s12 m3">
           <label for="inst-adresse" [class.active]="!!formInstallation.adresse"
             >Adresse / localisation</label
           >
+          <div class="input-field">
+            <input
+              id="inst-adresse"
+              type="text"
+              [(ngModel)]="formInstallation.adresse"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="inst-lat"
-            type="number"
-            step="0.000001"
-            [(ngModel)]="formInstallation.latitude"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="inst-lat" class="active">Latitude</label>
+          <div class="input-field">
+            <input
+              id="inst-lat"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formInstallation.latitude"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="inst-lng"
-            type="number"
-            step="0.000001"
-            [(ngModel)]="formInstallation.longitude"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="inst-lng" class="active">Longitude</label>
+          <div class="input-field">
+            <input
+              id="inst-lng"
+              type="number"
+              step="0.000001"
+              [(ngModel)]="formInstallation.longitude"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <select
-            id="inst-statut"
-            (change)="onStatutInstallationChange($event)"
-          >
-            <option
-              value="fonctionnelle"
-              [selected]="formInstallation.statut === 'fonctionnelle'"
-            >
-              Fonctionnelle
-            </option>
-            <option
-              value="hors_service"
-              [selected]="formInstallation.statut === 'hors_service'"
-            >
-              Hors service
-            </option>
-          </select>
+
+        <div class="form-input col s12 m2">
           <label>Statut</label>
+          <div class="input-field">
+            <select
+              id="inst-statut"
+              (change)="onStatutInstallationChange($event)"
+            >
+              <option
+                value="fonctionnelle"
+                [selected]="formInstallation.statut === 'fonctionnelle'"
+              >
+                Fonctionnelle
+              </option>
+              <option
+                value="hors_service"
+                [selected]="formInstallation.statut === 'hors_service'"
+              >
+                Hors service
+              </option>
+            </select>
+          </div>
         </div>
+
         <div class="col s12 m2 right-align" style="margin-top: 25px">
           <button
             class="btn waves-effect green"
@@ -538,76 +562,136 @@
         *ngIf="afficherFormTransaction"
         style="padding: 10px; border-radius: 4px; margin-top: 10px"
       >
-        <div class="input-field col s12 m2">
-          <input
-            id="trx-date"
-            type="date"
-            [(ngModel)]="formTransaction.date_transaction"
-          />
+        <div class="form-input col s12 m2">
           <label for="trx-date" class="active">Date *</label>
+          <div class="input-field">
+            <input
+              id="trx-date"
+              type="date"
+              [(ngModel)]="formTransaction.date_transaction"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m3">
-          <select id="trx-site" (change)="onSiteTransactionChange($event)">
-            <option value="">-- Site de débarquement --</option>
-            <option
-              *ngFor="let s of sitesDuMareyeur()"
-              [value]="s"
-              [selected]="formTransaction.site_debarquement === s"
-            >
-              {{ s }}
-            </option>
-          </select>
+
+        <div class="form-input col s12 m3">
           <label>Site</label>
+          <div class="input-field">
+            <select
+              #selectSite
+              id="trx-site"
+              [(ngModel)]="site"
+              (change)="onSiteTransactionChange($event)"
+            >
+              <option [ngValue]="null">-- Site de débarquement --</option>
+              <option *ngFor="let s of debarcaderes" [ngValue]="s">
+                {{ s.site }}
+              </option>
+            </select>
+          </div>
         </div>
-        <div class="input-field col s12 m3">
-          <input
-            id="trx-pecheur"
-            type="text"
-            [(ngModel)]="formTransaction.pecheur"
-          />
+
+        <div class="form-input col s12 m3">
           <label for="trx-pecheur" [class.active]="!!formTransaction.pecheur"
             >Pêcheur</label
           >
+          <div class="input-field">
+            <select
+              #selectPecheur
+              id="trx-pecheur"
+              [(ngModel)]="pecheur"
+              (change)="onPecheurChange()"
+            >
+              <option [ngValue]="null">-- Pêcheur --</option>
+              <option *ngFor="let p of pecheurs" [ngValue]="p">
+                {{ p.nom }} {{ p.prenom }}
+              </option>
+            </select>
+            <!-- <input
+              id="trx-pecheur"
+              type="text"
+              [(ngModel)]="formTransaction.pecheur"
+            /> -->
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="trx-pirogue"
-            type="text"
-            [(ngModel)]="formTransaction.pirogue"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="trx-pirogue" [class.active]="!!formTransaction.pirogue"
             >Pirogue</label
           >
+          <div class="input-field">
+            <select #selectBateau id="trx-pirogue" [(ngModel)]="bateau">
+              <option [ngValue]="null">-- Pirogue --</option>
+              <option *ngFor="let b of bateauxFiltered" [ngValue]="b">
+                {{ b.nom_bateau }}_{{ b.numero_immatriculation }}
+              </option>
+            </select>
+            <!-- <input
+              id="trx-pirogue"
+              type="text"
+              [(ngModel)]="formTransaction.pirogue"
+            /> -->
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="trx-espece"
-            type="text"
-            [(ngModel)]="formTransaction.espece"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="trx-espece" [class.active]="!!formTransaction.espece"
             >Espèce *</label
           >
+          <div class="input-field">
+            <select #selectEspece id="trx-espece" [(ngModel)]="espece">
+              <option [ngValue]="null">-- Espèce --</option>
+              <option *ngFor="let e of especes" [ngValue]="e">
+                {{ e.nom_commun_francais }} ({{ e.categorie }})
+              </option>
+            </select>
+            <!-- <input
+              id="trx-espece"
+              type="text"
+              [(ngModel)]="formTransaction.espece"
+            /> -->
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="trx-quantite"
-            type="number"
-            min="0"
-            step="0.1"
-            [(ngModel)]="formTransaction.quantite_kg"
-          />
+
+        <div class="form-input col s12 m3">
+          <label for="trx-etat">Etat poisson</label>
+          <div class="input-field">
+            <select
+              id="trx-etat"
+              [(ngModel)]="formTransaction.etat_poisson"
+              (change)="onSiteTransactionChange($event)"
+            >
+              <option [value]="'frais'">-- Poisson frais --</option>
+              <option [value]="'fume'">-- Poisson fumé --</option>
+              <option [value]="'sale'">-- Poisson salé --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-input col s12 m2">
           <label for="trx-quantite" class="active">Quantité (kg) *</label>
+          <div class="input-field">
+            <input
+              id="trx-quantite"
+              type="number"
+              min="0"
+              step="0.1"
+              [(ngModel)]="formTransaction.quantite_kg"
+            />
+          </div>
         </div>
-        <div class="input-field col s12 m2">
-          <input
-            id="trx-prix"
-            type="number"
-            min="0"
-            [(ngModel)]="formTransaction.prix_unitaire_fcfa"
-          />
+
+        <div class="form-input col s12 m2">
           <label for="trx-prix" class="active">Prix unitaire (FCFA/kg)</label>
+          <div class="input-field">
+            <input
+              id="trx-prix"
+              type="number"
+              min="0"
+              [(ngModel)]="formTransaction.prix_unitaire_fcfa"
+            />
+          </div>
         </div>
+
         <div class="col s12 m3 grey-text" style="margin-top: 28px">
           Montant :
           <strong>{{ montantPrevisionnel() | number: "1.0-0" }} FCFA</strong>
@@ -637,6 +721,7 @@
             <th>Code</th>
             <th>Date</th>
             <th>Espèce</th>
+            <th>Etat poisson</th>
             <th class="right-align">Quantité (kg)</th>
             <th class="right-align">PU (FCFA)</th>
             <th class="right-align">Montant (FCFA)</th>
@@ -652,6 +737,17 @@
             </td>
             <td>{{ t.date_transaction }}</td>
             <td>{{ t.espece }}</td>
+            <td>
+              @if (t.etat_poisson == "frais") {
+                Poisson frais
+              }
+              @if (t.etat_poisson == "fume") {
+                Poisson fumé
+              }
+              @if (t.etat_poisson == "sale") {
+                Poisson salé
+              }
+            </td>
             <td class="right-align">{{ t.quantite_kg | number: "1.0-1" }}</td>
             <td class="right-align">
               {{

@@ -12,6 +12,7 @@ import {
   StatutPecheur,
 } from "../../../models/pecheur.model";
 import { HasPermissionDirective } from "../../../directives/has-permission.directive";
+import { AuthService } from "../../../services/auth.service";
 
 declare var M: any;
 
@@ -101,9 +102,39 @@ declare var M: any;
       <!-- Résultats -->
       <div class="card" *ngIf="!loading">
         <div class="card-content">
-          <span class="card-title">
-            {{ pecheurs.length }} pêcheur(s) trouvé(s)
-          </span>
+          <div class="row valign-wrapper" style="margin-bottom: 10px">
+            <div class="col s5">
+              <span class="card-title">
+                {{ pecheurs.length }} pêcheur(s) trouvé(s)
+              </span>
+            </div>
+            <div class="col s7 right-align">
+              <a
+                routerLink="/pecheurs/rapports"
+                class="btn waves-effect grey white-text"
+                [class.disabled]="!hasPermission('pecheur.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">assessment</i>Générer rapport
+              </a>
+              <a
+                routerLink="/pecheurs/exporter"
+                class="btn waves-effect orange white-text"
+                [class.disabled]="!hasPermission('pecheur.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">download</i>Exporter
+              </a>
+              <a
+                routerLink="/pecheurs/importer"
+                class="btn-flat btn waves-effect green white-text"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">upload</i>Importer
+              </a>
+            </div>
+          </div>
+
           <div class="table-responsive">
             <table class="highlight responsive-table">
               <thead>
@@ -276,11 +307,16 @@ export class PecheurListComponent implements OnInit {
   constructor(
     private pecheurService: PecheurService,
     private cardGeneratorService: CardGeneratorService,
+    private permissionService: AuthService,
   ) {}
 
   ngOnInit() {
     this.loadPecheurs();
     setTimeout(() => this.initializeSelects(), 100);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissionService.hasPermission(permission);
   }
 
   loadPecheurs() {

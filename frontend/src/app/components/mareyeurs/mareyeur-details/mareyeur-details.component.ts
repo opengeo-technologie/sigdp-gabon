@@ -1,4 +1,10 @@
-import { Component, OnInit, inject } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  inject,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -15,6 +21,10 @@ import {
   LIBELLES_CATEGORIE_AGREMENT,
   SITES_DEBARQUEMENT,
 } from "../../../models/mareyeur.model";
+import { DebarcadereService } from "../../../services/debarcadere.service";
+import { PecheurService } from "../../../services/pecheur.service";
+import { BateauService } from "../../../services/bateau.service";
+import { EspeceService } from "../../../services/espece.service";
 
 const LIBELLES_TYPE_INSTALLATION: Record<string, string> = {
   chambre_froide: "Chambre froide",
@@ -22,6 +32,12 @@ const LIBELLES_TYPE_INSTALLATION: Record<string, string> = {
   entrepot: "Entrepôt",
   etal: "Étal",
   autre: "Autre",
+};
+
+const LIBELLES_ETAT_TRANSACTION: Record<string, string> = {
+  frais: "Frais",
+  sale: "Salé",
+  fume: "Fumé",
 };
 
 declare var M: any;
@@ -34,8 +50,17 @@ declare var M: any;
   styleUrl: "./mareyeur-details.component.scss",
 })
 export class MareyeurDetailsComponent implements OnInit {
+  @ViewChild("selectSite") selectSite!: ElementRef;
+  @ViewChild("selectPecheur") selectPecheur!: ElementRef;
+  @ViewChild("selectBateau") selectBateau!: ElementRef;
+  @ViewChild("selectEspece") selectEspece!: ElementRef;
+
   private mareyeurService = inject(MareyeurService);
   private mareyeurPdfService = inject(MareyeurPdfService);
+  private debarcadereService = inject(DebarcadereService);
+  private pecheurService = inject(PecheurService);
+  private bateauService = inject(BateauService);
+  private especeService = inject(EspeceService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -43,9 +68,22 @@ export class MareyeurDetailsComponent implements OnInit {
   LIBELLES_TYPE_INSTALLATION = LIBELLES_TYPE_INSTALLATION;
   LIBELLES_STATUT_AGREMENT = LIBELLES_STATUT_AGREMENT;
   LIBELLES_CATEGORIE_AGREMENT = LIBELLES_CATEGORIE_AGREMENT;
+  LIBELLES_ETAT_TRANSACTION = LIBELLES_ETAT_TRANSACTION;
 
   mareyeur: Mareyeur | null = null;
   agrements: AgrementMareyage[] = [];
+
+  debarcaderes: any[] = [];
+  pecheurs: any[] = [];
+  filteredPecheurs: any[] = [];
+  bateaux: any[] = [];
+  bateauxFiltered: any[] = [];
+  especes: any[] = [];
+
+  pecheur: any = null;
+  site: any = null;
+  bateau: any = null;
+  espece: any = null;
 
   afficherFormAgrement = false;
   nouvelAgrement = {
@@ -412,9 +450,14 @@ export class MareyeurDetailsComponent implements OnInit {
       mareyeur_id: this.mareyeur?.id || 0,
       date_transaction: new Date().toISOString().slice(0, 10),
       site_debarquement: null,
-      pecheur: null,
-      pirogue: null,
+      site_debarquement_id: 0,
+      pecheur: "",
+      pirogue: "",
       espece: "",
+      etat_poisson: "frais",
+      pecheur_id: 0,
+      pirogue_id: 0,
+      espece_id: 0,
       quantite_kg: 0,
       prix_unitaire_fcfa: null,
     };
@@ -440,6 +483,74 @@ export class MareyeurDetailsComponent implements OnInit {
       });
   }
 
+  loadData() {
+    this.debarcadereService.getDebarcadereList().subscribe((data: any) => {
+      // console.log("Debarcaderes:", data);
+      this.debarcaderes = data;
+      // setTimeout(() => this.initMaterialize(), 500);
+      setTimeout(() => {
+        M.FormSelect.init(this.selectSite?.nativeElement);
+        this.addSearchBox(this.selectSite?.nativeElement, "select_debarcadere");
+      }, 500);
+    });
+    this.pecheurService.getPecheursDropdown().subscribe((data) => {
+      // console.log("Pecheurs:", data);
+      this.pecheurs = data;
+      this.filteredPecheurs = data;
+      // setTimeout(() => this.initMaterialize(), 500);
+      setTimeout(() => {
+        M.FormSelect.init(this.selectPecheur?.nativeElement);
+        this.addSearchBox(this.selectPecheur?.nativeElement, "trx-pecheur");
+      }, 500);
+    });
+    this.bateauService.getBateauxDropdown().subscribe((data) => {
+      // console.log("Bateaux:", data);
+      this.bateaux = data;
+      // this.bateauxFiltered = data;
+      // setTimeout(() => this.initMaterialize(), 500);
+      setTimeout(() => {
+        M.FormSelect.init(this.selectBateau?.nativeElement);
+        this.addSearchBox(this.selectBateau?.nativeElement, "trx-pirogue");
+      }, 500);
+    });
+    this.especeService.getEspeces({ actif: true }).subscribe((data) => {
+      // console.log("Especes:", data);
+      this.especes = data;
+      setTimeout(() => {
+        M.FormSelect.init(this.selectEspece?.nativeElement);
+        this.addSearchBox(this.selectEspece?.nativeElement, "trx-espece");
+      }, 500);
+    });
+  }
+
+  onPecheurChange() {
+    if (this.pecheur) {
+      this.formTransaction.pecheur =
+        this.pecheur.nom + " " + this.pecheur.prenom;
+      this.formTransaction.pecheur_id = this.pecheur.id;
+    }
+    if (this.formTransaction.pecheur_id) {
+      this.bateauService
+        .getBateauxByProprietaire(this.formTransaction.pecheur_id)
+        .subscribe({
+          next: (data) => {
+            this.bateauxFiltered = data.length > 0 ? data : this.bateaux;
+            setTimeout(() => {
+              M.FormSelect.init(this.selectBateau?.nativeElement);
+              this.addSearchBox(
+                this.selectBateau?.nativeElement,
+                "select_pecheur",
+              );
+            }, 500);
+            // setTimeout(() => this.initMaterialize(), 50);
+          },
+          error: () => {
+            this.bateauxFiltered = this.bateaux;
+          },
+        });
+    }
+  }
+
   sitesDuMareyeur(): string[] {
     const sites = (this.mareyeur?.sites_debarquement || "")
       .split(",")
@@ -450,13 +561,14 @@ export class MareyeurDetailsComponent implements OnInit {
 
   ouvrirFormTransaction(): void {
     this.formTransaction = this.transactionVide();
+    this.loadData();
     this.afficherFormTransaction = true;
     this.initSelects();
   }
 
   onSiteTransactionChange(event: Event): void {
-    this.formTransaction.site_debarquement =
-      (event.target as HTMLSelectElement).value || null;
+    this.formTransaction.site_debarquement = this.site.site;
+    this.formTransaction.site_debarquement_id = this.site.id;
   }
 
   montantPrevisionnel(): number {
@@ -470,6 +582,23 @@ export class MareyeurDetailsComponent implements OnInit {
     if (!this.mareyeur?.id) {
       return;
     }
+
+    this.formTransaction.mareyeur_id = this.mareyeur.id;
+    if (this.pecheur) {
+      this.formTransaction.pecheur =
+        this.pecheur.nom + " " + this.pecheur.prenom;
+      this.formTransaction.pecheur_id = this.pecheur.id;
+    }
+    if (this.bateau) {
+      this.formTransaction.pirogue =
+        this.bateau.nom_bateau + "_" + this.bateau.numero_immatriculation;
+      this.formTransaction.pirogue_id = this.bateau.id;
+    }
+    if (this.espece) {
+      this.formTransaction.espece = this.espece.nom_commun_francais;
+      this.formTransaction.espece_id = this.espece.id;
+    }
+
     if (
       !this.formTransaction.espece ||
       !this.formTransaction.quantite_kg ||
@@ -481,7 +610,8 @@ export class MareyeurDetailsComponent implements OnInit {
       });
       return;
     }
-    this.formTransaction.mareyeur_id = this.mareyeur.id;
+
+    // console.log(this.formTransaction);
     this.mareyeurService.creerTransaction(this.formTransaction).subscribe({
       next: (t) => {
         M.toast({ html: `Achat ${t.code} enregistré`, classes: "green" });
@@ -518,6 +648,69 @@ export class MareyeurDetailsComponent implements OnInit {
       1,
       Math.ceil(this.totalTransactions / this.taillePageTransactions),
     );
+  }
+
+  addSearchBox(element: HTMLSelectElement, id_select: string) {
+    if (!element) return;
+
+    const instance2 = M.FormSelect.getInstance(element);
+    if (!instance2) return;
+
+    // Get the dropdown UL directly from the instance — version-safe-ish
+    const dropdownContent: HTMLElement =
+      instance2.dropdown?.dropdownEl ||
+      instance2.dropdownEl || // some versions expose it directly on the instance
+      null;
+
+    if (!dropdownContent) {
+      console.warn("Could not resolve dropdownEl for", id_select);
+      return;
+    }
+
+    // Avoid inserting duplicate search inputs on repeated calls
+    const existing = dropdownContent.querySelector(".search-input");
+    if (existing) existing.remove();
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Rechercher...";
+    searchInput.classList.add("browser-default", "search-input");
+    searchInput.style.margin = "8px";
+    searchInput.style.width = "90%";
+    searchInput.style.boxSizing = "border-box";
+
+    ["mousedown", "click"].forEach((evt) => {
+      searchInput.addEventListener(evt, (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+      });
+    });
+
+    dropdownContent.insertBefore(searchInput, dropdownContent.firstChild);
+
+    searchInput.addEventListener("keyup", () => {
+      const filter = searchInput.value.toLowerCase();
+      const items = dropdownContent.querySelectorAll("li > span");
+      items.forEach((item: any) => {
+        const text = item.textContent.toLowerCase();
+        (item.parentElement as HTMLElement).style.display = text.includes(
+          filter,
+        )
+          ? ""
+          : "none";
+      });
+    });
+
+    const instance = M.FormSelect.getInstance(element);
+    if (instance && instance.dropdown) {
+      instance.dropdown.options.onOpenStart = () => {
+        searchInput.value = "";
+        dropdownContent.querySelectorAll("li").forEach((li: HTMLElement) => {
+          li.style.display = "";
+        });
+        setTimeout(() => searchInput.focus(), 200);
+      };
+    }
   }
 
   // supprimerAgrement(a: AgrementMareyage): void {

@@ -88,7 +88,12 @@ export interface TransactionAchat {
   site_debarquement?: string | null;
   pecheur?: string | null;
   pirogue?: string | null;
+  site_debarquement_id?: number | null;
+  pecheur_id?: number | null;
+  pirogue_id?: number | null;
   espece: string;
+  espece_id: number;
+  etat_poisson: string;
   quantite_kg: number;
   prix_unitaire_fcfa?: number | null;
   montant_total_fcfa?: number | null;

@@ -5,6 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { BateauService } from "../../../services/bateau.service";
 import { Bateau, TypeBateau } from "../../../models/bateau.model";
 import { HasPermissionDirective } from "../../../directives/has-permission.directive";
+import { AuthService } from "../../../services/auth.service";
 
 declare var M: any;
 
@@ -27,7 +28,7 @@ declare var M: any;
       <div class="card">
         <div class="card-content">
           <div class="row">
-            <div class="col s12 m3">
+            <div class="col s12 m2">
               <div class="form-input">
                 <label>Type de bateau</label>
                 <select
@@ -46,7 +47,7 @@ declare var M: any;
                 </select>
               </div>
             </div>
-            <div class="col s12 m3">
+            <div class="col s12 m2">
               <div class="form-input">
                 <label>Statut</label>
                 <select
@@ -62,16 +63,30 @@ declare var M: any;
                 </select>
               </div>
             </div>
-            <div class="col s12 m3">
+            <div class="col s12 m2">
               <div class="form-input">
-                <label for="search-input">Immatriculation ou nom</label>
+                <label for="search-input">Immatriculation</label>
                 <div class="input-field">
                   <input
                     type="text"
-                    [(ngModel)]="searchTerm"
+                    [(ngModel)]="immatriculation"
                     (keyup.enter)="search()"
                     placeholder="Rechercher..."
                     id="search-input"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m3">
+              <div class="form-input">
+                <label for="search-input-nom">Nom bateau</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="nom"
+                    (keyup.enter)="search()"
+                    placeholder="Rechercher..."
+                    id="search-input-nom"
                   />
                 </div>
               </div>
@@ -96,9 +111,39 @@ declare var M: any;
       <!-- Résultats -->
       <div class="card" *ngIf="!loading">
         <div class="card-content">
-          <span class="card-title">
-            {{ bateaux.length }} bateau(x) trouvé(s)
-          </span>
+          <div class="row valign-wrapper" style="margin-bottom: 10px">
+            <div class="col s5">
+              <span class="card-title">
+                {{ bateaux.length }} bateau(x) trouvé(s)
+              </span>
+            </div>
+            <div class="col s7 right-align">
+              <a
+                routerLink="/bateaux/rapports"
+                class="btn waves-effect grey white-text"
+                [class.disabled]="!hasPermission('bateau.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">assessment</i>Générer rapport
+              </a>
+              <a
+                routerLink="/bateaux/exporter"
+                class="btn waves-effect orange white-text"
+                [class.disabled]="!hasPermission('bateau.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">download</i>Exporter
+              </a>
+              <a
+                routerLink="/bateaux/importer"
+                class="btn-flat btn waves-effect green white-text"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">upload</i>Importer
+              </a>
+            </div>
+          </div>
+
           <div class="table-responsive">
             <table class="highlight responsive-table">
               <thead>
@@ -289,6 +334,8 @@ export class BateauListComponent implements OnInit {
   bateaux: Bateau[] = [];
   loading = true;
   searchTerm = "";
+  immatriculation: any | undefined;
+  nom: any | undefined;
   filters = {
     type_bateau: "",
     statut: "",
@@ -297,11 +344,18 @@ export class BateauListComponent implements OnInit {
   currentPage = 1;
   rowsPerPage = 10;
 
-  constructor(private bateauService: BateauService) {}
+  constructor(
+    private bateauService: BateauService,
+    private permissionService: AuthService,
+  ) {}
 
   ngOnInit() {
     this.loadBateaux();
     setTimeout(() => this.initializeSelects(), 100);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissionService.hasPermission(permission);
   }
 
   loadBateaux() {
@@ -361,20 +415,25 @@ export class BateauListComponent implements OnInit {
   }
 
   search() {
-    if (this.searchTerm.trim()) {
-      this.bateauService
-        .getBateauByImmatriculation(this.searchTerm.trim())
-        .subscribe({
-          next: (data) => {
-            this.bateaux = [data];
-            this.loading = false;
-          },
-          error: (error) => {
-            console.error("Bateau non trouvé:", error);
-            M.toast({ html: "Bateau non trouvé", classes: "orange" });
-            this.loadBateaux();
-          },
-        });
+    if (this.immatriculation || this.nom) {
+      const payload = {
+        immatriculation: this.immatriculation,
+        nom: this.nom,
+        skip: 0,
+        limit: 500,
+      };
+      console.log(payload);
+      this.bateauService.getBateauByImmatriculationName(payload).subscribe({
+        next: (data) => {
+          this.bateaux = data.items;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error("Bateau non trouvé:", error);
+          M.toast({ html: "Bateau non trouvé", classes: "orange" });
+          this.loadBateaux();
+        },
+      });
     } else {
       this.loadBateaux();
     }

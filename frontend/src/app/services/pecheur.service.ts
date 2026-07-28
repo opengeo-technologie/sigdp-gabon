@@ -38,6 +38,10 @@ export class PecheurService {
     return this.http.get<Pecheur[]>(this.apiUrl, { params });
   }
 
+  getPecheursDropdown(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
+
   getPecheur(id: number): Observable<Pecheur> {
     return this.http.get<Pecheur>(`${this.apiUrl}/${id}`);
   }

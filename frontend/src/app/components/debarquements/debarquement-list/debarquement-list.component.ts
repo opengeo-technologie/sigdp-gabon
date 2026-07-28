@@ -4,6 +4,7 @@ import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { DebarquementService } from "../../../services/debarquement.service";
 import { Debarquement } from "../../../models/debarquement.model";
+import { AuthService } from "../../../services/auth.service";
 
 declare var M: any;
 
@@ -84,7 +85,36 @@ declare var M: any;
       <!-- Résultats -->
       <div class="card" *ngIf="!loading">
         <div class="card-content">
-          <span class="card-title">{{ totalData }} débarquement(s)</span>
+          <div class="row valign-wrapper" style="margin-bottom: 10px">
+            <div class="col s5">
+              <span class="card-title"> {{ totalData }} débarquement(s) </span>
+            </div>
+            <div class="col s7 right-align">
+              <a
+                routerLink="/debarquements/rapports"
+                class="btn waves-effect grey white-text"
+                [class.disabled]="!hasPermission('debarquements.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">assessment</i>Générer rapport
+              </a>
+              <a
+                routerLink="/debarquements/exporter"
+                class="btn waves-effect orange white-text"
+                [class.disabled]="!hasPermission('debarquements.export')"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">download</i>Exporter
+              </a>
+              <a
+                routerLink="/debarquements/importer"
+                class="btn-flat btn waves-effect green white-text"
+                style="margin-right: 10px"
+              >
+                <i class="material-icons left">upload</i>Importer
+              </a>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="highlight responsive-table">
               <thead>
@@ -207,11 +237,18 @@ export class DebarquementListComponent implements OnInit {
   rowsPerPage = 10;
   totalData = 1;
 
-  constructor(private debarquementService: DebarquementService) {}
+  constructor(
+    private debarquementService: DebarquementService,
+    private permissionService: AuthService,
+  ) {}
 
   ngOnInit() {
     this.filterParams.limit = this.filters.limit;
     this.loadDebarquements();
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissionService.hasPermission(permission);
   }
 
   loadDebarquements() {

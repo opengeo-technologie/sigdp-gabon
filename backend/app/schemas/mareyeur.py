@@ -187,6 +187,10 @@ class TransactionBase(BaseModel):
     site_debarquement: Optional[str] = None
     pecheur: Optional[str] = None
     pirogue: Optional[str] = None
+    site_debarquement_id: Optional[int] = None
+    pecheur_id: Optional[int] = None
+    pirogue_id: Optional[int] = None
+    etat_poisson: str = "frais"  # frais | sale | fume | autre
     espece: str
     quantite_kg: float = 0
     prix_unitaire_fcfa: Optional[float] = None

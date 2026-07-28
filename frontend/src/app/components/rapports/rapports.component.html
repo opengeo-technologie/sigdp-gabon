@@ -11,7 +11,7 @@
 </div>
 <div class="container" style="margin-top: 2rem; margin-bottom: 3rem">
   <!-- FILTRES -->
-  <div class="row">
+  <!-- <div class="row">
     <div class="col s12">
       <div class="card">
         <div class="card-content">
@@ -76,10 +76,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- EXPORTS RAPIDES -->
-  <div class="row">
+  <!-- <div class="row">
     <div class="col s12">
       <div class="card blue lighten-5">
         <div class="card-content">
@@ -140,7 +140,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- TYPES DE RAPPORTS -->
   <div class="row">
@@ -178,14 +178,17 @@
               <div
                 *ngFor="let format of rapport.formats"
                 class="chip {{ rapport.color }} white-text format-chip"
-                (click)="genererRapport(rapport.id, format)"
-                [class.disabled]="loading"
               >
                 <i class="material-icons tiny">file_download</i>
                 {{ format.toUpperCase() }}
               </div>
             </div>
           </div>
+        </div>
+        <div class="card-action" style="align-items: center">
+          <a class="btn-small" [routerLink]="['/stations-piscicoles/rapports']"
+            >Générer rapport</a
+          >
         </div>
       </div>
     </div>

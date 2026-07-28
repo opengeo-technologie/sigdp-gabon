@@ -36,6 +36,8 @@ from app.services.activity_logger import log_activity, ActivityLogger
 from app.models.armement_coorperative import ArmementCooperative
 from app.models.debarcadere import Debarcadere
 
+from app.utils.validation import parser_date
+
 router = APIRouter(prefix="/api/pecheurs", tags=["Pêcheurs"])
 
 # Configuration upload
@@ -123,6 +125,8 @@ async def upload_pecheurs_excel(
         engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
         df = pd.read_excel(excel_file, engine=engine)
 
+        # print(df.columns)
+
         # Valider les colonnes requises
         required_columns = {
             "nom",
@@ -130,6 +134,7 @@ async def upload_pecheurs_excel(
             "nationalite",
             "type_carte",
             "numero_piece_identite",
+            "date_de_naissance",
             "telephone",
             "adresse",
             "categorie",
@@ -146,14 +151,28 @@ async def upload_pecheurs_excel(
         # Nettoyer les données
         df = df.fillna("")  # Remplacer NaN par chaîne vide
 
+        # Insérer les données dans la base de données
+
+        pieces_existantes = {
+            p.numero_piece_identite.lower().strip()
+            for p in db.query(Pecheur.numero_piece_identite).all()
+            if p.numero_piece_identite
+        }
+
+        # Détection des doublons internes au fichier
+        pieces_vues_fichier: set[str] = set()
+
         # Statistiques d'import
         total_rows = len(df)
         inserted_count = 0
         updated_count = 0
         errors = []
 
-        # Insérer les données dans la base de données
         for _, row in df.iterrows():
+
+            nom = str(row["nom"]).strip().lower()
+            prenom = str(row["prenom"]).strip().lower()
+            piece = str(row["numero_piece_identite"]).strip().lower()
 
             pecheur = (
                 db.query(Pecheur)
@@ -172,7 +191,38 @@ async def upload_pecheurs_excel(
                 .first()
             )
 
-            if not pecheur:
+            try:
+
+                if pecheur:
+                    continue
+                    # raise ValueError(
+                    #     f"Pêcheur {pecheur.nom} {pecheur.prenom} déja existant."
+                    # )
+
+                # --- Doublons ---
+                piece_cle = piece.lower()
+                if piece_cle in pieces_existantes:
+                    raise ValueError(
+                        f"Un pêcheur avec la pièce d'identité « {piece} » "
+                        f"existe déjà dans la base de données"
+                    )
+                if piece_cle in pieces_vues_fichier:
+                    raise ValueError(
+                        f"La pièce d'identité « {piece} » apparaît plusieurs fois "
+                        f"dans le fichier (doublon interne)"
+                    )
+
+                # --- Dates et cohérence métier ---
+                date_naissance_pecheur = parser_date(
+                    row.get("date_de_naissance"), "Date de naissance du pecheur"
+                )
+                if date_naissance_pecheur and date_naissance_pecheur > date.today():
+                    raise ValueError(
+                        f"La date de naissance ({date_naissance_pecheur.strftime('%d/%m/%Y')}) "
+                        f"est dans le futur"
+                    )
+
+                # print(row.get("date_de_naissance"))
 
                 cooperative = (
                     db.query(ArmementCooperative)
@@ -196,47 +246,50 @@ async def upload_pecheurs_excel(
                     .first()
                 )
 
-                try:
-                    pecheur_data = PecheurCreate(
-                        numero_carte=get_next_reference(db),
-                        nom=str(row["nom"]),
-                        prenom=str(row["prenom"]),
-                        date_naissance="2026-06-01",  # Valeur par défaut, à ajuster selon les besoins
-                        lieu_naissance="",
-                        email="",
-                        nationalite=str(row["nationalite"]),
-                        type_carte=str(row["type_carte"]),
-                        numero_piece_identite=str(row["numero_piece_identite"]),
-                        telephone=str(row["telephone"]),
-                        adresse=str(row["adresse"]),
-                        categorie=str(row["categorie"]),
-                        statut=str(row["statut"]),
-                        cooperative_id=cooperative.id if cooperative else None,
-                        cooperative_nom=cooperative.sigle if cooperative else None,
-                        debarcadere_habituel_id=debarcadere.id if debarcadere else None,
-                        debarcadere_habituel_code=(
-                            debarcadere.code if debarcadere else None
-                        ),
-                        debarcadere_habituel_nom=(
-                            debarcadere.nom_local if debarcadere else None
-                        ),
-                    )
-                    pecheur = Pecheur(**pecheur_data.model_dump())
-                    db.add(pecheur)
-                    db.commit()
-                except Exception as e:
-                    db.rollback()
-                    error_row = row.to_dict()
-                    error_row["error_message"] = str(e)
-                    errors.append(error_row)
+                pecheur_data = PecheurCreate(
+                    numero_carte=get_next_reference(db),
+                    nom=str(row["nom"]),
+                    prenom=str(row["prenom"]),
+                    date_naissance=date_naissance_pecheur,  # Valeur par défaut, à ajuster selon les besoins
+                    lieu_naissance="",
+                    email="",
+                    nationalite=str(row["nationalite"]),
+                    type_carte=str(row["type_carte"]),
+                    numero_piece_identite=str(row["numero_piece_identite"]),
+                    telephone=str(row["telephone"]),
+                    adresse=str(row["adresse"]),
+                    categorie=str(row["categorie"]),
+                    statut=str(row["statut"]),
+                    cooperative_id=cooperative.id if cooperative else None,
+                    cooperative_nom=cooperative.sigle if cooperative else None,
+                    debarcadere_habituel_id=debarcadere.id if debarcadere else None,
+                    debarcadere_habituel_code=(
+                        debarcadere.code if debarcadere else None
+                    ),
+                    debarcadere_habituel_nom=(
+                        debarcadere.nom_local if debarcadere else None
+                    ),
+                )
+                pecheur = Pecheur(**pecheur_data.model_dump())
+                db.add(pecheur)
+                db.commit()
+                pieces_vues_fichier.add(piece_cle)
+                inserted_count += 1
+            except Exception as e:
+                db.rollback()
+                error_row = row.to_dict()
+                error_row["error_message"] = str(e)
+                errors.append(error_row)
 
         header = df.columns.tolist()
         if errors:
             save_errors(errors, header)
 
         return {
-            "inserted": len(df) - len(errors),
-            "failed": len(errors),
+            "total": total_rows,
+            "inseres": inserted_count,
+            "echoues": len(errors),
+            "erreurs": errors,
             "error_file": ERROR_FILE if errors else None,
         }
 
@@ -341,6 +394,15 @@ def get_pecheur_by_numero(numero_carte: str, db: Session = Depends(get_db)):
     pecheur_dict["licence_active"] = is_licence_active(pecheur.licence_date_expiration)
 
     return PecheurResponse(**pecheur_dict)
+
+
+@router.get("/dropdown/list/data")
+def get_pecheurs_dropdown(db: Session = Depends(get_db)):
+    query = db.query(Pecheur).all()
+
+    pecheurs_dict = [{"id": p.id, "nom": p.nom, "prenom": p.prenom} for p in query]
+
+    return pecheurs_dict
 
 
 def save_photo(photo: UploadFile, pecheur_id: int) -> str:

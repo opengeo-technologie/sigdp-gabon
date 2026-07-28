@@ -10,7 +10,7 @@ class PecheurBase(BaseModel):
     )
     nom: str = Field(..., min_length=2, max_length=100)
     prenom: str = Field(None, min_length=0, max_length=100)
-    date_naissance: date
+    date_naissance: Optional[datetime] = None
     lieu_naissance: Optional[str] = Field(None, max_length=100)
     nationalite: str = Field(default="Gabonaise", max_length=50)
     type_carte: Optional[str] = Field(None, max_length=100)

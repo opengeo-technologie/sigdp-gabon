@@ -1,0 +1,423 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">{{
+        modeEdition ? "edit" : "add_circle"
+      }}</i
+      >{{ modeEdition ? "Modifier la station" : "Nouvelle station piscicole" }}
+    </h1>
+    <span *ngIf="codeStation" class="grey-text"> — {{ codeStation }}</span>
+  </div>
+</div>
+
+<div class="container">
+  <!-- <h5>
+    <i class="material-icons left">{{ modeEdition ? "edit" : "add_circle" }}</i>
+    {{ modeEdition ? "Modifier la station" : "Nouvelle station piscicole" }}
+    <span *ngIf="codeStation" class="grey-text"> — {{ codeStation }}</span>
+  </h5> -->
+
+  <form [formGroup]="form" (ngSubmit)="enregistrer()">
+    <!-- Identification -->
+    <div class="card" style="padding: 20px">
+      <span class="card-title">Identification</span>
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col s12 m8">
+          <div class="form-input">
+            <label for="nom" [class.active]="form.value.nom"
+              >Nom de la station *</label
+            >
+            <div class="input-field">
+              <input
+                id="nom"
+                type="text"
+                formControlName="nom"
+                [class.invalid]="invalide('nom')"
+              />
+
+              <span class="helper-text red-text" *ngIf="invalide('nom')">
+                Le nom est obligatoire</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="date_creation" class="active">Date de création</label>
+            <div class="input-field">
+              <input
+                id="date_creation"
+                type="date"
+                formControlName="date_creation"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Localisation -->
+    <div class="card" style="padding: 20px">
+      <span class="card-title">Localisation</span>
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label>Province *</label>
+            <div class="input-field">
+              <select
+                formControlName="province"
+                [class.invalid]="invalide('province')"
+                class="browser-default"
+              >
+                <option value="" disabled>Choisir une province</option>
+                <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="departement" [class.active]="form.value.departement">
+              Département</label
+            >
+            <div class="input-field">
+              <input
+                id="departement"
+                type="text"
+                formControlName="departement"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="localite" [class.active]="form.value.localite"
+              >Localité</label
+            >
+            <div class="input-field">
+              <input id="localite" type="text" formControlName="localite" />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label for="adresse" [class.active]="form.value.adresse"
+              >Adresse</label
+            >
+            <div class="input-field">
+              <input id="adresse" type="text" formControlName="adresse" />
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label for="latitude" [class.active]="form.value.latitude !== null">
+              Latitude</label
+            >
+            <div class="input-field">
+              <input
+                id="latitude"
+                type="number"
+                step="any"
+                formControlName="latitude"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label
+              for="longitude"
+              [class.active]="form.value.longitude !== null"
+            >
+              Longitude</label
+            >
+            <div class="input-field">
+              <input
+                id="longitude"
+                type="number"
+                step="any"
+                formControlName="longitude"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Caractéristiques techniques -->
+    <div class="card" style="padding: 20px">
+      <span class="card-title">Caractéristiques techniques</span>
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Type de station *</label>
+            <div class="input-field">
+              <select
+                formControlName="type_station"
+                [class.invalid]="invalide('type_station')"
+              >
+                <option value="" disabled>Choisir un type</option>
+                <option *ngFor="let t of typesStation" [value]="t">
+                  {{ typeLabels[t] }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Source d'eau</label>
+            <div class="input-field">
+              <select formControlName="source_eau">
+                <option value="">Non renseignée</option>
+                <option *ngFor="let s of sourcesEau" [value]="s">
+                  {{ sourceEauLabels[s] }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label
+              for="superficie"
+              [class.active]="form.value.superficie_totale !== null"
+            >
+              Superficie (m²)</label
+            >
+            <div class="input-field">
+              <input
+                id="superficie"
+                type="number"
+                min="0"
+                formControlName="superficie_totale"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label
+              for="bassins"
+              [class.active]="form.value.nombre_bassins !== null"
+            >
+              Nb bassins</label
+            >
+            <div class="input-field">
+              <input
+                id="bassins"
+                type="number"
+                min="0"
+                formControlName="nombre_bassins"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m2">
+          <div class="form-input">
+            <label
+              for="capacite"
+              [class.active]="form.value.capacite_production !== null"
+            >
+              Capacité (t/an)</label
+            >
+            <div class="input-field">
+              <input
+                id="capacite"
+                type="number"
+                min="0"
+                step="0.1"
+                formControlName="capacite_production"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label>Espèces élevées</label>
+            <div class="input-field">
+              <select multiple formControlName="especes">
+                <option *ngFor="let e of especesDisponibles" [value]="e">
+                  {{ e }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promoteur -->
+    <div class="card" style="padding: 20px">
+      <span class="card-title">Promoteur</span>
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col s12 m5">
+          <div class="form-input">
+            <label
+              for="promoteur_nom"
+              [class.active]="form.value.promoteur_nom"
+            >
+              Nom du promoteur *</label
+            >
+            <div class="input-field">
+              <input
+                id="promoteur_nom"
+                type="text"
+                formControlName="promoteur_nom"
+                [class.invalid]="invalide('promoteur_nom')"
+              />
+
+              <span
+                class="helper-text red-text"
+                *ngIf="invalide('promoteur_nom')"
+              >
+                Le promoteur est obligatoire</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label
+              for="promoteur_contact"
+              [class.active]="form.value.promoteur_contact"
+            >
+              Contact (téléphone)</label
+            >
+            <div class="input-field">
+              <input
+                id="promoteur_contact"
+                type="text"
+                formControlName="promoteur_contact"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m3">
+          <div class="form-input">
+            <label>Type de promoteur</label>
+            <div class="input-field">
+              <select formControlName="promoteur_type">
+                <option *ngFor="let t of typesPromoteur" [value]="t">
+                  {{ typePromoteurLabels[t] }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agrément -->
+    <div class="card" style="padding: 20px">
+      <div class="card-content">
+        <span class="card-title">Agrément</span>
+        <div class="row" style="margin-bottom: 10px">
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label
+                for="numero_agrement"
+                [class.active]="form.value.numero_agrement"
+              >
+                Numéro d'agrément</label
+              >
+              <div class="input-field">
+                <input
+                  id="numero_agrement"
+                  type="text"
+                  formControlName="numero_agrement"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="date_agrement" class="active"
+                >Date de délivrance</label
+              >
+              <div class="input-field">
+                <input
+                  id="date_agrement"
+                  type="date"
+                  formControlName="date_agrement"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div class="form-input">
+              <label for="date_expiration" class="active"
+                >Date d'expiration</label
+              >
+              <div class="input-field">
+                <input
+                  id="date_expiration"
+                  type="date"
+                  formControlName="date_expiration_agrement"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col s12">
+            <div class="form-input">
+              <label
+                for="observations"
+                [class.active]="form.value.observations"
+              >
+                Observations</label
+              >
+              <div class="input-field">
+                <textarea
+                  id="observations"
+                  class="materialize-textarea"
+                  formControlName="observations"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-action right-align">
+        <a routerLink="/stations-piscicoles" class="btn-flat waves-effect"
+          >Annuler</a
+        >
+        <button
+          type="submit"
+          class="btn waves-effect waves-light green"
+          [disabled]="enregistrement"
+        >
+          <i class="material-icons left">save</i>
+          {{
+            modeEdition ? "Enregistrer les modifications" : "Créer la station"
+          }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <!-- <div class="row">
+      <div class="col s12 right-align">
+        <a routerLink="/stations-piscicoles" class="btn-flat waves-effect"
+          >Annuler</a
+        >
+        <button
+          type="submit"
+          class="btn waves-effect waves-light green"
+          [disabled]="enregistrement"
+        >
+          <i class="material-icons left">save</i>
+          {{
+            modeEdition ? "Enregistrer les modifications" : "Créer la station"
+          }}
+        </button>
+      </div>
+    </div> -->
+  </form>
+</div>

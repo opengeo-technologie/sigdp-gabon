@@ -9,6 +9,24 @@ declare var M: any;
 
 Chart.register(...registerables);
 
+export interface LigneMensuelle {
+  mois: number; // 1 à 12
+  libelle: string; // "Mai"
+  volume_captures_kg: number;
+  volume_transactions_kg: number;
+  montant_transactions_fcfa: number;
+  taux_absorption: number;
+}
+
+export interface StatistiquesMensuelles {
+  annee: number;
+  total_captures_kg: number;
+  total_transactions_kg: number;
+  total_montant_fcfa: number;
+  taux_absorption_global: number;
+  series: LigneMensuelle[];
+}
+
 @Component({
   selector: "app-dashboard",
   standalone: true,
@@ -32,6 +50,7 @@ export class DashboardComponent implements OnInit {
   evolutionData: any = null;
   autorisationData: any = null;
   captureZoneData: any = null;
+  statsCapturesMareyeurs: StatistiquesMensuelles | null = null;
 
   filtresAutorisation: any[] = [
     { id: 1, valeur: "Province (Strate majeure)" },
@@ -67,6 +86,7 @@ export class DashboardComponent implements OnInit {
   lineChart: Chart | null = null;
   barChart: Chart | null = null;
   pieChartCaptureZone: Chart | null = null;
+  private charts: Chart[] = [];
 
   // UI
   loading = false;
@@ -91,7 +111,8 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => this.loadTopEspeces(), 300);
     setTimeout(() => this.loadTopDebarcaderes(), 600);
     setTimeout(() => this.loadCaptureParAn(), 900);
-    setTimeout(() => this.loadAutorisationParProvince(), 1200);
+    setTimeout(() => this.chargerCaptureTransaction(), 900);
+    // setTimeout(() => this.loadAutorisationParProvince(), 1200);
     setTimeout(() => this.loadCaptureParZone(), 1500);
     setTimeout(() => this.initMaterialize(), 100);
   }
@@ -220,6 +241,27 @@ export class DashboardComponent implements OnInit {
           setTimeout(() => this.initPieCaptureParzone(), 300);
         },
         error: (err) => console.error("Erreur top débarcadères:", err),
+      });
+  }
+
+  chargerCaptureTransaction(): void {
+    this.http
+      .get(
+        `${environment.apiUrl}/api/statistiques/captures-mareyeurs/yearly?annee=${this.selectedYearAutorisation}`,
+      )
+      .subscribe({
+        next: (data: any) => {
+          // console.log(data);
+          this.statsCapturesMareyeurs = data;
+          setTimeout(() => this.dessinerGraphes(), 300);
+        },
+        error: () => {
+          // this.chargement = false;
+          M.toast({
+            html: "Erreur lors du chargement des statistiques",
+            classes: "red",
+          });
+        },
       });
   }
 
@@ -393,6 +435,64 @@ export class DashboardComponent implements OnInit {
     //
   }
 
+  /**
+   * ✅ Line chart évolution capture + transactions mareyeurs par année
+   */
+  dessinerGraphes() {
+    if (!this.statsCapturesMareyeurs) {
+      return;
+    }
+
+    const ctx = document.getElementById("barChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const labels = this.statsCapturesMareyeurs.series.map((l) => l.libelle);
+
+    this.barChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Captures déclarées",
+            data: this.statsCapturesMareyeurs.series.map(
+              (l: any) => l.volume_captures_kg,
+            ),
+            backgroundColor: "rgba(30, 136, 229, 0.7)",
+            borderColor: "#1e88e5",
+            borderWidth: 1,
+          },
+          {
+            label: "Achats mareyeurs",
+            data: this.statsCapturesMareyeurs.series.map(
+              (l: any) => l.volume_transactions_kg,
+            ),
+            backgroundColor: "rgba(0, 158, 96, 0.7)",
+            borderColor: "#009e60",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "kg" } },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const value = ctx.parsed?.y ?? 0;
+                return `${ctx.dataset.label}: ${value.toLocaleString("fr-FR")} kg`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   refreshLineChart() {
     if (this.lineChart) {
       this.lineChart.destroy();
@@ -406,7 +506,7 @@ export class DashboardComponent implements OnInit {
       this.barChart.destroy();
       this.barChart = null;
     }
-    this.loadAutorisationParProvince();
+    this.chargerCaptureTransaction();
   }
 
   refreshPieChart() {

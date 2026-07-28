@@ -23,8 +23,10 @@ declare var M: any;
                   alt=""
                   style="height: 200px;"
                 />
-                <h4 class="logo-title">SIG-PECHE</h4>
-                <p class="grey-text subtitle">Système de Gestion de la Pêche</p>
+                <h4 class="logo-title">SIGPA</h4>
+                <p class="grey-text subtitle">
+                  Système de Gestion de la Pêche et de l'Aquaculture
+                </p>
                 <div class="divider"></div>
               </div>
 
@@ -70,7 +72,7 @@ declare var M: any;
 
               <!-- Lien page publique -->
               <div class="center-align mt-3">
-                <a routerLink="/public" class="blue-text">
+                <a routerLink="/map" class="blue-text">
                   <i class="material-icons tiny">public</i>
                   Consulter la page publique
                 </a>

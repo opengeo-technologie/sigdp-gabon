@@ -379,6 +379,11 @@ export class PermissionsRoleComponent {
       statistique: "Statistiques",
       user: "Utilisateurs",
       system: "Système",
+      stations: "Stations piscicoles",
+      armement: "Armements et coopératives",
+      licences: "Licences et autorisations",
+      surveillance: "Surveillance de pêche",
+      mareyeurs: "Mareyeurs",
     };
     return labels[module] || module;
   }
@@ -394,6 +399,11 @@ export class PermissionsRoleComponent {
       statistique: "bar_chart",
       user: "people",
       system: "settings",
+      stations: "waves",
+      armement: "anchor",
+      licences: "assignment",
+      surveillance: "visibility",
+      mareyeurs: "storefront",
     };
     return icons[module] || "folder";
   }

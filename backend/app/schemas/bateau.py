@@ -5,6 +5,13 @@ from app.models.bateau import TypeBateau, Propulsion, MateriauCoque
 from app.schemas.pecheur import PecheurResponse
 
 
+class BateauSearchRequest(BaseModel):
+    immatriculation: Optional[str] = None
+    nom: Optional[str] = None
+    skip: int = 0
+    limit: int = 50
+
+
 class BateauBase(BaseModel):
     numero_immatriculation: str = Field(
         ..., min_length=5, max_length=50, description="GA-PCH-2025-XXXX"

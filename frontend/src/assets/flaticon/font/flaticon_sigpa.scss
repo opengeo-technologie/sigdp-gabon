@@ -1,0 +1,109 @@
+$flaticon_sigpa-font: "flaticon_sigpa";
+
+@font-face {
+    font-family: $flaticon_sigpa-font;
+    src: url("./flaticon_sigpa.woff2?46a68afb3ac63dda2c5cf398349825cb") format("woff2"),
+url("./flaticon_sigpa.woff?46a68afb3ac63dda2c5cf398349825cb") format("woff"),
+url("./flaticon_sigpa.eot?46a68afb3ac63dda2c5cf398349825cb#iefix") format("embedded-opentype"),
+url("./flaticon_sigpa.ttf?46a68afb3ac63dda2c5cf398349825cb") format("truetype"),
+url("./flaticon_sigpa.svg?46a68afb3ac63dda2c5cf398349825cb#flaticon_sigpa") format("svg");
+}
+
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon_sigpa !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+$flaticon_sigpa-map: (
+    "chambre-froide": "\f101",
+    "flocon-de-neige": "\f102",
+    "flocon-de-neige-1": "\f103",
+    "ports": "\f104",
+    "jetee-1": "\f105",
+    "port": "\f106",
+    "jetee-2": "\f107",
+    "stand-de-nourriture": "\f108",
+    "marche-aux-poissons": "\f109",
+    "marche-aux-poissons-1": "\f10a",
+    "pompe-a-essence": "\f10b",
+    "carburant": "\f10c",
+    "pompe-a-carburant": "\f10d",
+    "eau": "\f10e",
+    "eau-potable": "\f10f",
+    "eau-potable-1": "\f110",
+    "eau-purifiee": "\f111",
+    "eclairage": "\f112",
+    "electricite": "\f113",
+    "electricite-1": "\f114",
+    "eclat": "\f115",
+);
+
+.flaticon-chambre-froide:before {
+    content: map-get($flaticon_sigpa-map, "chambre-froide");
+}
+.flaticon-flocon-de-neige:before {
+    content: map-get($flaticon_sigpa-map, "flocon-de-neige");
+}
+.flaticon-flocon-de-neige-1:before {
+    content: map-get($flaticon_sigpa-map, "flocon-de-neige-1");
+}
+.flaticon-ports:before {
+    content: map-get($flaticon_sigpa-map, "ports");
+}
+.flaticon-jetee-1:before {
+    content: map-get($flaticon_sigpa-map, "jetee-1");
+}
+.flaticon-port:before {
+    content: map-get($flaticon_sigpa-map, "port");
+}
+.flaticon-jetee-2:before {
+    content: map-get($flaticon_sigpa-map, "jetee-2");
+}
+.flaticon-stand-de-nourriture:before {
+    content: map-get($flaticon_sigpa-map, "stand-de-nourriture");
+}
+.flaticon-marche-aux-poissons:before {
+    content: map-get($flaticon_sigpa-map, "marche-aux-poissons");
+}
+.flaticon-marche-aux-poissons-1:before {
+    content: map-get($flaticon_sigpa-map, "marche-aux-poissons-1");
+}
+.flaticon-pompe-a-essence:before {
+    content: map-get($flaticon_sigpa-map, "pompe-a-essence");
+}
+.flaticon-carburant:before {
+    content: map-get($flaticon_sigpa-map, "carburant");
+}
+.flaticon-pompe-a-carburant:before {
+    content: map-get($flaticon_sigpa-map, "pompe-a-carburant");
+}
+.flaticon-eau:before {
+    content: map-get($flaticon_sigpa-map, "eau");
+}
+.flaticon-eau-potable:before {
+    content: map-get($flaticon_sigpa-map, "eau-potable");
+}
+.flaticon-eau-potable-1:before {
+    content: map-get($flaticon_sigpa-map, "eau-potable-1");
+}
+.flaticon-eau-purifiee:before {
+    content: map-get($flaticon_sigpa-map, "eau-purifiee");
+}
+.flaticon-eclairage:before {
+    content: map-get($flaticon_sigpa-map, "eclairage");
+}
+.flaticon-electricite:before {
+    content: map-get($flaticon_sigpa-map, "electricite");
+}
+.flaticon-electricite-1:before {
+    content: map-get($flaticon_sigpa-map, "electricite-1");
+}
+.flaticon-eclat:before {
+    content: map-get($flaticon_sigpa-map, "eclat");
+}

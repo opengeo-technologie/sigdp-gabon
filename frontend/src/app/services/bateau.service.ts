@@ -48,8 +48,8 @@ export class BateauService {
     return this.http.get<Bateau>(`${this.apiUrl}/${id}`);
   }
 
-  getBateauByImmatriculation(numero: string): Observable<Bateau> {
-    return this.http.get<Bateau>(`${this.apiUrl}/immatriculation/${numero}`);
+  getBateauByImmatriculationName(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/search`, payload);
   }
 
   getStatistiquesBateau(id: number, annee: number): Observable<any> {

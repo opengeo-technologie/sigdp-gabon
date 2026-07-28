@@ -27,7 +27,7 @@ export class DebarquementFormComponent implements OnInit {
   @ViewChild("selectPecheur") selectPecheur!: ElementRef;
   @ViewChild("selectBateau") selectBateau!: ElementRef;
   submitting = false;
-  debarcaderes: Debarcadere[] = [];
+  debarcaderes: any[] = [];
   pecheurs: Pecheur[] = [];
   bateaux: Bateau[] = [];
   filterdPecheurs: Pecheur[] = [];
@@ -56,6 +56,7 @@ export class DebarquementFormComponent implements OnInit {
     this.loadData();
     setTimeout(() => this.initMaterialize(), 500);
   }
+
   ngAfterViewInit(): void {
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
@@ -83,16 +84,16 @@ export class DebarquementFormComponent implements OnInit {
   }
 
   loadData() {
-    this.debarcadereService.getDebarcaderes().subscribe((data) => {
+    this.debarcadereService.getDebarcadereList().subscribe((data: any) => {
       // console.log("Debarcaderes:", data);
-      this.debarcaderes = data.result;
+      this.debarcaderes = data;
       // setTimeout(() => this.initMaterialize(), 500);
       setTimeout(() => {
         M.FormSelect.init(this.selectSite?.nativeElement);
         this.addSearchBox(this.selectSite?.nativeElement, "select_debarcadere");
       }, 500);
     });
-    this.pecheurService.getPecheurs().subscribe((data) => {
+    this.pecheurService.getPecheursDropdown().subscribe((data) => {
       // console.log("Pecheurs:", data);
       this.pecheurs = data;
       this.filterdPecheurs = data;
@@ -102,7 +103,7 @@ export class DebarquementFormComponent implements OnInit {
         this.addSearchBox(this.selectPecheur?.nativeElement, "select_pecheur");
       }, 500);
     });
-    this.bateauService.getBateaux().subscribe((data) => {
+    this.bateauService.getBateauxDropdown().subscribe((data) => {
       // console.log("Bateaux:", data);
       this.bateaux = data;
       this.bateauxFiltered = data;

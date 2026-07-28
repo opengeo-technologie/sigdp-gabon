@@ -168,7 +168,14 @@ class TransactionAchat(Base):
     pecheur = Column(String(150), nullable=True)
     pirogue = Column(String(100), nullable=True)
 
+    site_debarquement_id = Column(Integer, nullable=True)
+    pecheur_id = Column(Integer, nullable=True)
+    pirogue_id = Column(Integer, nullable=True)
+
     espece = Column(String(120), index=True)
+    espece_id = Column(Integer, index=True)
+    # frais | sale | fume | autre
+    etat_poisson = Column(String(20), default="frais", index=True)
     quantite_kg = Column(Float, default=0)
     prix_unitaire_fcfa = Column(Float, nullable=True)
     montant_total_fcfa = Column(Float, nullable=True)

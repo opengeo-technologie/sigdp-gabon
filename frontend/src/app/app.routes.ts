@@ -61,8 +61,15 @@ export const routes: Routes = [
   // Pages publiques
   {
     path: "",
-    redirectTo: "/public",
+    redirectTo: "/map",
     pathMatch: "full",
+  },
+  {
+    path: "map",
+    loadComponent: () =>
+      import("./components/public/public-map/public-map.component").then(
+        (m) => m.PublicMapComponent,
+      ),
   },
   {
     path: "public",
@@ -144,12 +151,21 @@ export const routes: Routes = [
     canActivate: [authGuard, PermissionGuard],
   },
   {
+    path: "pecheurs/importer",
+    loadComponent: () =>
+      import("./components/pecheurs/pecheurs-import/pecheurs-import.component").then(
+        (m) => m.PecheursImportComponent,
+      ),
+    canActivate: [authGuard],
+  },
+
+  {
     path: "pecheurs/new",
     loadComponent: () =>
       import("./components/pecheurs/pecheur-form/pecheur-form.component").then(
         (m) => m.PecheurFormComponent,
       ),
-    canActivate: [authGuard, PermissionGuard],
+    canActivate: [authGuard],
   },
   {
     path: "pecheurs/:id",
@@ -157,7 +173,7 @@ export const routes: Routes = [
       import("./components/pecheurs/pecheur-detail/pecheur-detail.component").then(
         (m) => m.PecheurDetailComponent,
       ),
-    canActivate: [authGuard, PermissionGuard],
+    canActivate: [authGuard],
   },
   {
     path: "pecheurs/:id/edit",
@@ -182,6 +198,14 @@ export const routes: Routes = [
         (m) => m.BateauFormComponent,
       ),
     canActivate: [authGuard, PermissionGuard],
+  },
+  {
+    path: "bateaux/importer",
+    loadComponent: () =>
+      import("./components/bateaux/bateaux-import/bateaux-import.component").then(
+        (m) => m.BateauxImportComponent,
+      ),
+    canActivate: [authGuard],
   },
   {
     path: "bateaux/:id",
@@ -244,6 +268,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./components/debarquements/debarquement-form/debarquement-form.component").then(
         (m) => m.DebarquementFormComponent,
+      ),
+    canActivate: [authGuard, PermissionGuard],
+  },
+  {
+    path: "debarquements/importer",
+    loadComponent: () =>
+      import("./components/debarquements/captures-import/captures-import.component").then(
+        (m) => m.CapturesImportComponent,
       ),
     canActivate: [authGuard, PermissionGuard],
   },
@@ -434,6 +466,70 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./components/mareyeurs/mareyeur-details/mareyeur-details.component").then(
         (m) => m.MareyeurDetailsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles.component").then(
+        (m) => m.StationsPiscicolesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/add",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-form/stations-piscicoles-form.component").then(
+        (m) => m.StationsPiscicolesFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/carte",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-map/stations-piscicoles-map.component").then(
+        (m) => m.StationsPiscicolesMapComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/:id/edit",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-form/stations-piscicoles-form.component").then(
+        (m) => m.StationsPiscicolesFormComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/:id/details",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-details/stations-piscicoles-details.component").then(
+        (m) => m.StationsPiscicolesDetailsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/importer",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-import/stations-piscicoles-import.component").then(
+        (m) => m.StationsPiscicolesImportComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/exporter",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/stations-piscicoles-export/stations-piscicoles-export.component").then(
+        (m) => m.StationsPiscicolesExportComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "stations-piscicoles/rapports",
+    loadComponent: () =>
+      import("./components/stations-piscicoles/station-piscicole-rapport/station-piscicole-rapport.component").then(
+        (m) => m.StationPiscicoleRapportComponent,
       ),
     canActivate: [authGuard],
   },

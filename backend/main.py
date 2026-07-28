@@ -23,6 +23,12 @@ from app.api import (
     signataire,
     licence_signature,
     mareyeur,
+    stations_piscicoles,
+    stations_piscicoles_import,
+    stations_piscicoles_export,
+    # stations_piscicoles_analyses_ia,
+    stations_piscicoles_rapport,
+    zone,
 )
 
 # Créer les tables
@@ -53,6 +59,11 @@ app.add_middleware(
 )
 
 # Inclusion des routers
+app.include_router(stations_piscicoles_rapport.router)
+app.include_router(zone.router)
+app.include_router(stations_piscicoles_import.router)
+app.include_router(stations_piscicoles_export.router)
+app.include_router(stations_piscicoles.router)
 app.include_router(mareyeur.router)
 app.include_router(signataire.router)
 app.include_router(licence2.router)

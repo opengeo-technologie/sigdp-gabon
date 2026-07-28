@@ -1,0 +1,131 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">upload_file</i>Importer des stations</h1>
+    <p>Importer les stations piscicoles</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row valign-wrapper" style="margin-bottom: 0">
+    <div class="col s8">
+      <!-- <h5>
+        <i class="material-icons left">upload_file</i>Importer des stations
+      </h5> -->
+    </div>
+    <div class="col s4 right-align">
+      <a routerLink="/stations-piscicoles" class="btn-small red waves-effect">
+        <i class="material-icons left">arrow_back</i>Retour à la liste</a
+      >
+    </div>
+  </div>
+
+  <div class="card-panel">
+    <p>
+      Formats acceptés : <strong>.xlsx</strong>, <strong>.csv</strong> /
+      <strong>.txt</strong> (séparateur <code>;</code> ou <code>,</code>) et
+      <strong>.json</strong> — 10 Mo maximum. Les stations importées sont créées
+      au statut
+      <span class="new badge orange" data-badge-caption="">En construction</span
+      >.
+    </p>
+    <p>
+      <a class="btn-flat waves-effect green-text" (click)="telechargerModele()">
+        <i class="material-icons left">download</i>
+        Télécharger le modèle Excel
+      </a>
+    </p>
+
+    <div class="file-field input-field">
+      <div class="btn green">
+        <span
+          ><i class="material-icons left">attach_file</i>Choisir un
+          fichier</span
+        >
+        <input
+          type="file"
+          accept=".xlsx,.csv,.txt,.json"
+          (change)="fichierChoisi($event)"
+        />
+      </div>
+      <div class="file-path-wrapper">
+        <input
+          class="file-path validate"
+          type="text"
+          placeholder="Aucun fichier sélectionné"
+        />
+      </div>
+    </div>
+
+    <button
+      class="btn waves-effect waves-light green"
+      [disabled]="!fichier || envoiEnCours"
+      (click)="importer()"
+    >
+      <i class="material-icons left">cloud_upload</i>
+      {{ envoiEnCours ? 'Import en cours...' : 'Lancer l\\'import' }}
+    </button>
+  </div>
+
+  <div *ngIf="envoiEnCours" class="progress">
+    <div class="indeterminate"></div>
+  </div>
+
+  <!-- Rapport d'import -->
+  <div class="card" *ngIf="rapport">
+    <div class="card-content">
+      <span class="card-title">Rapport d'import</span>
+
+      <div class="row center-align" style="margin-bottom: 0">
+        <div class="col s4">
+          <h4 style="margin: 8px 0">{{ rapport.total_lignes }}</h4>
+          <span class="grey-text">Lignes lues</span>
+        </div>
+        <div class="col s4">
+          <h4 class="green-text" style="margin: 8px 0">
+            {{ rapport.importees }}
+          </h4>
+          <span class="grey-text">Importées</span>
+        </div>
+        <div class="col s4">
+          <h4 [class.red-text]="rapport.rejetees > 0" style="margin: 8px 0">
+            {{ rapport.rejetees }}
+          </h4>
+          <span class="grey-text">Rejetées</span>
+        </div>
+      </div>
+
+      <table
+        class="striped"
+        *ngIf="rapport.erreurs.length > 0"
+        style="margin-top: 16px"
+      >
+        <thead>
+          <tr>
+            <th style="width: 80px">Ligne</th>
+            <th>Nom</th>
+            <th>Erreur</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of rapport.erreurs">
+            <td>{{ e.ligne }}</td>
+            <td>{{ e.nom || "—" }}</td>
+            <td class="red-text">{{ e.erreur }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p
+        class="green-text"
+        *ngIf="rapport.rejetees === 0"
+        style="margin-top: 16px"
+      >
+        <i class="material-icons tiny">check_circle</i>
+        Toutes les lignes ont été importées avec succès.
+      </p>
+    </div>
+    <div class="card-action">
+      <a routerLink="/stations-piscicoles">Voir les stations importées</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="carte-hote">
+  <div
+    #conteneurCarte
+    class="carte"
+    role="application"
+    aria-label="Carte des zones halieutiques du Gabon"
+  ></div>
+
+  <!-- Légende / contrôle des couches -->
+  <div class="panneau-couches">
+    <div class="entete">
+      <span>Couches</span>
+      @if (enChargement()) {
+        <span
+          class="indicateur-chargement"
+          aria-label="Chargement en cours"
+        ></span>
+      }
+    </div>
+
+    @for (couche of couches; track couche.type) {
+      <div class="ligne-couche">
+        <label>
+          <input
+            type="checkbox"
+            [checked]="visibilite()[couche.type]"
+            (change)="basculerCouche(couche.type)"
+          />
+          <span
+            class="pastille"
+            [style.background]="couche.couleurRemplissage"
+            [style.border-color]="couche.couleur"
+            [style.border-style]="couche.pointilles ? 'dashed' : 'solid'"
+          ></span>
+          <span class="libelle">{{ couche.libelle }}</span>
+        </label>
+        <button
+          type="button"
+          class="bouton-zoom"
+          [disabled]="!visibilite()[couche.type]"
+          (click)="zoomerSurCouche(couche.type)"
+          title="Cadrer sur cette couche"
+        >
+          ⤢
+        </button>
+      </div>
+    }
+
+    <div class="separateur"></div>
+
+    <label class="ligne-couche">
+      <input
+        type="checkbox"
+        [checked]="fondSatellite()"
+        (change)="fondSatellite.set(!fondSatellite())"
+      />
+      <span class="libelle">Fond satellite</span>
+    </label>
+
+    <button type="button" class="bouton-reinit" (click)="reinitialiserVue()">
+      Réinitialiser la vue
+    </button>
+  </div>
+
+  <!-- Résultat d'un clic sur la carte -->
+  @if (pointInterroge(); as point) {
+    <div class="panneau-point">
+      <div class="entete">
+        <span>Point interrogé</span>
+        <button type="button" (click)="effacerPoint()" aria-label="Fermer">
+          ×
+        </button>
+      </div>
+      <div class="coordonnees">
+        {{ point.lat | number: "1.4-4" }}° / {{ point.lon | number: "1.4-4" }}°
+      </div>
+
+      @if (zonesAuPoint(); as zones) {
+        @if (zones.length) {
+          <ul>
+            @for (zone of zones; track zone.id) {
+              <li>
+                <span
+                  class="pastille"
+                  [style.background]="couleurCouche(zone.type_zone)"
+                ></span>
+                <div>
+                  <strong>{{ zone.nom }}</strong>
+                  <small>{{ libelleCouche(zone.type_zone) }}</small>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="vide">Aucune zone référencée à cet endroit.</p>
+        }
+      } @else {
+        <p class="vide">Recherche…</p>
+      }
+    </div>
+  }
+
+  @if (erreur(); as message) {
+    <div class="bandeau-erreur" role="alert">
+      {{ message }}
+      <button type="button" (click)="erreur.set(null)" aria-label="Fermer">
+        ×
+      </button>
+    </div>
+  }
+</div>

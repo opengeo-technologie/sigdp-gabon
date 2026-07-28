@@ -29,8 +29,11 @@ export class DebarcadereListComponent implements OnInit {
     province: "",
     type: "",
     statut: "",
+    localite: "",
     limit: 10,
   };
+
+  nom_site: string | undefined;
 
   filterParams: any = {};
 
@@ -81,6 +84,8 @@ export class DebarcadereListComponent implements OnInit {
       this.filterParams.province = this.filters.province;
     if (this.filters.type) this.filterParams.type = this.filters.type;
     if (this.filters.statut) this.filterParams.statut = this.filters.statut;
+    if (this.filters.localite)
+      this.filterParams.localite = this.filters.localite;
 
     this.debarcadereService.getDebarcaderes(this.filterParams).subscribe({
       next: (data) => {
@@ -196,6 +201,8 @@ export class DebarcadereListComponent implements OnInit {
     // this.filterParams.limit = this.totalData;
     this.loadDebarcaderes();
   }
+
+  search() {}
 
   deleteDebarcadere(debarcadere: Debarcadere) {
     if (

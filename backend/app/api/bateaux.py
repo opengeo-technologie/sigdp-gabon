@@ -35,6 +35,7 @@ from app.schemas.bateau import (
     BateauDetailResponse,
     BateauInDB,
     BateauBase,
+    BateauSearchRequest,
     EquipageCreate,
 )
 from app.models.engin_peche import EnginPeche
@@ -354,7 +355,12 @@ async def upload_bateau_excel(
                 .first()
             )
 
-            if not bateau:
+            try:
+                if bateau:
+                    continue
+                    # raise ValueError(
+                    #     f"Bateau avec immatriculation {bateau.numero_immatriculation} déja existant."
+                    # )
 
                 cooperative_armement = (
                     db.query(ArmementCooperative)
@@ -382,6 +388,11 @@ async def upload_bateau_excel(
                     .first()
                 )
 
+                if not proprietaire:
+                    raise ValueError(
+                        f"Propriétaire du bateau avec immatriculation {str(row["immatriculation"]).strip()} pas bien défini."
+                    )
+
                 site_attache = (
                     db.query(Debarcadere)
                     .filter(
@@ -390,6 +401,12 @@ async def upload_bateau_excel(
                     )
                     .first()
                 )
+
+                if not site_attache:
+                    raise ValueError(
+                        f"Site d'attache du bateau avec immatriculation {str(row["immatriculation"]).strip()} pas bien défini."
+                    )
+
                 liste_sites_obligatoires = [
                     s.strip() for s in row["site_obligatoire"].split("/") if s.strip()
                 ]
@@ -419,59 +436,64 @@ async def upload_bateau_excel(
                     .first()
                 )
 
-                try:
-                    bateau_data = BateauCreate(
-                        numero_immatriculation=row["immatriculation"].strip(),
-                        nom_bateau=row["nom"].strip(),
-                        type_bateau=row["type_bateau"],
-                        propulsion=row["propulseur"],
-                        longueur_hors_tout=0,
-                        largeur=0,
-                        tirant_eau=0,
-                        jauge_brute=0,
-                        moteur_marque=None,
-                        moteur_puissance_cv=row["puissance_cv"],
-                        moteur_type_carburant=None,
-                        moteur_numero_serie=None,
-                        materiau_coque=row["materiau_coque"].strip(),
-                        annee_construction=row["annee_construction"],
-                        chantier_construction=None,
-                        proprietaire_pecheur_id=(
-                            proprietaire.id if proprietaire else None
-                        ),
-                        cooperative_armement_id=(
-                            cooperative_armement.id if cooperative_armement else None
-                        ),
-                        proprietaire_nom=row["nom_proprietaire"],
-                        nombre_equipage=row["nombre_equipage"],
-                        site_port_attache=site_attache.id if site_attache else None,
-                        site_obligatoire=",".join(str(s) for s in site_obligatoires),
-                        engins_peche_principal=(
-                            engin_peche_principal.id if engin_peche_principal else None
-                        ),
-                        engins_peche_secondaires=(
-                            str(engin_peche_secondaire.id)
-                            if engin_peche_secondaire
-                            else None
-                        ),
-                    )
+                if not engin_peche_principal:
+                    raise ValueError(f"Engin de pêche principal pas bien défini.")
 
-                    bateau = Bateau(**bateau_data.model_dump())
-                    db.add(bateau)
-                    db.commit()
-                except Exception as e:
-                    db.rollback()
-                    error_row = row.to_dict()
-                    error_row["error_message"] = str(e)
-                    errors.append(error_row)
+                # print(str(row["immatriculation"]).strip())
+
+                bateau_data = BateauCreate(
+                    numero_immatriculation=str(row["immatriculation"]).strip(),
+                    nom_bateau=row["nom"].strip(),
+                    type_bateau=row["type_bateau"],
+                    propulsion=row["propulseur"],
+                    longueur_hors_tout=0,
+                    largeur=0,
+                    tirant_eau=0,
+                    jauge_brute=0,
+                    moteur_marque=None,
+                    moteur_puissance_cv=row["puissance_cv"],
+                    moteur_type_carburant=None,
+                    moteur_numero_serie=None,
+                    materiau_coque=row["materiau_coque"].strip(),
+                    annee_construction=row["annee_construction"],
+                    chantier_construction=None,
+                    proprietaire_pecheur_id=(proprietaire.id if proprietaire else None),
+                    cooperative_armement_id=(
+                        cooperative_armement.id if cooperative_armement else None
+                    ),
+                    proprietaire_nom=row["nom_proprietaire"],
+                    nombre_equipage=row["nombre_equipage"],
+                    site_port_attache=site_attache.id if site_attache else None,
+                    site_obligatoire=",".join(str(s) for s in site_obligatoires),
+                    engins_peche_principal=(
+                        engin_peche_principal.id if engin_peche_principal else None
+                    ),
+                    engins_peche_secondaires=(
+                        str(engin_peche_secondaire.id)
+                        if engin_peche_secondaire
+                        else None
+                    ),
+                )
+
+                bateau = Bateau(**bateau_data.model_dump())
+                db.add(bateau)
+                db.commit()
+                inserted_count += 1
+            except Exception as e:
+                db.rollback()
+                error_row = row.to_dict()
+                error_row["error_message"] = str(e)
+                errors.append(error_row)
 
         header = df.columns.tolist()
         if errors:
             save_errors(errors, header)
 
         return {
-            "inserted": len(df) - len(errors),
-            "failed": len(errors),
+            "total": total_rows,
+            "inseres": inserted_count,
+            "echoues": len(errors),
+            "erreurs": errors,
             "error_file": ERROR_FILE if errors else None,
         }
 
@@ -549,18 +571,6 @@ def get_bateau_simple_list(db: Session = Depends(get_db)):
     return result
 
 
-@router.get("/immatriculation/{numero}")
-def get_bateau_by_immatriculation(numero: str, db: Session = Depends(get_db)):
-    """
-    Récupérer un bateau par son numéro d'immatriculation
-    """
-    bateaux = db.query(Bateau).filter(Bateau.numero_immatriculation.ilike(numero)).all()
-
-    result = [build_bateau_response(l, db) for l in bateaux]
-
-    return result
-
-
 @router.post("", response_model=BateauResponse, status_code=status.HTTP_201_CREATED)
 def create_bateau(bateau_data: BateauCreate, db: Session = Depends(get_db)):
     """
@@ -604,6 +614,44 @@ def create_bateau(bateau_data: BateauCreate, db: Session = Depends(get_db)):
     )
 
     return BateauResponse(**bateau_dict)
+
+
+@router.post("/search")
+def get_bateau_by_immatriculation_name(
+    payload: BateauSearchRequest, db: Session = Depends(get_db)
+):
+    """
+    Récupérer un bateau par son numéro d'immatriculation ou par nom
+    """
+    query = db.query(Bateau)
+
+    # print(payload)
+
+    filters = []
+    if payload.immatriculation:
+        filters.append(
+            Bateau.numero_immatriculation.ilike(f"%{payload.immatriculation.strip()}%")
+        )
+    if payload.nom:
+        filters.append(Bateau.nom_bateau.ilike(f"%{payload.nom.strip()}%"))
+
+    if filters:
+        query = query.filter(or_(*filters))
+
+    total = query.count()
+    bateaux = (
+        query.order_by(Bateau.nom_bateau.asc())
+        .offset(payload.skip)
+        .limit(payload.limit)
+        .all()
+    )
+
+    return {
+        "total": total,
+        "skip": payload.skip,
+        "limit": payload.limit,
+        "items": [build_bateau_response(l, db) for l in bateaux],
+    }
 
 
 @router.put("/{bateau_id}", response_model=BateauResponse)

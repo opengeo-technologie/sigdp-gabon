@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100
 
+    # AI API KEY
+    # ANTHROPIC_API_KEY = "sk-ant-api03"
+    # SIGDP_IA_MODEL = "claude-opus-4-8"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

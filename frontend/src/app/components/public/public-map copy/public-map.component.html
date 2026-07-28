@@ -1,0 +1,92 @@
+<nav class="navbar-fixed-height">
+  <div class="nav-wrapper">
+    <a href="#" class="brand-logo">
+      <img
+        src="../../../assets/logo.png"
+        alt=""
+        style="height: 50px"
+        alt=""
+        onerror="this.style.display = 'none'"
+      />
+      <span>SIGPA</span>
+    </a>
+    <a href="#" data-target="mobile-menu" class="sidenav-trigger">
+      <i class="material-icons">menu</i>
+    </a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="#carte">Carte</a></li>
+      <li><a href="#statistiques">Statistiques</a></li>
+      <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+      <li>
+        <a routerLink="/login"
+          ><i class="material-icons left">login</i>Connexion</a
+        >
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<ul class="sidenav" id="mobile-menu">
+  <li><a href="#carte">Carte</a></li>
+  <li><a href="#statistiques">Statistiques</a></li>
+  <li><a routerLink="/public-especes">Espèces de poissons</a></li>
+  <li>
+    <a routerLink="/login"><i class="material-icons left">login</i>Connexion</a>
+  </li>
+</ul>
+
+<div class="layout" id="layout">
+  <aside class="side-panel" id="side-panel">
+    <div class="side-panel__inner">
+      <section class="side-panel__section">
+        <h2 class="side-panel__heading">Statistiques générales</h2>
+
+        <article class="stat-card">
+          <i class="material-icons light-blue-text text-lighten-2">place</i>
+          <span class="stat-card__value" id="stat-debarcaderes">0</span>
+          <span class="stat-card__label">Débarcadères actifs</span>
+        </article>
+
+        <article class="stat-card">
+          <i class="material-icons amber-text text-lighten-1">people</i>
+          <span class="stat-card__value" id="stat-pecheurs">0</span>
+          <span class="stat-card__label">Pêcheurs enregistrés</span>
+        </article>
+
+        <article class="stat-card">
+          <i class="material-icons cyan-text text-lighten-2">directions_boat</i>
+          <span class="stat-card__value" id="stat-bateaux">0</span>
+          <span class="stat-card__label">Bateaux référencés</span>
+        </article>
+
+        <article class="stat-card">
+          <i class="material-icons green-text text-lighten-1">insert_chart</i>
+          <span class="stat-card__value" id="stat-captures">0 t</span>
+          <span class="stat-card__label">Tonnes capturées (annuel)</span>
+        </article>
+      </section>
+
+      <!-- <section class="side-panel__section">
+        <h2 class="side-panel__heading">Activité récente</h2>
+        <p class="empty-state">Aucune donnée à afficher pour le moment.</p>
+      </section> -->
+    </div>
+  </aside>
+
+  <button
+    type="button"
+    class="panel-toggle"
+    id="panel-toggle"
+    aria-controls="side-panel"
+    aria-expanded="true"
+    aria-label="Replier le panneau de statistiques"
+    title="Replier le panneau"
+    (click)="toggleSidebar()"
+  >
+    <i class="material-icons panel-toggle__chevron">chevron_left</i>
+    <i class="material-icons panel-toggle__show">bar_chart</i>
+    <i class="material-icons panel-toggle__hide">close</i>
+  </button>
+
+  <main id="map" aria-label="Carte des débarcadères et zones de pêche"></main>
+</div>

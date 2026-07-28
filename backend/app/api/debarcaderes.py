@@ -261,6 +261,7 @@ def get_debarcaderes(
     limit: int = Query(500, ge=1, le=1000),
     province: Optional[str] = None,
     type: Optional[str] = None,
+    localite: Optional[str] = None,
     statut: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
@@ -272,9 +273,11 @@ def get_debarcaderes(
     if province:
         query = query.filter(Debarcadere.province == province)
     if type:
-        query = query.filter(Debarcadere.localite == type)
+        query = query.filter(Debarcadere.type == type)
     if statut:
         query = query.filter(Debarcadere.statut_operationnel == statut)
+    if localite:
+        query = query.filter(Debarcadere.localite == localite)
 
     debarcaderes = query.offset(skip).limit(limit).all()
 
@@ -697,6 +700,16 @@ def get_localite_site(db: Session = Depends(get_db)):
     localite_dict = [{"localite": l.localite} for l in localite_query]
 
     return localite_dict
+
+
+@router.get("/dropdown/list")
+def get_site_dropdown_list(db: Session = Depends(get_db)):
+    # Récupérer tous les sites
+    query = db.query(Debarcadere).all()
+
+    sites_dict = [{"site": s.denomination, "id": s.id} for s in query]
+
+    return sites_dict
 
 
 @router.get("/statistiques/{debarcadere_id}")

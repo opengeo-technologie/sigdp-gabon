@@ -21,6 +21,7 @@ export class DebarcadereService {
     limit?: number;
     province?: string;
     type?: string;
+    localite?: string;
     statut?: string;
   }): Observable<any> {
     let params = new HttpParams();
@@ -32,10 +33,15 @@ export class DebarcadereService {
         params = params.set("limit", filters.limit.toString());
       if (filters.province) params = params.set("province", filters.province);
       if (filters.type) params = params.set("type", filters.type);
+      if (filters.localite) params = params.set("localite", filters.localite);
       if (filters.statut) params = params.set("statut", filters.statut);
     }
 
     return this.http.get<any>(this.apiUrl, { params });
+  }
+
+  getDebarcadereList(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/dropdown/list`);
   }
 
   getDebarcadere(id: number): Observable<Debarcadere> {

@@ -37,6 +37,10 @@ interface Permission {
   module: string;
 }
 
+function isStringArray(arr: unknown): arr is string[] {
+  return Array.isArray(arr) && arr.every((item) => typeof item === "string");
+}
+
 @Component({
   selector: "app-user",
   standalone: true,
@@ -455,18 +459,30 @@ export class UserComponent {
     return labels[role] || role;
   }
 
-  getPermissionsByModule(permissions: string[]): any {
+  getPermissionsByModule(permissions: any[]): any {
     const grouped: any = {};
+    // console.log(permissions);
+    if (isStringArray(permissions)) {
+      permissions.forEach((code) => {
+        const parts = code.split(".");
+        const module = parts[0];
 
-    permissions.forEach((code) => {
-      const parts = code.split(".");
-      const module = parts[0];
+        if (!grouped[module]) {
+          grouped[module] = [];
+        }
+        grouped[module].push(code);
+      });
+    } else {
+      permissions.forEach((p) => {
+        const parts = p.code.split(".");
+        const module = parts[0];
 
-      if (!grouped[module]) {
-        grouped[module] = [];
-      }
-      grouped[module].push(code);
-    });
+        if (!grouped[module]) {
+          grouped[module] = [];
+        }
+        grouped[module].push(p.code);
+      });
+    }
 
     return grouped;
   }

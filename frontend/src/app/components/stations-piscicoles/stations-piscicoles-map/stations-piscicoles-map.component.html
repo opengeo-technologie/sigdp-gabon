@@ -1,0 +1,55 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">map</i>Carte des stations piscicoles</h1>
+    <!-- <p>Gestion des stations piscicoles</p> -->
+  </div>
+</div>
+
+<div class="container-fluid" style="max-width: 100%">
+  <div class="row" style="margin-bottom: 8px">
+    <div class="col s12 m6">
+      <!-- <h5>
+        <i class="material-icons left">map</i>Carte des stations piscicoles
+      </h5> -->
+    </div>
+    <div class="col s12 m6">
+      <label
+        style="display: inline-block; margin-right: 16px"
+        *ngFor="let s of statuts"
+      >
+        <input
+          type="checkbox"
+          class="filled-in"
+          [checked]="statutsVisibles.has(s)"
+          (change)="basculerStatut(s)"
+        />
+        <span>{{ statutLabels[s] }}</span>
+      </label>
+      <a routerLink="/stations-piscicoles" class="btn-flat waves-effect">
+        <i class="material-icons left">list</i>Liste</a
+      >
+    </div>
+  </div>
+
+  <div
+    class="card-panel orange lighten-4"
+    *ngIf="nbSansCoordonnees > 0"
+    style="padding: 8px 16px"
+  >
+    <i class="material-icons tiny">warning</i>
+    {{ nbSansCoordonnees }} station(s) sans coordonnées GPS ne sont pas
+    affichées sur la carte.
+  </div>
+
+  <div class="row">
+    <!-- Carte -->
+    <div class="card col s12 m12">
+      <div class="card-content">
+        <div
+          id="carte-stations"
+          style="height: 100vh; border-radius: 4px; margin: -20px"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>

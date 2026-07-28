@@ -1,0 +1,245 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">assessment</i>Rapport analytique des
+      stations piscicoles
+    </h1>
+    <!-- <p>Gestion des stations piscicoles</p> -->
+  </div>
+</div>
+<div class="container-fluid">
+  <div class="row valign-wrapper" style="margin-bottom: 0">
+    <!-- <div class="col s7">
+      <h5><i class="material-icons left">assessment</i>Rapport analytique</h5>
+    </div> -->
+    <div class="col s5 right-align">
+      <a routerLink="/stations-piscicoles" class="btn-flat waves-effect">
+        <i class="material-icons left">arrow_back</i>Stations piscicoles</a
+      >
+    </div>
+  </div>
+
+  <!-- Paramètres -->
+  <div class="card-panel">
+    <div class="row" style="margin-bottom: 0">
+      <div class="input-field col s12 m3">
+        <select [(ngModel)]="province" (ngModelChange)="recharger()">
+          <option value="">National</option>
+          <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+        </select>
+        <label>Périmètre</label>
+      </div>
+      <div class="input-field col s6 m2">
+        <select [(ngModel)]="annee" (ngModelChange)="recharger()">
+          <option *ngFor="let a of annees" [ngValue]="a">{{ a }}</option>
+        </select>
+        <label>Année</label>
+      </div>
+      <div class="col s6 m3" style="padding-top: 24px">
+        <label>
+          <input
+            type="checkbox"
+            class="filled-in"
+            [(ngModel)]="avecAnalyseIA"
+          />
+          <span>Inclure l'analyse IA dans le PDF</span>
+        </label>
+      </div>
+      <div class="col s12 m4 right-align" style="padding-top: 14px">
+        <button
+          class="btn waves-effect waves-light green"
+          [disabled]="pdfEnCours"
+          (click)="telechargerPDF()"
+        >
+          <i class="material-icons left">
+            {{ pdfEnCours ? "hourglass_top" : "picture_as_pdf" }}</i
+          >
+          {{ pdfEnCours ? "Génération..." : "Rapport PDF" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="chargement" class="progress">
+    <div class="indeterminate"></div>
+  </div>
+
+  <!-- KPI -->
+  <div class="row" *ngIf="indicateurs">
+    <div class="col s6 m3" *ngFor="let kpi of kpis">
+      <div class="card-panel center-align" style="padding: 14px 8px">
+        <i class="material-icons {{ kpi.couleur }}-text">{{ kpi.icone }}</i>
+        <h5 style="margin: 4px 0">{{ kpi.valeur }}</h5>
+        <span class="grey-text" style="font-size: 12px">{{ kpi.libelle }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analyse IA -->
+  <div class="card-panel" style="padding: 10px 16px">
+    <button
+      class="btn-small waves-effect indigo disabled"
+      [disabled]="iaEnCours"
+      (click)="analyserGraphiques()"
+    >
+      <i class="material-icons left">
+        {{ iaEnCours ? "hourglass_top" : "psychology" }}</i
+      >
+      {{ iaEnCours ? "Analyse en cours..." : "Analyser les graphiques (IA)" }}
+    </button>
+    <span
+      class="grey-text"
+      style="margin-left: 12px; font-size: 12px"
+      *ngIf="!analyses"
+    >
+      Cette option est en cours de développement.</span
+    >
+    <!-- <span
+      class="grey-text"
+      style="margin-left: 12px; font-size: 12px"
+      *ngIf="!analyses"
+    >
+      Lecture, tendance et prédiction sous chaque graphique, avec projection de
+      la production.</span
+    > -->
+    <span
+      class="green-text"
+      style="margin-left: 12px; font-size: 12px"
+      *ngIf="analyses"
+    >
+      <i class="material-icons tiny">check_circle</i>
+      Analyse générée — projection annuelle :
+      {{ projection?.tonnage_annuel_projete_t ?? "—" }} t</span
+    >
+  </div>
+
+  <!-- Graphiques -->
+  <div class="row">
+    <div class="col s12 m7">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 15px">
+            Stations par province</span
+          >
+          <div style="position: relative; height: 230px">
+            <canvas id="graph-provinces"></canvas>
+          </div>
+          <!-- <canvas id="graph-provinces" height="230px"></canvas> -->
+          <div class="bloc-ia" *ngIf="analyses?.['provinces']">
+            <ng-container
+              *ngTemplateOutlet="
+                blocIA;
+                context: { $implicit: analyses!['provinces'] }
+              "
+            ></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m5">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 15px">
+            Structure du parc</span
+          >
+          <div style="position: relative; height: 230px">
+            <canvas id="graph-statut"></canvas>
+          </div>
+
+          <div class="bloc-ia" *ngIf="analyses?.['structure']">
+            <ng-container
+              *ngTemplateOutlet="
+                blocIA;
+                context: { $implicit: analyses!['structure'] }
+              "
+            ></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 m5">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 15px">
+            Types d'installation</span
+          >
+          <div style="position: relative; height: 230px">
+            <canvas id="graph-type"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m7">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 15px">
+            Tonnage récolté par espèce</span
+          >
+          <div style="position: relative; height: 230px">
+            <canvas id="graph-especes"></canvas>
+          </div>
+
+          <div class="bloc-ia" *ngIf="analyses?.['especes']">
+            <ng-container
+              *ngTemplateOutlet="
+                blocIA;
+                context: { $implicit: analyses!['especes'] }
+              "
+            ></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 15px">
+            Production mensuelle {{ annee }}
+            <span class="grey-text" style="font-size: 11px" *ngIf="projection">
+              — barres claires : projection ({{
+                projection.tonnage_annuel_projete_t
+              }}
+              t annuels projetés)
+            </span></span
+          >
+
+          <div style="position: relative; height: 230px">
+            <canvas id="graph-mensuel"></canvas>
+          </div>
+
+          <div class="bloc-ia" *ngIf="analyses?.['mensuel']">
+            <ng-container
+              *ngTemplateOutlet="
+                blocIA;
+                context: { $implicit: analyses!['mensuel'] }
+              "
+            ></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template du bloc d'analyse IA -->
+  <ng-template #blocIA let-a>
+    <div
+      style="
+        background: #f1f8e9;
+        border-left: 3px solid #1b5e20;
+        padding: 8px 12px;
+        margin-top: 10px;
+        font-size: 12.5px;
+      "
+    >
+      <div><strong>Lecture :</strong> {{ a.lecture }}</div>
+      <div><strong>Tendance :</strong> {{ a.tendance }}</div>
+      <div><strong>Prédiction :</strong> {{ a.prediction }}</div>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,542 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">waves</i>Details de la station piscicole
+    </h1>
+    <p class="grey-text" *ngIf="station">
+      {{ station.code_station }} — {{ typeLabels[station.type_station] }}
+    </p>
+  </div>
+</div>
+
+<div class="container-fluid" *ngIf="station">
+  <!-- En-tête -->
+  <div class="row valign-wrapper" style="margin-bottom: 0">
+    <div class="col s8">
+      <h5>
+        {{ station.nom }}
+        <span
+          class="new badge {{ statutColors[station.statut] }}"
+          data-badge-caption=""
+          style="float: none"
+        >
+          {{ statutLabels[station.statut] }}</span
+        >
+      </h5>
+      <p class="grey-text">
+        {{ station.code_station }} — {{ typeLabels[station.type_station] }}
+      </p>
+    </div>
+    <div class="col s4 right-align">
+      <a routerLink="/stations-piscicoles" class="btn-flat waves-effect">
+        <i class="material-icons left">arrow_back</i>Retour</a
+      >
+      <a
+        [routerLink]="['/stations-piscicoles', station.id, 'edit']"
+        [class.disabled]="!hasPermission('stations.update')"
+        class="btn waves-effect waves-light blue"
+      >
+        <i class="material-icons left">edit</i>Modifier</a
+      >
+    </div>
+  </div>
+
+  <!-- Transitions de statut -->
+  <div class="card-panel" *ngIf="transitionsPossibles().length > 0">
+    <span class="grey-text">Changer le statut :</span>
+    <button
+      *ngFor="let s of transitionsPossibles()"
+      class="btn-small waves-effect {{ statutColors[s] }}"
+      [class.disabled]="!hasPermission('stations.update')"
+      style="margin-left: 8px"
+      (click)="ouvrirModalStatut(s)"
+    >
+      {{ statutLabels[s] }}
+    </button>
+  </div>
+
+  <div class="row">
+    <!-- Informations générales -->
+    <div class="col s12 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Informations générales</span>
+          <table class="striped">
+            <tbody>
+              <tr>
+                <td class="grey-text">Province</td>
+                <td>{{ station.province }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Département</td>
+                <td>{{ station.departement || "—" }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Localité</td>
+                <td>{{ station.localite || "—" }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Coordonnées (Lat; Long)</td>
+                <td>
+                  <span
+                    *ngIf="
+                      station.latitude != null && station.longitude != null
+                    "
+                  >
+                    ({{ station.latitude | number: "1.4-4" }};
+                    {{ station.longitude | number: "1.4-4" }})
+                  </span>
+                  <span *ngIf="station.latitude == null" class="orange-text">
+                    Non géolocalisée</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="grey-text">Superficie</td>
+                <td>
+                  {{
+                    station.superficie_totale
+                      ? (station.superficie_totale | number) + " m²"
+                      : "—"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="grey-text">Bassins</td>
+                <td>{{ station.nombre_bassins ?? "—" }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Capacité</td>
+                <td>
+                  {{
+                    station.capacite_production
+                      ? station.capacite_production + " t/an"
+                      : "—"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="grey-text">Source d'eau</td>
+                <td>
+                  {{
+                    station.source_eau
+                      ? sourceEauLabels[station.source_eau]
+                      : "—"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="grey-text">Espèces</td>
+                <td>
+                  <span *ngFor="let e of splitEspeces()" class="chip">{{
+                    e
+                  }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promoteur et agrément -->
+    <div class="col s12 m6">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Promoteur</span>
+          <table class="striped">
+            <tbody>
+              <tr>
+                <td class="grey-text">Nom</td>
+                <td>{{ station.promoteur_nom }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Type</td>
+                <td>{{ typePromoteurLabels[station.promoteur_type] }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Contact</td>
+                <td>{{ station.promoteur_contact || "—" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Agrément</span>
+          <table class="striped">
+            <tbody>
+              <tr>
+                <td class="grey-text">Numéro</td>
+                <td>{{ station.numero_agrement || "Non agréée" }}</td>
+              </tr>
+              <tr>
+                <td class="grey-text">Délivré le</td>
+                <td>
+                  {{
+                    station.date_agrement
+                      ? (station.date_agrement | date: "dd/MM/yyyy")
+                      : "—"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="grey-text">Expire le</td>
+                <td [class.red-text]="agrementExpire()">
+                  {{
+                    station.date_expiration_agrement
+                      ? (station.date_expiration_agrement | date: "dd/MM/yyyy")
+                      : "—"
+                  }}
+                  <span *ngIf="agrementExpire()"> (expiré)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cycles de production -->
+  <div class="card">
+    <div class="card-content">
+      <span class="card-title">
+        Cycles de production
+        <button
+          class="btn-small waves-effect green right"
+          [disabled]="
+            station.statut !== 'ACTIVE' || !hasPermission('stations.update')
+          "
+          (click)="ouvrirModalCycle()"
+          [title]="
+            station.statut !== 'ACTIVE'
+              ? 'La station doit être ACTIVE pour créer un cycle'
+              : ''
+          "
+        >
+          <i class="material-icons left">add</i>Nouveau cycle
+        </button>
+      </span>
+
+      <table class="striped highlight responsive-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Espèce</th>
+            <th>Empoissonnement</th>
+            <th>Alevins</th>
+            <th>Récolte prévue</th>
+            <th>Récolte effective</th>
+            <th>Tonnage</th>
+            <th>Statut</th>
+            <th class="center-align">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of station.cycles">
+            <td>
+              <strong>{{ c.code_cycle }}</strong>
+            </td>
+            <td>{{ c.espece }}</td>
+            <td>{{ c.date_empoissonnement | date: "dd/MM/yyyy" }}</td>
+            <td>{{ c.nombre_alevins | number }}</td>
+            <td>
+              {{
+                c.date_recolte_prevue
+                  ? (c.date_recolte_prevue | date: "dd/MM/yyyy")
+                  : "—"
+              }}
+            </td>
+            <td>
+              {{
+                c.date_recolte_effective
+                  ? (c.date_recolte_effective | date: "dd/MM/yyyy")
+                  : "—"
+              }}
+            </td>
+            <td>
+              {{ c.tonnage_recolte != null ? c.tonnage_recolte + " t" : "—" }}
+            </td>
+            <td>
+              <span
+                class="new badge {{ cycleColors[c.statut_cycle] }}"
+                data-badge-caption=""
+              >
+                {{ cycleLabels[c.statut_cycle] }}</span
+              >
+            </td>
+            <td class="center-align" style="white-space: nowrap">
+              <ng-container *ngIf="c.statut_cycle === 'EN_COURS'">
+                <a
+                  class="btn-flat btn-small waves-effect green-text"
+                  title="Récolter"
+                  [class.disabled]="!hasPermission('sations.update')"
+                  (click)="ouvrirModalRecolte(c)"
+                >
+                  <i class="material-icons">agriculture</i></a
+                >
+                <a
+                  class="btn-flat btn-small waves-effect orange-text"
+                  title="Abandonner"
+                  [class.disabled]="!hasPermission('sations.update')"
+                  (click)="abandonner(c)"
+                >
+                  <i class="material-icons">cancel</i></a
+                >
+              </ng-container>
+              <a
+                class="btn-flat btn-small waves-effect red-text"
+                [class.disabled]="!hasPermission('stations.delete')"
+                title="Supprimer"
+                (click)="supprimerCycle(c)"
+              >
+                <i class="material-icons">delete</i></a
+              >
+            </td>
+          </tr>
+          <tr *ngIf="station.cycles.length === 0">
+            <td
+              colspan="9"
+              class="center-align grey-text"
+              style="padding: 30px"
+            >
+              Aucun cycle de production enregistré.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-panel grey lighten-4" *ngIf="station.observations">
+    <span class="card-title grey-text text-darken-1">Observations</span>
+    <p style="white-space: pre-line">{{ station.observations }}</p>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal changement de statut -->
+  <div id="modal-statut" class="modal">
+    <div class="modal-content">
+      <h5>
+        Passer la station au statut « {{ statutLabels[statutCible || ""] }} »
+      </h5>
+      <div class="form-input">
+        <label for="motif-statut">Motif (sera ajouté aux observations)</label>
+        <div class="input-field">
+          <textarea
+            id="motif-statut"
+            class="materialize-textarea"
+            [(ngModel)]="motifStatut"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a class="modal-close btn-flat waves-effect">Annuler</a>
+      <a class="btn waves-effect green" (click)="confirmerStatut()"
+        >Confirmer</a
+      >
+    </div>
+  </div>
+
+  <!-- Modal nouveau cycle -->
+  <div id="modal-cycle" class="modal">
+    <div class="modal-content">
+      <h5>Nouveau cycle de production</h5>
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label>Espèce *</label>
+            <div class="input-field">
+              <select
+                id="select-espece-cycle"
+                [(ngModel)]="nouveauCycle.espece"
+              >
+                <option value="" disabled>Choisir une espèce</option>
+                <option *ngFor="let e of especesDisponibles" [value]="e">
+                  {{ e }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label for="date-empoissonnement" class="active">
+              Date d'empoissonnement *</label
+            >
+            <div class="input-field">
+              <input
+                id="date-empoissonnement"
+                type="date"
+                [(ngModel)]="nouveauCycle.date_empoissonnement"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label for="nb-alevins" class="active">Nombre d'alevins</label>
+            <div class="input-field">
+              <input
+                id="nb-alevins"
+                type="number"
+                min="0"
+                [(ngModel)]="nouveauCycle.nombre_alevins"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label for="origine-alevins">Origine des alevins</label>
+            <div class="input-field">
+              <input
+                id="origine-alevins"
+                type="text"
+                [(ngModel)]="nouveauCycle.origine_alevins"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="form-input">
+            <label for="date-recolte-prevue" class="active"
+              >Récolte prévue</label
+            >
+            <div class="input-field">
+              <input
+                id="date-recolte-prevue"
+                type="date"
+                [(ngModel)]="nouveauCycle.date_recolte_prevue"
+              />
+            </div>
+          </div>
+        </div>
+        <!-- <div class="input-field col s12 m6">
+          <select id="select-espece-cycle" [(ngModel)]="nouveauCycle.espece">
+            <option value="" disabled>Choisir une espèce</option>
+            <option *ngFor="let e of especesDisponibles" [value]="e">
+              {{ e }}
+            </option>
+          </select>
+          <label>Espèce *</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input
+            id="date-empoissonnement"
+            type="date"
+            [(ngModel)]="nouveauCycle.date_empoissonnement"
+          />
+          <label for="date-empoissonnement" class="active">
+            Date d'empoissonnement *</label
+          >
+        </div>
+        <div class="input-field col s12 m6">
+          <input
+            id="nb-alevins"
+            type="number"
+            min="0"
+            [(ngModel)]="nouveauCycle.nombre_alevins"
+          />
+          <label for="nb-alevins" class="active">Nombre d'alevins</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input
+            id="origine-alevins"
+            type="text"
+            [(ngModel)]="nouveauCycle.origine_alevins"
+          />
+          <label for="origine-alevins">Origine des alevins</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input
+            id="date-recolte-prevue"
+            type="date"
+            [(ngModel)]="nouveauCycle.date_recolte_prevue"
+          />
+          <label for="date-recolte-prevue" class="active">Récolte prévue</label>
+        </div> -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a class="modal-close btn-flat waves-effect">Annuler</a>
+      <a class="btn waves-effect green" (click)="creerCycle()"
+        >Créer le cycle</a
+      >
+    </div>
+  </div>
+
+  <!-- Modal récolte -->
+  <div id="modal-recolte" class="modal">
+    <div class="modal-content">
+      <h5>Récolter le cycle {{ cycleEnRecolte?.code_cycle }}</h5>
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="date-recolte" class="active">Date de récolte *</label>
+            <div class="input-field">
+              <input
+                id="date-recolte"
+                type="date"
+                [(ngModel)]="recolte.date_recolte_effective"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="tonnage" class="active">Tonnage récolté (t) *</label>
+            <div class="input-field">
+              <input
+                id="tonnage"
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="recolte.tonnage_recolte"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="form-input">
+            <label for="mortalite" class="active">Taux de mortalité (%)</label>
+            <div class="input-field">
+              <input
+                id="mortalite"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                [(ngModel)]="recolte.taux_mortalite"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12">
+          <div class="form-input">
+            <label for="obs-recolte">Observations</label>
+            <div class="input-field">
+              <textarea
+                id="obs-recolte"
+                class="materialize-textarea"
+                [(ngModel)]="recolte.observations"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a class="modal-close btn-flat waves-effect">Annuler</a>
+      <a class="btn waves-effect green" (click)="confirmerRecolte()">
+        Enregistrer la récolte</a
+      >
+    </div>
+  </div>
+</div>

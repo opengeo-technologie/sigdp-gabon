@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, and_, asc, desc
-from typing import Optional
+from typing import Dict, List, Optional
 from datetime import date, datetime, timedelta
 
 from app.database import get_db
@@ -12,6 +13,7 @@ from app.models.bateau import Bateau
 from app.models.espece import Espece
 from app.models.licence import LicenceAutorisationPeche
 from app.models.armement_coorperative import ArmementCooperative
+from app.models.mareyeur import TransactionAchat
 
 router = APIRouter(prefix="/api/statistiques", tags=["Statistiques"])
 
@@ -33,7 +35,9 @@ LIST_MONTHS = [
 
 
 @router.get("/dashboard")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(
+    annee_selected: Optional[int] = None, db: Session = Depends(get_db)
+):
     """
     Statistiques pour le tableau de bord principal
     """
@@ -93,6 +97,30 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         .count()
     )
 
+    # Filtrer les quantites groupé par annee
+    details_annee_group = (
+        db.query(
+            extract("year", Debarquement.date_debarquement).label("annee"),
+            func.sum(DetailDebarquement.quantite_kg).label("total_kg"),
+            func.sum(DetailDebarquement.valeur_totale).label("total_valeur"),
+        )
+        .join(Debarquement, Debarquement.id == DetailDebarquement.debarquement_id)
+        .group_by("annee")
+        .order_by("annee")
+        .all()
+    )
+
+    capture_groupe_par_annee = []
+
+    for item in details_annee_group:
+        capture_groupe_par_annee.append(
+            {
+                "annee": item.annee,
+                "quantite_kg": round(item.total_kg, 2),
+                "quantite_tonnes": round(item.total_kg / 1000, 3),
+            }
+        )
+
     # Licences expirées ou à renouveler (dans les 30 jours)
     date_limite = date.today() + timedelta(days=30)
     # licences_a_renouveler = db.query(Pecheur).filter(
@@ -125,6 +153,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             "quantite_tonnes": round(total_kg_annee / 1000, 3),
             "valeur_fcfa": round(total_valeur_annee, 2),
         },
+        "captures_annee_group": capture_groupe_par_annee,
         "alertes": {
             "actives_mois": alertes_actives,
             "licences_a_renouveler": 0,
@@ -701,3 +730,132 @@ def get_production_par_espece_par_groupe(
     evolution_data.append({"evolution": periodes})
 
     return {"evolution": periodes}
+
+
+class LigneMensuelle(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    mois: int
+    libelle: str  # "Mai 2026"
+    volume_captures_kg: float
+    volume_transactions_kg: float
+    # Ratio transactions/captures : indicateur d'absorption par le circuit
+    # mareyage (0 si pas de captures ; > 1 si mareyeurs achètent plus que
+    # ce qui a été déclaré en capture — signal d'incohérence à investiguer)
+    taux_absorption: float
+
+
+class StatistiquesMensuellesResponse(BaseModel):
+    annee: int
+    total_captures_kg: float
+    total_transactions_kg: float
+    total_montant_fcfa: float
+    taux_absorption_global: float
+    series: List[LigneMensuelle]
+
+
+MOIS_FR = [
+    "",
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre",
+]
+
+
+@router.get("/captures-mareyeurs/yearly")
+def get_evolution_captures(
+    annee: int = Query(2020, ge=1),
+    db: Session = Depends(get_db),
+):
+    """
+    Liste des captures par mois
+    """
+
+    # if filtre == "province":
+    evolution_data = []
+
+    q_captures = (
+        db.query(
+            extract("month", Debarquement.date_debarquement).label("mois"),
+            func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
+        )
+        .join(
+            DetailDebarquement,
+            DetailDebarquement.debarquement_id == Debarquement.id,
+        )
+        .join(Debarcadere, Debarcadere.id == Debarquement.debarcadere_id)
+        .filter(
+            and_(
+                extract("year", Debarquement.date_debarquement) == annee,
+            )
+        )
+        .group_by("mois")
+        .order_by("mois")
+        .all()
+    )
+
+    captures_par_mois: Dict[int, float] = {
+        int(r.mois): float(r.quantite_kg) for r in q_captures
+    }
+
+    q_transactions = (
+        db.query(
+            extract("month", TransactionAchat.date_transaction).label("mois"),
+            func.coalesce(func.sum(TransactionAchat.quantite_kg), 0).label(
+                "quantite_kg"
+            ),
+        )
+        .filter(
+            and_(
+                extract("year", TransactionAchat.date_transaction) == annee,
+            )
+        )
+        .group_by("mois")
+        .order_by("mois")
+        .all()
+    )
+
+    transactions_par_mois: Dict[int, float] = {
+        int(r.mois): float(r.quantite_kg) for r in q_transactions
+    }
+
+    # Construction de la série (mois à zéro inclus)
+    series: List[LigneMensuelle] = []
+    total_captures = total_transactions = total_montant = 0.0
+
+    for mois in range(1, 13):
+        vol_capt = captures_par_mois.get(mois, 0.0)
+        vol_trx = transactions_par_mois.get(mois, 0.0)
+        taux = (vol_trx / vol_capt) if vol_capt > 0 else 0.0
+        series.append(
+            LigneMensuelle(
+                mois=mois,
+                libelle=MOIS_FR[mois],
+                volume_captures_kg=round(vol_capt, 2),
+                volume_transactions_kg=round(vol_trx, 2),
+                taux_absorption=round(taux, 4),
+            )
+        )
+        total_captures += vol_capt
+        total_transactions += vol_trx
+        total_montant += 0
+
+    taux_global = (total_transactions / total_captures) if total_captures > 0 else 0.0
+
+    return StatistiquesMensuellesResponse(
+        annee=annee,
+        total_captures_kg=round(total_captures, 2),
+        total_transactions_kg=round(total_transactions, 2),
+        total_montant_fcfa=round(total_montant, 2),
+        taux_absorption_global=round(taux_global, 4),
+        series=series,
+    )

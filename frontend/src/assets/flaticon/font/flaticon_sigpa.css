@@ -1,0 +1,95 @@
+/*!
+*    ______ _       _   _
+*    |  ____| |     | | (_)
+*    | |__  | | __ _| |_ _  ___ ___  _ __
+*    |  __| | |/ _` | __| |/ __/ _ \| '_ \
+*    | |    | | (_| | |_| | (_| (_) | | | |
+*    |_|    |_|\__,_|\__|_|\___\___/|_| |_|
+*
+*         https://www.flaticon.com
+*/
+
+@font-face {
+    font-family: "flaticon_sigpa";
+    src: url("./flaticon_sigpa.woff2?46a68afb3ac63dda2c5cf398349825cb") format("woff2"),
+url("./flaticon_sigpa.woff?46a68afb3ac63dda2c5cf398349825cb") format("woff"),
+url("./flaticon_sigpa.eot?46a68afb3ac63dda2c5cf398349825cb#iefix") format("embedded-opentype"),
+url("./flaticon_sigpa.ttf?46a68afb3ac63dda2c5cf398349825cb") format("truetype"),
+url("./flaticon_sigpa.svg?46a68afb3ac63dda2c5cf398349825cb#flaticon_sigpa") format("svg")
+}
+
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon_sigpa !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.flaticon-chambre-froide:before {
+    content: "\f101";
+}
+.flaticon-flocon-de-neige:before {
+    content: "\f102";
+}
+.flaticon-flocon-de-neige-1:before {
+    content: "\f103";
+}
+.flaticon-ports:before {
+    content: "\f104";
+}
+.flaticon-jetee-1:before {
+    content: "\f105";
+}
+.flaticon-port:before {
+    content: "\f106";
+}
+.flaticon-jetee-2:before {
+    content: "\f107";
+}
+.flaticon-stand-de-nourriture:before {
+    content: "\f108";
+}
+.flaticon-marche-aux-poissons:before {
+    content: "\f109";
+}
+.flaticon-marche-aux-poissons-1:before {
+    content: "\f10a";
+}
+.flaticon-pompe-a-essence:before {
+    content: "\f10b";
+}
+.flaticon-carburant:before {
+    content: "\f10c";
+}
+.flaticon-pompe-a-carburant:before {
+    content: "\f10d";
+}
+.flaticon-eau:before {
+    content: "\f10e";
+}
+.flaticon-eau-potable:before {
+    content: "\f10f";
+}
+.flaticon-eau-potable-1:before {
+    content: "\f110";
+}
+.flaticon-eau-purifiee:before {
+    content: "\f111";
+}
+.flaticon-eclairage:before {
+    content: "\f112";
+}
+.flaticon-electricite:before {
+    content: "\f113";
+}
+.flaticon-electricite-1:before {
+    content: "\f114";
+}
+.flaticon-eclat:before {
+    content: "\f115";
+}
+

@@ -1,0 +1,166 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1><i class="material-icons left">download</i>Exporter les stations</h1>
+    <p>Exporter les stations piscicoles</p>
+  </div>
+</div>
+<div class="container">
+  <div class="row valign-wrapper" style="margin-bottom: 0">
+    <div class="col s8">
+      <!-- <h5><i class="material-icons left">download</i>Exporter les stations</h5> -->
+    </div>
+    <div class="col s4 right-align">
+      <a routerLink="/stations-piscicoles" class="btn-small red waves-effect">
+        <i class="material-icons left">arrow_back</i>Retour à la liste</a
+      >
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card-panel">
+    <span class="card-title grey-text text-darken-1">
+      Périmètre de l'export</span
+    >
+    <div class="row" style="margin-bottom: 0">
+      <div class="col s12 m4">
+        <div class="form-input">
+          <label for="recherche">Nom, code, promoteur, localité...</label>
+          <div class="input-field">
+            <!-- <i class="material-icons prefix">search</i> -->
+            <input
+              id="recherche"
+              type="text"
+              [(ngModel)]="filtres.search"
+              (change)="compter()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Province</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.province"
+              class="browser-default"
+              (ngModelChange)="compter()"
+            >
+              <option value="">Toutes</option>
+              <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Type</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.type_station"
+              class="browser-default"
+              (ngModelChange)="compter()"
+            >
+              <option value="">Tous</option>
+              <option *ngFor="let t of typesStation" [value]="t">
+                {{ typeLabels[t] }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Statut</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.statut"
+              class="browser-default"
+              (ngModelChange)="compter()"
+            >
+              <option value="">Tous</option>
+              <option *ngFor="let s of statuts" [value]="s">
+                {{ statutLabels[s] }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m2">
+        <div class="form-input">
+          <label>Espèce</label>
+          <div class="input-field">
+            <select
+              [(ngModel)]="filtres.espece"
+              class="browser-default"
+              (ngModelChange)="compter()"
+            >
+              <option value="">Toutes</option>
+              <option *ngFor="let e of especes" [value]="e">{{ e }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 8px 0 12px"></div>
+    <span *ngIf="comptage !== null">
+      <i class="material-icons tiny green-text">check_circle</i>
+      <strong>{{ comptage }}</strong> station(s) seront exportée(s)
+      <a
+        class="btn-flat btn-small waves-effect"
+        *ngIf="filtresActifs()"
+        (click)="reinitialiserFiltres()"
+      >
+        <i class="material-icons left tiny">clear</i>Réinitialiser les
+        filtres</a
+      >
+    </span>
+    <span *ngIf="comptage === null" class="grey-text"
+      >Comptage en cours...</span
+    >
+  </div>
+
+  <!-- Formats -->
+  <div class="row">
+    <div class="col s12 m6 l3" *ngFor="let format of formats">
+      <div class="card hoverable" style="min-height: 210px">
+        <div class="card-content center-align">
+          <i
+            class="material-icons {{ format.couleur }}-text"
+            style="font-size: 42px"
+            >{{ format.icone }}</i
+          >
+          <span class="card-title" style="display: block; margin-top: 4px">
+            {{ format.titre }}</span
+          >
+          <p class="grey-text" style="font-size: 13px; min-height: 55px">
+            {{ format.description }}
+          </p>
+        </div>
+        <div class="card-action center-align">
+          <button
+            class="btn waves-effect waves-light {{ format.couleur }}"
+            style="width: 90%"
+            [disabled]="enCours !== null || comptage === 0"
+            (click)="exporter(format)"
+          >
+            <i class="material-icons left">
+              {{ enCours === format.id ? "hourglass_top" : "download" }}</i
+            >
+            {{
+              enCours === format.id ? "Génération..." : "." + format.extension
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="enCours" class="progress"><div class="indeterminate"></div></div>
+
+  <div class="card-panel grey lighten-4" *ngIf="comptage === 0">
+    <i class="material-icons tiny orange-text">info</i>
+    Aucune station ne correspond aux filtres — rien à exporter.
+  </div>
+</div>

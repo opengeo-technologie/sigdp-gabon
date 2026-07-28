@@ -10,7 +10,7 @@
   <div class="card">
     <div class="card-content">
       <div class="row">
-        <div class="col s12 m3">
+        <div class="col s12 m2">
           <div class="form-input">
             <label for="province">Province (Strate majeure)</label>
             <select
@@ -32,13 +32,13 @@
             </select>
           </div>
         </div>
-        <div class="col s12 m3">
+        <div class="col s12 m2">
           <div class="form-input">
-            <label for="type_site">Localité (Strate mineure)</label>
+            <label for="localite_site">Localité (Strate mineure)</label>
             <select
               #selectLocalite
-              [(ngModel)]="filters.type"
-              id="type_site"
+              [(ngModel)]="filters.localite"
+              id="localite_site"
               (change)="applyFilters()"
             >
               <option value="">Toutes les localités</option>
@@ -64,7 +64,7 @@
                 </select>
               </div>
             </div> -->
-        <div class="col s12 m3">
+        <div class="col s12 m2">
           <div class="form-input">
             <label for="etat_site">Statut</label>
             <select
@@ -81,11 +81,25 @@
           </div>
         </div>
         <div class="col s12 m3">
+          <div class="form-input">
+            <label for="search-input-nom">Nom site de pêche</label>
+            <div class="input-field">
+              <input
+                type="text"
+                [(ngModel)]="nom_site"
+                (keyup.enter)="search()"
+                placeholder="Rechercher..."
+                id="search-input-nom"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m3">
           <a
             routerLink="/debarcaderes/new"
             *appHasPermission="['debarcadere.create']"
-            class="btn btn-primary waves-effect waves-light"
-            style="margin-top: 1.5rem"
+            class="btn-small btn-primary waves-effect waves-light"
+            style="margin-top: 2rem"
           >
             <i class="material-icons left">add</i>
             Nouveau débarcadère
