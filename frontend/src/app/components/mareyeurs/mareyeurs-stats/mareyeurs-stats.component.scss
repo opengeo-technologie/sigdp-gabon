@@ -1,0 +1,115 @@
+.stats-mareyeurs {
+  padding: 8px 4px 40px;
+
+  .toolbar {
+    padding: 6px 14px;
+    margin-bottom: 14px;
+
+    .toolbar-row {
+      margin-bottom: 0;
+    }
+
+    .titre-zone {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      .material-icons {
+        color: #1565c0;
+      }
+      .titre {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0d47a1;
+      }
+    }
+
+    .input-field {
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+    input[type="date"],
+    input[type="number"] {
+      margin-bottom: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+
+  .periode {
+    margin: 0 4px 12px;
+    font-size: 0.85rem;
+  }
+
+  .chargement {
+    padding: 40px 0;
+    p {
+      margin-top: 10px;
+    }
+  }
+
+  /* --- KPI --- */
+  .kpis .col {
+    margin-bottom: 0;
+  }
+  .kpi {
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin: 6px 0;
+    min-height: 108px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .kpi-val {
+      font-size: 1.9rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .kpi-val-sm {
+      font-size: 1.25rem;
+    }
+    .kpi-lib {
+      font-size: 0.9rem;
+      opacity: 0.95;
+      margin-top: 2px;
+    }
+    .kpi-sub {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+  }
+
+  /* --- Sections & graphiques --- */
+  .section-titre {
+    margin: 18px 4px 6px;
+    font-weight: 600;
+    color: #0d47a1;
+    border-left: 4px solid #1565c0;
+    padding-left: 8px;
+  }
+
+  .graph {
+    padding: 12px 14px 16px;
+    border-radius: 10px;
+    margin: 8px 0;
+
+    .graph-titre {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #37474f;
+      margin-bottom: 8px;
+    }
+  }
+
+  .telecharger-zone {
+    margin-top: 26px;
+  }
+}

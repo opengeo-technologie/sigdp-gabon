@@ -91,9 +91,9 @@ declare var M: any;
             </div>
             <div class="col s7 right-align">
               <a
-                routerLink="/debarquements/rapports"
+                routerLink="/debarquements/rapport"
                 class="btn waves-effect grey white-text"
-                [class.disabled]="!hasPermission('debarquements.export')"
+                [class.disabled]="!hasPermission('debarquement.export')"
                 style="margin-right: 10px"
               >
                 <i class="material-icons left">assessment</i>Générer rapport
@@ -119,11 +119,11 @@ declare var M: any;
             <table class="highlight responsive-table">
               <thead>
                 <tr>
-                  <th>N° Débarquement</th>
+                  <!-- <th>N° Débarquement</th> -->
                   <th>Date</th>
                   <th>Débarcadère</th>
-                  <!-- <th>Pêcheur</th>
-                  <th>Bateau</th> -->
+                  <th>Effort de pêche</th>
+                  <th>Cpue</th>
                   <th>Quantité</th>
                   <th>Valeur</th>
                   <th>Alertes</th>
@@ -132,15 +132,15 @@ declare var M: any;
               </thead>
               <tbody>
                 <tr *ngFor="let deb of debarquements">
-                  <td>
+                  <!-- <td>
                     <strong>{{ deb.numero_debarquement }}</strong>
-                  </td>
+                  </td> -->
                   <td>
-                    {{ deb.date_debarquement | date: "dd/MM/yyyy HH:mm" }}
+                    {{ deb.date_debarquement | date: "dd/MM/yyyy" }}
                   </td>
                   <td>{{ deb.debarcadere_nom }}</td>
-                  <!-- <td>{{ deb.pecheur_nom }}</td>
-                  <td>{{ deb.bateau_immatriculation }}</td> -->
+                  <td>{{ deb.effort_peche }}</td>
+                  <td>{{ deb.cpue }}</td>
                   <td>{{ deb.total_quantite_kg }} kg</td>
                   <td>{{ deb.total_valeur || 0 | number: "1.0-0" }} FCFA</td>
                   <td>
@@ -262,7 +262,7 @@ export class DebarquementListComponent implements OnInit {
 
     this.debarquementService.getDebarquements(this.filterParams).subscribe({
       next: (data) => {
-        // console.log(data);
+        console.log(data);
         this.debarquements = data.result;
         this.totalData = data.total;
         this.sortByDate();

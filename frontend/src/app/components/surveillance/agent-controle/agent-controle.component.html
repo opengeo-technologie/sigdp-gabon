@@ -1,137 +1,433 @@
 <div class="page-header">
   <div class="container-fluid">
-    <h1><i class="material-icons left">groups</i> Agent de controle</h1>
+    <h1><i class="material-icons left">badge</i> Agent de controle</h1>
     <p>Gestion des agents de controle</p>
   </div>
 </div>
 
 <div class="container-fluid">
-  <!-- Filtres et actions -->
   <div class="card">
     <div class="card-content">
-      <div class="row">
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Fonction</label>
-            <select
-              [(ngModel)]="filters.fonction"
-              (change)="applyFilters()"
-              class="browser-default"
-            >
-              <option value="">Choisir fonction</option>
-            </select>
-          </div>
+      <div class="ag-wrap">
+        <!-- ============================ EN-TÊTE ============================ -->
+        <!-- <div class="ag-header teal darken-2 white-text">
+      <div>
+        <h5><i class="material-icons left">badge</i>Agents de surveillance</h5>
+        <p class="grey-text text-lighten-4">
+          Référentiel des agents de contrôle, fonctions et organismes
+        </p>
+      </div>
+    </div> -->
+
+        <!-- ============================ ONGLETS ============================ -->
+        <div class="ag-tabs">
+          <a
+            (click)="changerOnglet('agents')"
+            [class.actif]="onglet === 'agents'"
+            ><i class="material-icons">groups</i> Agents</a
+          >
+          <a
+            (click)="changerOnglet('fonctions')"
+            [class.actif]="onglet === 'fonctions'"
+            ><i class="material-icons">work</i> Fonctions</a
+          >
+          <a
+            (click)="changerOnglet('organismes')"
+            [class.actif]="onglet === 'organismes'"
+            ><i class="material-icons">apartment</i> Organismes</a
+          >
         </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Organisme </label>
-            <select
-              [(ngModel)]="filters.organisme"
-              (change)="applyFilters()"
-              class="browser-default"
-            >
-              <option value="">Choisir organisme</option>
-            </select>
-          </div>
-        </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Matricule</label>
-            <div class="input-field">
-              <input
-                type="text"
-                placeholder="Matricule"
-                [(ngModel)]="filters.matricule"
-                (change)="applyFilters()"
+
+        <!-- ==================================================================
+        ONGLET AGENTS
+  =================================================================== -->
+        <div *ngIf="onglet === 'agents'" class="ag-panel">
+          <div class="ag-toolbar">
+            <div class="form-input ag-search">
+              <label for="q-ag">Rechercher (matricule, nom, prénom)</label>
+              <div class="input-field">
+                <input
+                  id="q-ag"
+                  type="text"
+                  [(ngModel)]="filtreAgent.q"
+                  (keyup.enter)="chargerAgents()"
+                />
+              </div>
+            </div>
+
+            <div class="form-input ag-mini" style="margin-top: 20px">
+              <select
                 class="browser-default"
-              />
+                [(ngModel)]="filtreAgent.fonction_id"
+                (change)="chargerAgents()"
+              >
+                <option [ngValue]="null">Toutes fonctions</option>
+                <option *ngFor="let f of fonctions" [ngValue]="f.id">
+                  {{ f.libelle }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-input ag-mini" style="margin-top: 20px">
+              <select
+                class="browser-default"
+                [(ngModel)]="filtreAgent.organisme_id"
+                (change)="chargerAgents()"
+              >
+                <option [ngValue]="null">Tous organismes</option>
+                <option *ngFor="let o of organismes" [ngValue]="o.id">
+                  {{ o.abbreviation || o.libelle }}
+                </option>
+              </select>
+            </div>
+
+            <a
+              class="btn teal darken-1"
+              (click)="ouvrirFormAgent()"
+              style="margin-top: 12px"
+              ><i class="material-icons left">person_add</i>Agent</a
+            >
+          </div>
+
+          <table class="striped ag-table">
+            <thead>
+              <tr>
+                <th>Matricule</th>
+                <th>Nom &amp; prénom</th>
+                <th>Fonction</th>
+                <th>Organisme</th>
+                <th>Contact</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of agents">
+                <td>
+                  <b>{{ a.matricule }}</b>
+                </td>
+                <td>{{ a.nom }} {{ a.prenom }}</td>
+                <td>{{ a.fonction_libelle || "—" }}</td>
+                <td>
+                  <span
+                    *ngIf="a.organisme_abbreviation"
+                    class="chip teal lighten-4"
+                    >{{ a.organisme_abbreviation }}</span
+                  >
+                  <span *ngIf="!a.organisme_abbreviation">—</span>
+                </td>
+                <td>
+                  <div *ngIf="a.contact_email">
+                    <i class="material-icons tiny">email</i>
+                    {{ a.contact_email }}
+                  </div>
+                  <div *ngIf="a.contact_telephone" class="grey-text">
+                    <i class="material-icons tiny">phone</i>
+                    {{ a.contact_telephone }}
+                  </div>
+                </td>
+                <td class="btn-group">
+                  <a
+                    (click)="ouvrirFormAgent(a)"
+                    title="Modifier"
+                    class="btn btn-small blue white-text"
+                    ><i class="material-icons">edit</i></a
+                  >
+                  <a
+                    (click)="supprimerAgent(a)"
+                    class="btn btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!agents.length && !chargement">
+                <td colspan="6" class="center grey-text">Aucun agent.</td>
+              </tr>
+              <tr *ngIf="chargement">
+                <td colspan="6" class="center grey-text">Chargement…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ==================================================================
+        ONGLET FONCTIONS
+  =================================================================== -->
+        <div *ngIf="onglet === 'fonctions'" class="ag-panel">
+          <div class="ag-toolbar">
+            <span class="ag-title">Fonctions ({{ fonctions.length }})</span>
+            <a class="btn teal darken-1" (click)="ouvrirFormFonction()"
+              ><i class="material-icons left">add</i>Fonction</a
+            >
+          </div>
+          <table class="striped ag-table">
+            <thead>
+              <tr>
+                <th>Libellé</th>
+                <th class="center">Agents</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of fonctions">
+                <td>{{ f.libelle }}</td>
+                <td class="center">
+                  <span class="chip">{{ f.nb_agents }}</span>
+                </td>
+                <td class="ag-actions">
+                  <a
+                    (click)="ouvrirFormFonction(f)"
+                    title="Modifier"
+                    class="btn btn-small blue white-text"
+                    ><i class="material-icons">edit</i></a
+                  >
+                  <a
+                    (click)="supprimerFonction(f)"
+                    [class.grey-text]="f.nb_agents > 0"
+                    [class.red-text]="f.nb_agents === 0"
+                    class="btn btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!fonctions.length">
+                <td colspan="3" class="center grey-text">Aucune fonction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ==================================================================
+        ONGLET ORGANISMES
+  =================================================================== -->
+        <div *ngIf="onglet === 'organismes'" class="ag-panel">
+          <div class="ag-toolbar">
+            <span class="ag-title">Organismes ({{ organismes.length }})</span>
+            <a class="btn teal darken-1" (click)="ouvrirFormOrganisme()"
+              ><i class="material-icons left">add</i>Organisme</a
+            >
+          </div>
+          <table class="striped ag-table">
+            <thead>
+              <tr>
+                <th>Libellé</th>
+                <th>Abréviation</th>
+                <th class="center">Agents</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of organismes">
+                <td>{{ o.libelle }}</td>
+                <td>
+                  <span *ngIf="o.abbreviation" class="chip teal lighten-4">{{
+                    o.abbreviation
+                  }}</span>
+                </td>
+                <td class="center">
+                  <span class="chip">{{ o.nb_agents }}</span>
+                </td>
+                <td class="ag-actions">
+                  <a
+                    (click)="ouvrirFormOrganisme(o)"
+                    title="Modifier"
+                    class="btn btn-small blue white-text"
+                    ><i class="material-icons">edit</i></a
+                  >
+                  <a
+                    (click)="supprimerOrganisme(o)"
+                    [class.grey-text]="o.nb_agents > 0"
+                    [class.red-text]="o.nb_agents === 0"
+                    class="btn btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!organismes.length">
+                <td colspan="4" class="center grey-text">Aucun organisme.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ==================================================================
+        MODAL : Agent
+  =================================================================== -->
+        <div id="modal-agent" class="modal">
+          <div class="modal-content">
+            <h5>{{ agentEnEdition ? "Modifier l'agent" : "Nouvel agent" }}</h5>
+            <div class="row">
+              <div class="form-input col s12 m4">
+                <label>Matricule</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="agentForm.matricule"
+                    placeholder="Matricule"
+                  />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m4">
+                <label>Nom</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="agentForm.nom"
+                    placeholder="Nom"
+                  />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m4">
+                <label>Prénom</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="agentForm.prenom"
+                    placeholder="Prénom"
+                  />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m6">
+                <label>Fonction</label>
+                <div class="input-field">
+                  <select
+                    class="browser-default"
+                    [(ngModel)]="agentForm.fonction_id"
+                  >
+                    <option [ngValue]="null">— Fonction —</option>
+                    <option *ngFor="let f of fonctions" [ngValue]="f.id">
+                      {{ f.libelle }}
+                    </option>
+                  </select>
+                  <!-- <span class="helper">Fonction</span> -->
+                </div>
+              </div>
+
+              <div class="form-input col s12 m6">
+                <label>Organisme</label>
+                <div class="input-field">
+                  <select
+                    class="browser-default"
+                    [(ngModel)]="agentForm.organisme_id"
+                  >
+                    <option [ngValue]="null">— Organisme —</option>
+                    <option *ngFor="let o of organismes" [ngValue]="o.id">
+                      {{ o.abbreviation || o.libelle }}
+                    </option>
+                  </select>
+                  <!-- <span class="helper">Organisme</span> -->
+                </div>
+              </div>
+
+              <div class="form-input col s12 m4">
+                <label>Date de naissance</label>
+                <div class="input-field">
+                  <input type="date" [(ngModel)]="agentForm.date_naissance" />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m4">
+                <label>Email contact</label>
+                <div class="input-field">
+                  <input
+                    type="email"
+                    [(ngModel)]="agentForm.contact_email"
+                    placeholder="E-mail"
+                  />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m4">
+                <label>Téléphone contact</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="agentForm.contact_telephone"
+                    placeholder="Téléphone"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <a
-              routerLink="/missions/new"
-              class="btn btn-primary waves-effect waves-light"
-              style="margin-top: 1.5rem"
+          <div class="modal-footer">
+            <a class="modal-close btn-flat">Annuler</a>
+            <a class="btn teal darken-1" (click)="enregistrerAgent()"
+              >Enregistrer</a
             >
-              <i class="material-icons left">add</i>
-              Nouveau agent
-            </a>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Résultats -->
-  <div class="card" *ngIf="!loading">
-    <div class="card-content">
-      <span class="card-title">
-        {{ agents.length }} agent(s) de controle trouvé(s)
-      </span>
-      <div class="table-responsive">
-        <table class="highlight responsive-table">
-          <thead>
-            <tr>
-              <th>Matricule</th>
-              <th>Nom</th>
-              <th>Prénom</th>
-              <th>Fonction</th>
-              <th>Organisme</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let agent of paginatedData"></tr>
-            <tr *ngIf="agents.length === 0">
-              <td colspan="6" class="center-align">
-                <p class="grey-text">
-                  Aucun agent de controle trouvé avec ces critères
-                </p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="center" style="padding-top: 20px">
-          <div class="btn-group" role="group">
-            <button
-              (click)="prevPage()"
-              class="btn waves-effect waves-light white darken-4 btn-small"
-              [disabled]="currentPage === 1"
+        <!-- ==================================================================
+        MODAL : Fonction
+  =================================================================== -->
+        <div id="modal-fonction" class="modal modal-small">
+          <div class="modal-content">
+            <h5>
+              {{
+                fonctionEnEdition ? "Modifier la fonction" : "Nouvelle fonction"
+              }}
+            </h5>
+            <div class="form-input">
+              <label>Libellé de la fonction</label>
+              <div class="input-field">
+                <input
+                  type="text"
+                  [(ngModel)]="fonctionForm.libelle"
+                  placeholder="Libellé de la fonction"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a class="modal-close btn-flat">Annuler</a>
+            <a class="btn teal darken-1" (click)="enregistrerFonction()"
+              >Enregistrer</a
             >
-              <i class="material-icons" style="color: #000000">chevron_left</i>
-            </button>
-            <span
-              class="page-number"
-              style="margin-left: 10px; margin-right: 10px"
-              >page {{ currentPage }} / {{ totalPages() }}</span
-            >
-            <button
-              (click)="nextPage()"
-              class="btn waves-effect waves-light white btn-small"
-              [disabled]="currentPage === totalPages()"
-            >
-              <i class="material-icons" style="color: #000000">chevron_right</i>
-            </button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Loading -->
-  <div class="spinner-container" *ngIf="loading">
-    <div class="preloader-wrapper big active">
-      <div class="spinner-layer spinner-blue-only">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div>
-        <div class="gap-patch">
-          <div class="circle"></div>
-        </div>
-        <div class="circle-clipper right">
-          <div class="circle"></div>
+        <!-- ==================================================================
+        MODAL : Organisme
+  =================================================================== -->
+        <div id="modal-organisme" class="modal modal-small">
+          <div class="modal-content">
+            <h5>
+              {{
+                organismeEnEdition ? "Modifier l'organisme" : "Nouvel organisme"
+              }}
+            </h5>
+            <div class="form-input">
+              <label>Libellé de l'organisme</label>
+              <div class="input-field">
+                <input
+                  type="text"
+                  [(ngModel)]="organismeForm.libelle"
+                  placeholder="Libellé de l'organisme"
+                />
+              </div>
+            </div>
+            <div class="form-input">
+              <label>Abréviation (ex. DGPA)</label>
+              <div class="input-field">
+                <input
+                  type="text"
+                  [(ngModel)]="organismeForm.abbreviation"
+                  placeholder="Abréviation (ex. DGPA)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a class="modal-close btn-flat">Annuler</a>
+            <a class="btn teal darken-1" (click)="enregistrerOrganisme()"
+              >Enregistrer</a
+            >
+          </div>
         </div>
       </div>
     </div>

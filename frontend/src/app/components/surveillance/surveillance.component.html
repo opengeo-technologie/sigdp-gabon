@@ -1,6 +1,498 @@
-<div class="page-header">
+<!-- <div class="page-header">
   <div class="container-fluid">
     <h1><i class="material-icons left">visibility</i> Surveillance</h1>
     <p>Surveillance des embarcations</p>
+  </div>
+</div> -->
+
+<div class="container-fluid" style="margin: 20px">
+  <div class="op-wrap">
+    <!-- ============================ EN-TÊTE ============================ -->
+    <div class="op-header blue-grey darken-3 white-text">
+      <div>
+        <h5>
+          <i class="material-icons left">fact_check</i>Opérations de
+          surveillance
+        </h5>
+        <p class="grey-text text-lighten-3">
+          Opérations, infractions relevées et saisies
+        </p>
+      </div>
+    </div>
+
+    <!-- =================== SÉLECTEUR DE MISSION (mode autonome) =========== -->
+    <div class="card">
+      <div class="card-content">
+        <div class="op-panel">
+          <label class="op-lbl">Choisir une mission</label>
+          <select
+            class="browser-default op-select-mission"
+            (change)="choisirMission(+$any($event.target).value)"
+          >
+            <option value="">— Sélectionner —</option>
+            <option *ngFor="let m of missions" [value]="m.id">
+              {{ m.date_depart }} — {{ m.lieu_mission || "Sans lieu" }} ({{
+                m.type_mission
+              }})
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================ OPÉRATIONS ============================ -->
+    <div class="card" *ngIf="missionId">
+      <div class="card-content">
+        <div class="op-panel">
+          <div class="op-toolbar">
+            <span class="op-title" *ngIf="missionLabel"
+              >Mission : {{ missionLabel }}</span
+            >
+            <a class="btn blue-grey darken-1" (click)="ouvrirFormOperation()"
+              ><i class="material-icons left">add</i>Opération</a
+            >
+          </div>
+
+          <table class="striped op-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Lieu</th>
+                <th>Type</th>
+                <th>Résultat</th>
+                <th class="center">Infractions</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of operations">
+                <td>
+                  <b>{{ o.date_operation | date: "dd/MM/yyyy" }}</b>
+                </td>
+                <td>{{ o.lieu_operation || "—" }}</td>
+                <td>{{ o.type_operation || "—" }}</td>
+                <td>
+                  <span
+                    class="badge-res white-text"
+                    [ngClass]="
+                      o.resultat === 'conforme'
+                        ? 'green'
+                        : o.resultat
+                          ? 'red'
+                          : 'grey'
+                    "
+                  >
+                    {{ o.resultat || "—" }}
+                  </span>
+                </td>
+                <td class="center">
+                  <span
+                    class="chip"
+                    [class.red]="o.nb_infractions > 0"
+                    [class.white-text]="o.nb_infractions > 0"
+                    >{{ o.nb_infractions }}</span
+                  >
+                </td>
+                <td class="op-actions">
+                  <a
+                    (click)="ouvrirDossier(o)"
+                    title="Infractions & saisies"
+                    class="btn btn-small green white-text"
+                    ><i class="material-icons">gavel</i></a
+                  >
+                  <a
+                    (click)="ouvrirFormOperation(o)"
+                    title="Modifier"
+                    class="btn btn-small blue white-text"
+                    ><i class="material-icons">edit</i></a
+                  >
+                  <a
+                    (click)="supprimerOperation(o)"
+                    class="btn btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!operations.length && !chargement">
+                <td colspan="6" class="center grey-text">Aucune opération.</td>
+              </tr>
+              <tr *ngIf="chargement">
+                <td colspan="6" class="center grey-text">Chargement…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+        MODAL : Opération (créer / modifier)
+  =================================================================== -->
+    <div id="modal-operation" class="modal">
+      <div class="modal-content">
+        <h5>
+          {{
+            operationEnEdition ? "Modifier l'opération" : "Nouvelle opération"
+          }}
+        </h5>
+        <div class="row">
+          <div class="form-input col s12 m4">
+            <label>Date</label>
+            <div class="input-field">
+              <input type="date" [(ngModel)]="operationForm.date_operation" />
+            </div>
+          </div>
+
+          <div class="form-input col s12 m8">
+            <label>Lieu de l'opération</label>
+            <div class="input-field">
+              <input
+                type="text"
+                [(ngModel)]="operationForm.lieu_operation"
+                placeholder="Lieu de l'opération"
+              />
+            </div>
+          </div>
+
+          <div class="form-input col s12 m6">
+            <label>Type d'opération</label>
+            <div class="input-field">
+              <select
+                class="browser-default"
+                [(ngModel)]="operationForm.type_operation"
+              >
+                <option [ngValue]="null">— Type —</option>
+                <option *ngFor="let t of typesOperation" [value]="t">
+                  {{ t }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-input col s12 m6">
+            <label>Résultat</label>
+            <div class="input-field">
+              <select
+                class="browser-default"
+                [(ngModel)]="operationForm.resultat"
+              >
+                <option [ngValue]="null">— Résultat —</option>
+                <option *ngFor="let r of resultats" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-input col s12">
+            <label>Remarques</label>
+            <div class="input-field">
+              <textarea
+                class="materialize-textarea"
+                [(ngModel)]="operationForm.remarques"
+                placeholder="Remarques"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close btn-flat">Annuler</a>
+        <a class="btn blue-grey darken-1" (click)="enregistrerOperation()"
+          >Enregistrer</a
+        >
+      </div>
+    </div>
+
+    <!-- ==================================================================
+        MODAL : Dossier opération (infractions + saisies)
+  =================================================================== -->
+    <div id="modal-dossier-op" class="modal modal-large">
+      <div class="modal-content" *ngIf="dossier">
+        <div class="op-dossier-head">
+          <h5>
+            Opération du {{ dossier.date_operation | date: "dd/MM/yyyy" }}
+          </h5>
+          <span
+            class="badge-res white-text"
+            [ngClass]="
+              dossier.resultat === 'conforme'
+                ? 'green'
+                : dossier.resultat
+                  ? 'red'
+                  : 'grey'
+            "
+            >{{ dossier.resultat || "—" }}</span
+          >
+        </div>
+        <p class="grey-text">
+          {{ dossier.type_operation
+          }}<span *ngIf="dossier.lieu_operation">
+            · {{ dossier.lieu_operation }}</span
+          >
+        </p>
+
+        <!-- Infractions -->
+        <div class="op-sub">
+          <h6>
+            <i class="material-icons left">gavel</i>Infractions relevées ({{
+              dossier.infractions.length
+            }})
+          </h6>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Gravité</th>
+                <th>Bateau</th>
+                <th>Description</th>
+                <th>Sanction proposée</th>
+                <th class="center">Saisies</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let i of dossier.infractions"
+                [class.actif]="infractionActive?.id === i.id"
+              >
+                <td>{{ i.date_infraction | date: "dd/MM/yyyy" }}</td>
+                <td>{{ libelleType(i.infraction_id) }}</td>
+                <td>
+                  <span
+                    *ngIf="i.gravite_infraction"
+                    class="badge-res white-text"
+                    [ngClass]="couleurGravite[i.gravite_infraction]"
+                    >{{ labelGravite[i.gravite_infraction] }}</span
+                  >
+                </td>
+                <td>{{ libelleBateau(i.bateau_id) }}</td>
+                <td class="op-desc">{{ i.description_infraction || "—" }}</td>
+                <td>{{ i.sanction_proposee || "—" }}</td>
+                <td class="center">
+                  <a
+                    (click)="ouvrirSaisies(i)"
+                    class="chip clickable"
+                    title="Gérer les saisies"
+                    >{{ i.nb_saisies }}
+                    <i class="material-icons tiny">inventory_2</i></a
+                  >
+                </td>
+                <td class="op-actions">
+                  <a
+                    (click)="editerInfraction(i)"
+                    title="Modifier"
+                    class="btn btn-small blue white-text"
+                    ><i class="material-icons">edit</i></a
+                  >
+                  <a
+                    (click)="supprimerInfraction(i)"
+                    class="btn btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!dossier.infractions.length">
+                <td colspan="8" class="center grey-text">Aucune infraction.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Formulaire infraction -->
+          <div class="op-form-row row">
+            <div class="form-input col s6 m2">
+              <label>Date</label>
+              <div class="input-field">
+                <input
+                  type="date"
+                  [(ngModel)]="infractionForm.date_infraction"
+                />
+              </div>
+            </div>
+
+            <div class="form-input col s6 m3">
+              <label>Type Infraction</label>
+              <div class="input-field">
+                <ng-container *ngIf="typesInfraction.length; else typeNum">
+                  <select
+                    class="browser-default"
+                    [(ngModel)]="infractionForm.infraction_id"
+                  >
+                    <option [ngValue]="null">— Type d'infraction —</option>
+                    <option *ngFor="let t of typesInfraction" [ngValue]="t.id">
+                      {{ t.libelle }}
+                    </option>
+                  </select>
+                </ng-container>
+                <ng-template #typeNum
+                  ><input
+                    type="number"
+                    [(ngModel)]="infractionForm.infraction_id"
+                    placeholder="ID type infraction"
+                /></ng-template>
+              </div>
+            </div>
+
+            <div class="form-input col s6 m2">
+              <label>Gravité infraction</label>
+              <div class="input-field">
+                <select
+                  class="browser-default"
+                  [(ngModel)]="infractionForm.gravite_infraction"
+                >
+                  <option *ngFor="let g of gravites" [value]="g">
+                    {{ labelGravite[g] }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-input col s6 m2">
+              <label>Bateau</label>
+              <div class="input-field">
+                <ng-container *ngIf="bateaux.length; else bateauNum">
+                  <select
+                    class="browser-default"
+                    [(ngModel)]="infractionForm.bateau_id"
+                  >
+                    <option [ngValue]="null">— Bateau —</option>
+                    <option *ngFor="let b of bateaux" [ngValue]="b.id">
+                      {{ b.libelle }}
+                    </option>
+                  </select>
+                </ng-container>
+                <ng-template #bateauNum
+                  ><input
+                    type="number"
+                    [(ngModel)]="infractionForm.bateau_id"
+                    placeholder="ID bateau"
+                /></ng-template>
+              </div>
+            </div>
+
+            <div class="form-input col s12 m3">
+              <label>Sanction proposée</label>
+              <div class="input-field">
+                <input
+                  type="text"
+                  [(ngModel)]="infractionForm.sanction_proposee"
+                  placeholder="Sanction proposée"
+                />
+              </div>
+            </div>
+
+            <div class="form-input col s12">
+              <label>Description de l'infraction</label>
+              <div class="input-field">
+                <textarea
+                  class="materialize-textarea"
+                  [(ngModel)]="infractionForm.description_infraction"
+                  placeholder="Description de l'infraction"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="col s12">
+              <a
+                class="btn blue-grey darken-1"
+                (click)="enregistrerInfraction()"
+                ><i class="material-icons left">save</i
+                >{{ infractionEnEdition ? "Modifier" : "Ajouter" }}</a
+              >
+              <a
+                *ngIf="infractionEnEdition"
+                class="btn-flat"
+                (click)="annulerEditionInfraction()"
+                >Annuler</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Saisies de l'infraction sélectionnée -->
+        <div class="op-sub blue-grey lighten-5" *ngIf="infractionActive">
+          <h6>
+            <i class="material-icons left">inventory_2</i>Saisies — infraction
+            du {{ infractionActive.date_infraction | date: "dd/MM/yyyy" }}
+          </h6>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Remarques</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of saisies">
+                <td>{{ s.date_saisie | date: "dd/MM/yyyy" }}</td>
+                <td>
+                  {{
+                    s.agent_matricule
+                      ? s.agent_matricule + " — " + s.agent_nom_complet
+                      : "—"
+                  }}
+                </td>
+                <td>{{ s.remarques || "—" }}</td>
+                <td class="op-actions">
+                  <a
+                    (click)="supprimerSaisie(s)"
+                    class="btn-small red white-text"
+                    title="Supprimer"
+                    ><i class="material-icons">delete</i></a
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!saisies.length">
+                <td colspan="4" class="center grey-text">Aucune saisie.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="op-form-row row">
+            <div class="form-input col s6 m3">
+              <label>Date de saisie</label>
+              <div class="input-field">
+                <input type="date" [(ngModel)]="saisieForm.date_saisie" />
+              </div>
+            </div>
+
+            <div class="form-input col s12 m4">
+              <label>Agent</label>
+              <div class="input-field">
+                <select
+                  class="browser-default"
+                  [(ngModel)]="saisieForm.agent_id"
+                >
+                  <option [ngValue]="null">— Agent —</option>
+                  <option *ngFor="let a of agents" [ngValue]="a.id">
+                    {{ a.matricule }} — {{ a.nom }} {{ a.prenom }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-input col s12 m4">
+              <label>Remarques (objet saisi…)</label>
+              <div class="input-field">
+                <input
+                  type="text"
+                  [(ngModel)]="saisieForm.remarques"
+                  placeholder="Remarques (objet saisi…)"
+                />
+              </div>
+            </div>
+
+            <div class="col s12 m1" style="margin-top: 35px">
+              <a class="btn btn-small orange darken-1" (click)="ajouterSaisie()"
+                ><i class="material-icons">add</i></a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><a class="modal-close btn-flat">Fermer</a></div>
+    </div>
   </div>
 </div>

@@ -1,136 +1,487 @@
 <div class="page-header">
   <div class="container-fluid">
-    <h1><i class="material-icons left">dashboard</i> Missions</h1>
-    <p>Missions de surveillance des embarcations</p>
+    <h1><i class="material-icons left">explore</i> Missions de surveillance</h1>
+    <p>Planification, composition d'équipe, rapports et documents scannés</p>
   </div>
 </div>
 
 <div class="container-fluid">
-  <!-- Filtres et actions -->
   <div class="card">
     <div class="card-content">
-      <div class="row">
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Type de mission</label>
-            <select
-              [(ngModel)]="filters.type_mission"
-              (change)="applyFilters()"
-              class="browser-default"
-            >
-              <option value="">Type de mission</option>
-            </select>
-          </div>
-        </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Moyen de contrôle </label>
-            <select
-              [(ngModel)]="filters.moyen_controle"
-              (change)="applyFilters()"
-              class="browser-default"
-            >
-              <option value="">Moyen de contrôle</option>
-            </select>
-          </div>
-        </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <label>Date de départ</label>
+      <div class="mi-wrap">
+        <!-- ============================ EN-TÊTE ============================ -->
+        <!-- <div class="mi-header indigo darken-2 white-text">
+      <div>
+        <h5>
+          <i class="material-icons left">explore</i>Missions de surveillance
+        </h5>
+        <p class="grey-text text-lighten-3">
+          Planification, composition d'équipe, rapports et documents scannés
+        </p>
+      </div>
+    </div> -->
+
+        <!-- ============================ FILTRES ============================ -->
+        <div class="mi-toolbar">
+          <div class="form-input mi-search">
+            <label for="q-mi">Rechercher (lieu, moyen de contrôle)</label>
             <div class="input-field">
               <input
-                type="date"
-                [(ngModel)]="filters.date_depart"
-                (change)="applyFilters()"
-                class="browser-default"
+                id="q-mi"
+                type="text"
+                [(ngModel)]="filtre.q"
+                (keyup.enter)="chargerMissions()"
               />
             </div>
           </div>
-        </div>
-        <div class="col s12 m3">
-          <div class="form-input">
-            <a
-              routerLink="/missions/new"
-              class="btn btn-primary waves-effect waves-light"
-              style="margin-top: 1.5rem"
-            >
-              <i class="material-icons left">add</i>
-              Nouvelle mission
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Résultats -->
-  <div class="card" *ngIf="!loading">
-    <div class="card-content">
-      <span class="card-title">
-        {{ missions.length }} mission(s) trouvé(s)
-      </span>
-      <div class="table-responsive">
-        <table class="highlight responsive-table">
+          <div class="form-input mi-mini" style="margin-top: 23px">
+            <!-- <label>Type de mission</label> -->
+            <select
+              class="browser-default"
+              [(ngModel)]="filtre.type_mission"
+              (change)="chargerMissions()"
+            >
+              <option value="">Tous types</option>
+              <option *ngFor="let t of typesMission" [value]="t">
+                {{ labelType[t] }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-input mi-date">
+            <label>Date départ</label>
+            <div class="input-field">
+              <input
+                type="date"
+                [(ngModel)]="filtre.date_debut"
+                (change)="chargerMissions()"
+              />
+            </div>
+          </div>
+
+          <div class="form-input mi-date">
+            <label>Date de retour</label>
+            <div class="input-field">
+              <input
+                type="date"
+                [(ngModel)]="filtre.date_fin"
+                (change)="chargerMissions()"
+              />
+            </div>
+          </div>
+
+          <a
+            class="btn indigo darken-1"
+            (click)="ouvrirFormMission()"
+            style="margin-top: 15px"
+            ><i class="material-icons left">add</i>Mission</a
+          >
+        </div>
+
+        <!-- ============================ LISTE ============================ -->
+        <table class="striped mi-table">
           <thead>
             <tr>
-              <th>Date de départ</th>
-              <th>Date de retour</th>
-              <th>Lieu de mission</th>
+              <th>Départ</th>
+              <th>Retour</th>
+              <th>Lieu</th>
+              <th>Type</th>
               <th>Moyen de contrôle</th>
-              <th>Type de mission</th>
-              <th>Actions</th>
+              <th class="center">Équipe</th>
+              <th class="center">Rapports</th>
+              <th class="center">Scan</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let mission of paginatedData"></tr>
-            <tr *ngIf="missions.length === 0">
-              <td colspan="8" class="center-align">
-                <p class="grey-text">
-                  Aucune mission trouvée avec ces critères
-                </p>
+            <tr *ngFor="let m of missions">
+              <td>
+                <b>{{ m.date_depart | date: "dd/MM/yyyy" }}</b>
               </td>
+              <td>
+                {{ m.date_retour ? (m.date_retour | date: "dd/MM/yyyy") : "—" }}
+              </td>
+              <td>{{ m.lieu_mission || "—" }}</td>
+              <td>
+                <span
+                  *ngIf="m.type_mission"
+                  class="badge-type white-text"
+                  [ngClass]="couleurType[m.type_mission]"
+                  >{{ labelType[m.type_mission] }}</span
+                >
+                <span *ngIf="!m.type_mission">—</span>
+              </td>
+              <td>{{ m.moyen_controle || "—" }}</td>
+              <td class="center">
+                <span class="chip">{{ m.nb_membres }}</span>
+              </td>
+              <td class="center">
+                <span class="chip">{{ m.nb_rapports }}</span>
+              </td>
+              <td class="center">
+                <a
+                  *ngIf="m.rapport_scan"
+                  [href]="m.rapport_scan"
+                  target="_blank"
+                  title="Voir le document"
+                  ><i class="material-icons green-text">picture_as_pdf</i></a
+                >
+                <span *ngIf="!m.rapport_scan" class="grey-text">—</span>
+              </td>
+              <td class="btn-group">
+                <a
+                  (click)="apercuFiche(m.id)"
+                  title="Imprimer fiche"
+                  class="btn btn-small grey white-text"
+                  ><i class="material-icons">print</i></a
+                >
+                <a
+                  (click)="ouvrirDossier(m)"
+                  title="Dossier"
+                  class="btn btn-small green white-text"
+                  ><i class="material-icons">folder_open</i></a
+                >
+                <a
+                  (click)="ouvrirFormMission(m)"
+                  title="Modifier"
+                  class="btn btn-small amber white-text"
+                  ><i class="material-icons">edit</i></a
+                >
+                <a
+                  (click)="supprimerMission(m)"
+                  class="btn btn-small red white-text"
+                  title="Supprimer"
+                  ><i class="material-icons">delete</i></a
+                >
+              </td>
+            </tr>
+            <tr *ngIf="!missions.length && !chargement">
+              <td colspan="9" class="center grey-text">Aucune mission.</td>
+            </tr>
+            <tr *ngIf="chargement">
+              <td colspan="9" class="center grey-text">Chargement…</td>
             </tr>
           </tbody>
         </table>
-        <div class="center" style="padding-top: 20px">
-          <div class="btn-group" role="group">
-            <button
-              (click)="prevPage()"
-              class="btn waves-effect waves-light white darken-4 btn-small"
-              [disabled]="currentPage === 1"
+
+        <!-- ==================================================================
+        MODAL : Mission (créer / modifier)
+  =================================================================== -->
+        <div id="modal-mission" class="modal">
+          <div class="modal-content">
+            <h5>
+              {{
+                missionEnEdition ? "Modifier la mission" : "Nouvelle mission"
+              }}
+            </h5>
+            <div class="row">
+              <div class="form-input col s12 m6">
+                <label>Date de départ</label>
+                <div class="input-field">
+                  <input type="date" [(ngModel)]="missionForm.date_depart" />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m6">
+                <label>Date de retour (optionnel)</label>
+                <div class="input-field">
+                  <input type="date" [(ngModel)]="missionForm.date_retour" />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m6">
+                <label>Lieu de la missio</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="missionForm.lieu_mission"
+                    placeholder="Lieu de la mission"
+                  />
+                </div>
+              </div>
+
+              <div class="form-input col s12 m6">
+                <label>Type de mission</label>
+                <div class="input-field">
+                  <select
+                    class="browser-default"
+                    [(ngModel)]="missionForm.type_mission"
+                  >
+                    <option [ngValue]="null">— Type —</option>
+                    <option *ngFor="let t of typesMission" [value]="t">
+                      {{ labelType[t] }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-input col s12">
+                <label>Moyen de contrôle (vedette, véhicule…)</label>
+                <div class="input-field">
+                  <input
+                    type="text"
+                    [(ngModel)]="missionForm.moyen_controle"
+                    placeholder="Moyen de contrôle (vedette, véhicule…)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a class="modal-close btn-flat">Annuler</a>
+            <a class="btn indigo darken-1" (click)="enregistrerMission()"
+              >Enregistrer</a
             >
-              <i class="material-icons" style="color: #000000">chevron_left</i>
-            </button>
-            <span
-              class="page-number"
-              style="margin-left: 10px; margin-right: 10px"
-              >page {{ currentPage }} / {{ totalPages() }}</span
-            >
-            <button
-              (click)="nextPage()"
-              class="btn waves-effect waves-light white btn-small"
-              [disabled]="currentPage === totalPages()"
-            >
-              <i class="material-icons" style="color: #000000">chevron_right</i>
-            </button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Loading -->
-  <div class="spinner-container" *ngIf="loading">
-    <div class="preloader-wrapper big active">
-      <div class="spinner-layer spinner-blue-only">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div>
-        <div class="gap-patch">
-          <div class="circle"></div>
-        </div>
-        <div class="circle-clipper right">
-          <div class="circle"></div>
+        <!-- ==================================================================
+        MODAL : Dossier de mission
+  =================================================================== -->
+        <div id="modal-dossier" class="modal modal-large">
+          <div class="modal-content" *ngIf="dossier">
+            <div class="mi-dossier-head">
+              <h5>Mission du {{ dossier.date_depart | date: "dd/MM/yyyy" }}</h5>
+              <span
+                *ngIf="dossier.type_mission"
+                class="badge-type white-text"
+                [ngClass]="couleurType[dossier.type_mission]"
+                >{{ labelType[dossier.type_mission] }}</span
+              >
+            </div>
+            <p class="grey-text">
+              {{ dossier.lieu_mission || "Lieu non précisé"
+              }}<span *ngIf="dossier.moyen_controle">
+                · {{ dossier.moyen_controle }}</span
+              >
+            </p>
+
+            <!-- Équipe -->
+            <div class="mi-sub blue-grey lighten-5">
+              <h6>
+                <i class="material-icons left">groups</i>Équipe ({{
+                  dossier.membres.length
+                }})
+              </h6>
+              <table class="striped compact">
+                <thead>
+                  <tr>
+                    <th>Matricule</th>
+                    <th>Agent</th>
+                    <th>Organisme</th>
+                    <th>Rôle</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let e of dossier.membres">
+                    <td>{{ e.matricule }}</td>
+                    <td>
+                      {{ e.nom_complet }}<br /><small class="grey-text">{{
+                        e.fonction_libelle
+                      }}</small>
+                    </td>
+                    <td>
+                      <span
+                        *ngIf="e.organisme_abbreviation"
+                        class="chip indigo lighten-4"
+                        >{{ e.organisme_abbreviation }}</span
+                      >
+                    </td>
+                    <td>
+                      <div class="form-input">
+                        <div class="input-field">
+                          <input
+                            class="role-input"
+                            type="text"
+                            [ngModel]="e.role_agent"
+                            (change)="changerRole(e, $any($event.target).value)"
+                            placeholder="rôle…"
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a
+                        (click)="retirerMembre(e)"
+                        class="red-text"
+                        title="Retirer"
+                        ><i class="material-icons">person_remove</i></a
+                      >
+                    </td>
+                  </tr>
+                  <tr *ngIf="!dossier.membres.length">
+                    <td colspan="5" class="center grey-text">
+                      Aucun agent affecté.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="row mi-add-row">
+                <div class="form-input col s12 m6">
+                  <label>Sélectionner un agent</label>
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="membreForm.agent_id"
+                    >
+                      <option [ngValue]="null">
+                        — Sélectionner un agent —
+                      </option>
+                      <option
+                        *ngFor="let a of agentsDisponibles"
+                        [ngValue]="a.id"
+                      >
+                        {{ a.matricule }} — {{ a.nom }} {{ a.prenom
+                        }}<span *ngIf="a.organisme_abbreviation">
+                          ({{ a.organisme_abbreviation }})</span
+                        >
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-input col s12 m4">
+                  <label>Rôle (chef d'équipe, membre…)</label>
+                  <div class="input-field">
+                    <input
+                      type="text"
+                      [(ngModel)]="membreForm.role_agent"
+                      placeholder="Rôle (chef d'équipe, membre…)"
+                    />
+                  </div>
+                </div>
+
+                <div class="col s12 m2 mi-add-btn" style="margin-top: 25px">
+                  <a
+                    class="btn indigo darken-1"
+                    [class.disabled]="!membreForm.agent_id"
+                    (click)="ajouterMembre()"
+                    ><i class="material-icons left">add</i>Ajouter</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Rapports -->
+            <div class="mi-sub">
+              <h6>
+                <i class="material-icons left">assignment</i>Rapports ({{
+                  dossier.rapports.length
+                }})
+              </h6>
+              <table class="striped compact">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Contenu</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of dossier.rapports">
+                    <td>{{ r.date_rapport | date: "dd/MM/yyyy" }}</td>
+                    <td class="mi-contenu">{{ r.contenu_rapport || "—" }}</td>
+                    <td class="mi-actions">
+                      <a (click)="editerRapport(r)" title="Modifier"
+                        ><i class="material-icons">edit</i></a
+                      >
+                      <a
+                        (click)="supprimerRapport(r)"
+                        class="red-text"
+                        title="Supprimer"
+                        ><i class="material-icons">delete</i></a
+                      >
+                    </td>
+                  </tr>
+                  <tr *ngIf="!dossier.rapports.length">
+                    <td colspan="3" class="center grey-text">Aucun rapport.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="row mi-add-row">
+                <div class="form-input col s12 m3">
+                  <label>Date du rapport</label>
+                  <div class="input-field">
+                    <input
+                      type="date"
+                      [(ngModel)]="rapportForm.date_rapport"
+                    /><span class="helper">Date du rapport</span>
+                  </div>
+                </div>
+
+                <div class="form-input col s12 m7">
+                  <label>Contenu du rapport</label>
+                  <div class="input-field">
+                    <textarea
+                      class="materialize-textarea"
+                      [(ngModel)]="rapportForm.contenu_rapport"
+                      placeholder="Contenu du rapport"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="col s12 m2 mi-add-btn" style="margin-top: 60px">
+                  <a class="btn teal darken-1" (click)="enregistrerRapport()"
+                    ><i class="material-icons left">save</i
+                    >{{ rapportEnEdition ? "Modifier" : "Ajouter" }}</a
+                  >
+                  <a
+                    *ngIf="rapportEnEdition"
+                    class="btn-flat"
+                    (click)="annulerEditionRapport()"
+                    >Annuler</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Document scanné -->
+            <div class="mi-sub blue-grey lighten-5">
+              <h6><i class="material-icons left">scanner</i>Rapport scanné</h6>
+              <div class="mi-scan">
+                <a
+                  *ngIf="dossier.rapport_scan"
+                  [href]="dossier.rapport_scan"
+                  target="_blank"
+                  class="btn-flat green-text"
+                >
+                  <i class="material-icons left">picture_as_pdf</i>Voir le
+                  document actuel
+                </a>
+                <span *ngIf="!dossier.rapport_scan" class="grey-text"
+                  >Aucun document.</span
+                >
+                <div class="file-field input-field">
+                  <div class="btn indigo lighten-1">
+                    <span>Choisir</span
+                    ><input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      (change)="onFichierChoisi($event)"
+                    />
+                  </div>
+                  <div class="file-path-wrapper">
+                    <input
+                      class="file-path validate"
+                      type="text"
+                      placeholder="PDF, JPG ou PNG"
+                    />
+                  </div>
+                </div>
+                <a
+                  class="btn indigo darken-1"
+                  [class.disabled]="!fichierScan"
+                  (click)="televerserScan()"
+                  ><i class="material-icons left">upload</i>Téléverser</a
+                >
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a class="modal-close btn-flat">Fermer</a>
+          </div>
         </div>
       </div>
     </div>

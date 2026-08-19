@@ -59,15 +59,11 @@ declare var M: any;
                   required
                 >
                   <option value="" disabled>Choisir</option>
-                  <option value="Poissons pélagiques">
-                    Poissons pélagiques
-                  </option>
-                  <option value="Poissons démersaux">Poissons démersaux</option>
-                  <option value="Poissons d'eaux douces">
-                    Poissons d'eaux douces
-                  </option>
-                  <option value="Crustacés">Crustacés</option>
-                  <option value="Mollusques">Mollusques</option>
+                  <option value="PELAGIQUE">Poissons pélagiques</option>
+                  <option value="DEMERSAL">Poissons démersaux</option>
+                  <option value="EAUX DOUCES">Poissons d'eaux douces</option>
+                  <option value="CRUSTACE">Crustacés</option>
+                  <option value="MOLLUSQUES">Mollusques</option>
                 </select>
                 <label>Catégorie *</label>
               </div>

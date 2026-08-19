@@ -1,0 +1,17 @@
+.tabs .tab {
+  text-transform: none;
+  font-size: 14px;
+  font-weight: bold;
+
+  background-color: #d7ccc8;
+}
+
+.tabs .tab a {
+  color: #4e4c4c !important;
+  cursor: pointer;
+}
+
+.tabs .tab .active {
+  background-color: #795548;
+  color: #ffffff !important;
+}

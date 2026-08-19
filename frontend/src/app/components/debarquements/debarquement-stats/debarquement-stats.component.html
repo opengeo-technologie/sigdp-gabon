@@ -1,0 +1,263 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">assessment</i>Rapport statistique des
+      débarquements
+    </h1>
+    <p>Prévisualisez les statistiques à l'écran, puis téléchargez le PDF.</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <!-- ===================== Formulaire ===================== -->
+  <div class="card">
+    <div class="card-content">
+      <!-- <span class="card-title">
+        <i class="material-icons left teal-text text-darken-1">assessment</i>
+        Rapport statistique des débarquements
+      </span>
+      <p class="grey-text text-darken-1" style="margin-top: -6px">
+        Prévisualisez les statistiques à l'écran, puis téléchargez le PDF.
+      </p> -->
+
+      <div class="row" style="margin-top: 18px">
+        <div class="form-input col s12 m6 l3">
+          <label for="dateDebut" class="active">Date de début</label>
+          <div class="input-field">
+            <input
+              id="dateDebut"
+              type="date"
+              [ngModel]="dateDebut()"
+              (ngModelChange)="dateDebut.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="form-input col s12 m6 l3">
+          <label for="dateFin" class="active">Date de fin</label>
+          <div class="input-field">
+            <input
+              id="dateFin"
+              type="date"
+              [ngModel]="dateFin()"
+              (ngModelChange)="dateFin.set($event)"
+            />
+          </div>
+        </div>
+
+        <div class="form-input col s12 m6 l3">
+          <label for="select_debarcadere" class="active">Débarcadère</label>
+          <div class="input-field">
+            <select
+              #selectSite
+              [ngModel]="debarcadereId()"
+              id="select_debarcadere"
+              (ngModelChange)="debarcadereId.set($event ? +$event : null)"
+            >
+              <option [ngValue]="null">Tous les débarcadères</option>
+              <option *ngFor="let d of debarcaderes()" [ngValue]="d.id">
+                {{ d.site }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-input col s12 m6 l3">
+          <label for="topN" class="active">Top espèces / débarcadères</label>
+          <div class="input-field">
+            <input
+              id="topN"
+              type="number"
+              min="3"
+              max="30"
+              [ngModel]="topN()"
+              (ngModelChange)="topN.set(+$event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <p
+        *ngIf="periodeInvalide()"
+        class="red-text text-darken-1"
+        style="margin-top: -4px"
+      >
+        <i class="material-icons tiny">error_outline</i>
+        La date de fin doit être postérieure ou égale à la date de début.
+      </p>
+    </div>
+
+    <div class="card-action">
+      <div class="btn-group">
+        <button
+          class="btn teal darken-1 waves-effect waves-light"
+          [disabled]="loadingApercu() || periodeInvalide()"
+          (click)="previsualiser()"
+        >
+          <i class="material-icons left">visibility</i>
+          {{ loadingApercu() ? "Chargement…" : "Prévisualiser" }}
+        </button>
+        <button
+          class="btn blue-grey darken-2 waves-effect waves-light"
+          [disabled]="!aDesDonnees() || loadingPdf()"
+          (click)="telechargerPdf()"
+        >
+          <i class="material-icons left">picture_as_pdf</i>
+          {{ loadingPdf() ? "Génération…" : "Télécharger le PDF" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== Aperçu ===================== -->
+  <ng-container *ngIf="stats() as s">
+    <!-- État vide -->
+    <div
+      *ngIf="!aDesDonnees()"
+      class="card-panel amber lighten-4 amber-text text-darken-4"
+    >
+      <i class="material-icons left">info_outline</i>
+      Aucun débarquement enregistré sur la période sélectionnée.
+    </div>
+
+    <ng-container *ngIf="aDesDonnees()">
+      <!-- Bandeau période -->
+      <h6 class="grey-text text-darken-2" style="margin: 18px 4px 8px">
+        Période : {{ s.date_debut }} → {{ s.date_fin }}
+        <span *ngIf="s.debarcadere_nom">
+          · Débarcadère : {{ s.debarcadere_nom }}</span
+        >
+      </h6>
+
+      <!-- KPI -->
+      <div class="row">
+        <div
+          class="col s6 m4 l2"
+          *ngFor="
+            let k of [
+              { l: 'Débarquements', v: fmt(s.nb_debarquements) },
+              { l: 'Quantité (kg)', v: fmt(s.quantite_totale_kg) },
+              { l: 'Valeur (FCFA)', v: fmt(s.valeur_totale_fcfa) },
+              { l: 'Espèces', v: fmt(s.nb_especes) },
+              { l: 'Pêcheurs', v: fmt(s.nb_pecheurs) },
+              { l: 'Durée moy. (h)', v: s.duree_moyenne_h },
+            ]
+          "
+        >
+          <div
+            class="card-panel center-align"
+            style="padding: 12px 6px; background: #e8f2f4"
+          >
+            <div style="font-size: 1.5rem; font-weight: 600; color: #0b4f6c">
+              {{ k.v }}
+            </div>
+            <div class="grey-text text-darken-1" style="font-size: 0.8rem">
+              {{ k.l }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphiques -->
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title" style="font-size: 1rem"
+                >Par débarcadère</span
+              >
+              <div style="position: relative; height: 260px">
+                <canvas id="chartDebarcadere"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title" style="font-size: 1rem"
+                >Espèces principales (kg)</span
+              >
+              <div style="position: relative; height: 260px">
+                <canvas id="chartEspeces"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m7">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title" style="font-size: 1rem"
+                >Évolution des quantités</span
+              >
+              <div style="position: relative; height: 260px">
+                <canvas id="chartEvolution"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col s12 m5">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title" style="font-size: 1rem"
+                >Répartition par zone de pêche</span
+              >
+              <div style="position: relative; height: 260px">
+                <canvas id="chartDestination"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau espèces -->
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 1rem"
+            >Détail des espèces débarquées</span
+          >
+          <table class="striped responsive-table">
+            <thead>
+              <tr>
+                <th>Espèce</th>
+                <th class="right-align">Quantité (kg)</th>
+                <th class="right-align">Valeur (FCFA)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of s.top_especes">
+                <td>{{ e.nom }}</td>
+                <td class="right-align">{{ fmt(e.quantite_kg) }}</td>
+                <td class="right-align">{{ fmt(e.valeur_fcfa) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alertes -->
+      <div class="card" *ngIf="totalAlertes() > 0">
+        <div class="card-content">
+          <span class="card-title" style="font-size: 1rem">
+            <i class="material-icons left red-text text-darken-1">warning</i
+            >Alertes réglementaires
+          </span>
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Type d'alerte</th>
+                <th class="right-align">Occurrences</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of s.alertes | keyvalue">
+                <td>{{ a.key }}</td>
+                <td class="right-align">{{ a.value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

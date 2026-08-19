@@ -107,6 +107,8 @@ class DebarquementResponse(DebarquementInDB):
     debarcadere_nom: Optional[str] = None
     bateau_immatriculation: Optional[str] = None
     pecheur_nom: Optional[str] = None
+    effort_peche: Optional[int] = None
+    cpue: Optional[float] = None
     total_quantite_kg: Optional[float] = None
     total_valeur: Optional[float] = None
     nb_especes: Optional[int] = None

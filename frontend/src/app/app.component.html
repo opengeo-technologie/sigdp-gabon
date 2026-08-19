@@ -117,9 +117,15 @@
       </a>
     </li>
     <li class="divider"></li>
+    <li *appHasPermission="'capturees_estimees.read'">
+      <a routerLink="/captures-estimees" routerLinkActive="active">
+        <i class="material-icons left">inventory</i>Captures estimées
+      </a>
+    </li>
+    <li class="divider"></li>
     <li *appHasPermission="'debarquement.read'">
       <a routerLink="/debarquements" routerLinkActive="active">
-        <i class="material-icons left">inventory</i>Captures
+        <i class="material-icons left">inventory</i>Captures déclarées
       </a>
     </li>
     <li class="divider"></li>

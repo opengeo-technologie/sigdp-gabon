@@ -1,0 +1,128 @@
+.ag-wrap {
+  padding: 0 0 40px;
+}
+
+/* En-tête */
+.ag-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-radius: 0 0 6px 6px;
+}
+.ag-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+.ag-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+/* Onglets */
+.ag-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.ag-tabs a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 10px 18px;
+  color: #607d8b;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  user-select: none;
+}
+.ag-tabs a .material-icons {
+  font-size: 20px;
+}
+.ag-tabs a.actif {
+  color: #00796b;
+  border-bottom-color: #00796b;
+}
+.ag-tabs a:hover {
+  background: #f4f8f7;
+}
+
+/* Panneaux & barre d'outils */
+.ag-panel {
+  padding: 18px 24px;
+}
+.ag-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.ag-toolbar .ag-search {
+  flex: 1 1 260px;
+  margin: 0;
+}
+.ag-toolbar .ag-mini {
+  width: auto;
+  min-width: 160px;
+  height: 40px;
+}
+.ag-toolbar .btn {
+  margin-left: auto;
+}
+.ag-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #37474f;
+}
+
+/* Tables */
+.ag-table th {
+  color: #37474f;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.ag-table td {
+  vertical-align: middle;
+  font-size: 14px;
+}
+.ag-table .material-icons.tiny {
+  font-size: 14px;
+  vertical-align: middle;
+}
+.ag-actions {
+  white-space: nowrap;
+}
+.ag-actions a {
+  cursor: pointer;
+  margin: 0 3px;
+}
+.ag-actions .material-icons {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.chip.teal.lighten-4 {
+  color: #00695c;
+  font-weight: 600;
+}
+
+/* Modals */
+.modal.modal-small {
+  width: 40%;
+  max-width: 480px;
+}
+.input-field .helper {
+  display: block;
+  font-size: 12px;
+  color: #90a4ae;
+  margin-top: -4px;
+}
+
+@media (max-width: 992px) {
+  .modal.modal-small {
+    width: 90%;
+  }
+}

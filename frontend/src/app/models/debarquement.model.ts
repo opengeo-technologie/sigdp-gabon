@@ -25,51 +25,53 @@ export interface Debarquement {
   bateau_immatriculation?: string;
   pecheur_principal_id: number;
   pecheur_nom?: string;
-  
+
   date_debarquement: string;
   heure_depart_peche?: string;
   heure_arrivee_debarcadere?: string;
   duree_sortie_heures?: number;
-  
+  effort_peche?: number;
+  cpue?: number;
+
   // Zone de pêche
   zone_peche_nom?: string;
   zone_peche_latitude?: number;
   zone_peche_longitude?: number;
   zone_peche_profondeur_m?: number;
-  
+
   // Météo
   meteo_conditions?: string;
   meteo_etat_mer?: string;
   meteo_temperature_c?: number;
-  
+
   // Équipage
   nombre_pecheurs?: number;
   liste_pecheurs_ids?: string;
-  
+
   // Validation
   agent_controle_nom?: string;
   agent_controle_matricule?: string;
-  
+
   // Alertes
   alerte_espece_protegee: boolean;
   alerte_quota_depasse: boolean;
   alerte_taille_illegale: boolean;
   alerte_bateau_non_conforme: boolean;
   alerte_details?: string;
-  
+
   // Observations
   observations?: string;
   anomalies_detectees?: string;
-  
+
   synchronise: boolean;
-  
+
   // Données enrichies
   details: DetailDebarquement[];
   total_quantite_kg?: number;
   total_valeur?: number;
   nb_especes?: number;
   has_alertes?: boolean;
-  
+
   created_at: string;
   updated_at?: string;
 }

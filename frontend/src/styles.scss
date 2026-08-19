@@ -328,6 +328,10 @@ tbody tr td {
   color: #757575;
 }
 
+.form-input label .required-field {
+  color: red;
+}
+
 .form-input select {
   height: 30px; /* fixed height */
   border-radius: 5px;

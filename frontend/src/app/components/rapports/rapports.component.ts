@@ -14,6 +14,7 @@ interface RapportType {
   icon: string;
   formats: string[];
   color: string;
+  url: string;
 }
 
 @Component({
@@ -45,6 +46,7 @@ export class RapportsComponent implements OnInit {
       icon: "waves",
       formats: ["pdf"],
       color: "blue",
+      url: "/stations-piscicoles/rapports",
     },
     // {
     //   id: "synthese_activite",
@@ -54,22 +56,26 @@ export class RapportsComponent implements OnInit {
     //   formats: ["pdf", "excel"],
     //   color: "blue",
     // },
-    // {
-    //   id: "debarquements",
-    //   titre: "Débarquements",
-    //   description: "Liste détaillée de tous les débarquements",
-    //   icon: "inventory",
-    //   formats: ["pdf", "excel", "csv"],
-    //   color: "teal",
-    // },
-    // {
-    //   id: "captures_par_espece",
-    //   titre: "Captures par espèce",
-    //   description: "Statistiques des captures groupées par espèce",
-    //   icon: "set_meal",
-    //   formats: ["pdf", "excel", "csv"],
-    //   color: "green",
-    // },
+    {
+      id: "debarquements",
+      titre: "Débarquements",
+      description:
+        "Prévisualisez les statistiques à l'écran, puis téléchargez le PDF des captures de pêche",
+      icon: "inventory",
+      formats: ["pdf"],
+      color: "teal",
+      url: "/debarquements/rapport",
+    },
+    {
+      id: "mareyeurs",
+      titre: "Mareyeurs",
+      description:
+        "Prévisualisez les statistiques à l'écran, puis téléchargez le PDF des Mareyeurs",
+      icon: "insights",
+      formats: ["pdf"],
+      color: "green",
+      url: "//mareyeurs/rapport",
+    },
     // {
     //   id: "activite_debarcaderes",
     //   titre: "Activité débarcadères",

@@ -1,5 +1,16 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Enum, Text
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    Float,
+    Boolean,
+    DateTime,
+    Enum,
+    Text,
+)
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 import enum
 from app.database import Base
@@ -73,10 +84,29 @@ class Debarcadere(Base):
         Enum(StatutOperationnel), nullable=False, default=StatutOperationnel.ACTIF
     )
 
+    strate_majeure_id = Column(
+        Integer,
+        ForeignKey("strates_majeures.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    strate_mineure_id = Column(
+        Integer,
+        ForeignKey("strates_mineures.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     # Métadonnées
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Bidirectionnelle : décommentez sur StrateMineure la ligne
+
+    strate_mineure = relationship("StrateMineure", back_populates="debarcaderes")
+    # Unidirectionnelle (aucune modif requise sur StrateMajeure)
+    strate_majeure = relationship("StrateMajeure")
 
     def __repr__(self):
         return f"<Debarcadere {self.code} - {self.denomination}>"

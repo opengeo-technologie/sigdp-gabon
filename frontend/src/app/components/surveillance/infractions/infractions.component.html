@@ -4,3 +4,198 @@
     <p>Infractions des embarcations</p>
   </div>
 </div>
+
+<div class="container-fluid">
+  <!-- Filtres et actions -->
+  <div class="row" style="margin-top: -50px !important">
+    <!-- <div class="col s12 m9"></div> -->
+    <div class="col s12 m3">
+      <div class="form-input">
+        <a
+          class="btn btn-primary waves-effect waves-light"
+          style="margin-top: 1.5rem"
+          (click)="ouvrirCreation()"
+        >
+          <i class="material-icons left">add</i>
+          Nouvelle infraction
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-content">
+      <span class="card-title">
+        {{ infractions.length }} infraction(s) trouvée(s)
+      </span>
+      <div class="table-responsive">
+        <table class="highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Libellé</th>
+              <th>Type infraction</th>
+              <th>Description</th>
+              <th>Sanction proposée</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let infraction of paginatedData">
+              <td>{{ infraction.libelle_infra }}</td>
+              <td>Type {{ infraction.type_infra }}</td>
+              <td>{{ infraction.description }}</td>
+              <td>{{ infraction.sanction_proposee }}</td>
+              <td>
+                <div class="btn-group">
+                  <a
+                    class="btn btn-small blue waves-effect waves-light"
+                    (click)="ouvrirEdition(infraction)"
+                  >
+                    <i class="material-icons">edit</i>
+                  </a>
+                  <!-- <a
+                    routerLink="/infractions/{{ infraction.id }}"
+                    class="btn btn-small waves-effect waves-light"
+                  >
+                    <i class="material-icons">visibility</i>
+                  </a> -->
+                  <a
+                    class="btn btn-small waves-effect waves-light red"
+                    (click)="supprimer(infraction)"
+                  >
+                    <i class="material-icons">delete</i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="infractions.length === 0">
+              <td colspan="8" class="center-align">
+                <p class="grey-text">
+                  Aucune infraction trouvée avec ces critères
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center" style="padding-top: 20px">
+          <div class="btn-group" role="group">
+            <button
+              (click)="prevPage()"
+              class="btn waves-effect waves-light white darken-4 btn-small"
+              [disabled]="currentPage === 1"
+            >
+              <i class="material-icons" style="color: #000000">chevron_left</i>
+            </button>
+            <span
+              class="page-number"
+              style="margin-left: 10px; margin-right: 10px"
+              >page {{ currentPage }} / {{ totalPages() }}</span
+            >
+            <button
+              (click)="nextPage()"
+              class="btn waves-effect waves-light white btn-small"
+              [disabled]="currentPage === totalPages()"
+            >
+              <i class="material-icons" style="color: #000000">chevron_right</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale CRUD (déplacée dans <body> pour éviter le piège de z-index Materialize) -->
+<div #modale id="modaleInfraction" class="modal">
+  <div class="modal-content">
+    <h6 style="color: #0d47a1">
+      {{ enEdition ? "Modifier l'infraction" : "Nouvelle infraction" }}
+    </h6>
+    <hr />
+    <p style="color: red">(*) -> Champs obligatoires</p>
+    <div class="row">
+      <div class="col s6 m6">
+        <div class="form-input">
+          <label class="active"
+            >Libellé infraction <span class="required-field">(*)</span></label
+          >
+          <div class="input-field">
+            <input type="text" [(ngModel)]="form.libelle_infra" />
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6">
+        <div class="form-input">
+          <label
+            >Type d'infraction <span class="required-field">(*)</span></label
+          >
+          <div class="input-field">
+            <select
+              #mStrateMajeure
+              [(ngModel)]="form.type_infra"
+              class="browser-default"
+              [disabled]="enEdition"
+            >
+              <option value="null">
+                ------ Sélectionner type infraction ------
+              </option>
+              <option value="A">Type A</option>
+              <option value="B">Type B</option>
+              <option value="C">Type C</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top: -20px">
+      <div class="col s12 m12">
+        <div class="form-input">
+          <label class="active">Description</label>
+          <div class="input-field">
+            <textarea
+              [(ngModel)]="form.description"
+              class="materialize-textarea"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m12">
+        <div class="form-input">
+          <label class="active">sanction proposée</label>
+          <div class="input-field">
+            <textarea
+              [(ngModel)]="form.sanction_proposee"
+              class="materialize-textarea"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <p *ngIf="erreur" class="red-text">{{ erreur }}</p> -->
+  </div>
+  <div class="modal-footer">
+    <a class="modal-close btn-flat">Annuler</a>
+    <a class="btn blue darken-3 waves-effect" (click)="enregistrer()"
+      >Enregistrer</a
+    >
+  </div>
+</div>

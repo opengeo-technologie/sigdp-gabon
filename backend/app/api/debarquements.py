@@ -38,6 +38,8 @@ ERROR_FILE_BATEAUX = ERRORS_DIR / "errors_bateaux.xlsx"
 
 FORMATS_DATE = ["%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"]
 
+BATCH_SIZE = 100
+
 
 def parser_date(valeur, nom_champ: str) -> date | None:
     """Parse une date depuis Excel (str, datetime ou None) avec erreur explicite."""
@@ -77,24 +79,21 @@ def generate_numero_debarquement() -> str:
     return f"DEB-{today.strftime('%Y%m%d')}-{random_suffix}"
 
 
+def calculerEffortPeche(capture: Debarquement) -> int:
+    date1 = capture.date_depart_peche
+    date2 = capture.date_debarquement
+    return (date2 - date1).days + 1
+
+
+def calculerCpue(capture: Debarquement) -> float:
+
+    return 0
+
+
 @router.post("/upload-excel")
 async def upload_captures_excel(
     file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
-    """
-    Télécharge un fichier Excel contenant les données des bateaux et les insère dans la base de données.
-
-    Format attendu du fichier Excel:
-    - code_pirogue_bd:Code unique du bateau (ex: Pirogue-001)
-    - nom: Nom du bateau (ex: La Belle Pirogue)
-    - immatriculation: Numéro d'immatriculation du bateau (ex: GA-1234-AB)
-    - depart: Date de départ en mer
-    - retour: Date de retour au débarcadère
-    - zone_de_peche: Zone de pêche habituelle (ex: Zone A, Zone B)
-    - sitedebarquement: Nom du site de débarquement (ex: Port de Libreville)
-    """
-
-    # Vérifier l'extension du fichier
     if not file.filename.endswith((".xlsx", ".xls")):
         raise HTTPException(
             status_code=400,
@@ -102,13 +101,11 @@ async def upload_captures_excel(
         )
 
     try:
-        # Lire le fichier Excel avec pandas
         contents = await file.read()
         excel_file = io.BytesIO(contents)
         engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
         df = pd.read_excel(excel_file, engine=engine)
 
-        # Valider les colonnes requises
         required_columns = {
             "code_pirogue_bd",
             "depart",
@@ -123,150 +120,157 @@ async def upload_captures_excel(
                 detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
             )
 
-        # Nettoyer les données
-        df = df.fillna("")  # Remplacer NaN par chaîne vide
+        df = df.fillna("")
 
-        header = df.columns.tolist()
-        print(header)
-
-        # Statistiques d'import
         total_rows = len(df)
         inserted_count = 0
-        updated_count = 0
         errors = []
         errors_bateaux = []
+        all_errors = []
 
-        # Précharger les données de référence pour éviter les requêtes répétées
+        # Précharger les espèces une seule fois (hors des boucles)
         especes = db.query(Espece).all()
 
-        # Insérer les données dans la base de données
-        for _, row in df.iterrows():
+        # ---- Traitement par lots de BATCH_SIZE lignes ----
+        for batch_start in range(0, total_rows, BATCH_SIZE):
+            batch_df = df.iloc[batch_start : batch_start + BATCH_SIZE]
+            batch_inserted = 0
 
-            # print(f"Traitement de la ligne: {row.to_dict()}")  # Debug
-
-            bateau = (
-                db.query(Bateau)
-                .filter(
-                    Bateau.numero_immatriculation
-                    == str(row["immatriculation_pirogue"]).strip()
-                )
-                .first()
-            )
-
-            debarquement = (
-                db.query(Debarcadere)
-                .filter(
-                    or_(
-                        func.lower(func.trim(Debarcadere.nom_local))
-                        == str(row["sitedebarquement"]).strip().lower(),
-                        func.lower(func.trim(Debarcadere.denomination))
-                        == str(row["sitedebarquement"]).strip().lower(),
+            for _, row in batch_df.iterrows():
+                bateau = (
+                    db.query(Bateau)
+                    .filter(
+                        Bateau.numero_immatriculation
+                        == str(row["immatriculation_pirogue"]).strip()
                     )
+                    .first()
                 )
-                .first()
-            )
 
-            details_selected = []
+                # Renommé en 'debarcadere' pour éviter la confusion avec
+                # l'objet Debarquement créé plus bas
+                debarcadere = (
+                    db.query(Debarcadere)
+                    .filter(
+                        or_(
+                            func.lower(func.trim(Debarcadere.nom_local))
+                            == str(row["sitedebarquement"]).strip().lower(),
+                            func.lower(func.trim(Debarcadere.denomination))
+                            == str(row["sitedebarquement"]).strip().lower(),
+                        )
+                    )
+                    .first()
+                )
 
-            for espece in especes:
-                if (
-                    espece.nom_commun_francais in df.columns
-                    and row[espece.nom_commun_francais] != ""
-                ):
-                    # print(
-                    #     f"Colonne pour l'espèce {espece.nom_commun_francais} trouvée dans le fichier Excel"
-                    # )  # Debug
-                    espece_chosen = {
-                        "espece_id": espece.id,
-                        "quantite_kg": (
-                            safe_int(row[espece.nom_commun_francais])
-                            if row[espece.nom_commun_francais] != ""
-                            else 0
-                        ),
-                    }
-                    details_selected.append(espece_chosen)
+                details_selected = []
+                for espece in especes:
+                    if (
+                        espece.nom_commun_francais in df.columns
+                        and row[espece.nom_commun_francais] != ""
+                    ):
+                        details_selected.append(
+                            {
+                                "espece_id": espece.id,
+                                "quantite_kg": safe_int(
+                                    row[espece.nom_commun_francais]
+                                ),
+                            }
+                        )
 
+                try:
+                    # Savepoint par ligne : si CETTE ligne échoue, seule
+                    # elle est annulée, le reste du lot continue.
+                    with db.begin_nested():
+                        date_depart = parser_date(
+                            row.get("depart"), "Date de départ pêche"
+                        )
+                        date_debarq = parser_date(
+                            row.get("retour"), "Date de débarquement"
+                        )
+
+                        if date_depart and date_debarq and date_depart > date_debarq:
+                            raise ValueError(
+                                f"La date de départ ({date_depart.strftime('%d/%m/%Y')}) est supérieure "
+                                f"à la date de débarquement ({date_debarq.strftime('%d/%m/%Y')})"
+                            )
+
+                        debarquement_data = DebarquementCreate(
+                            bateau_id=bateau.id if bateau else None,
+                            pecheur_principal_id=(
+                                bateau.proprietaire_pecheur_id if bateau else None
+                            ),
+                            date_debarquement=date_debarq,
+                            date_depart_peche=date_depart,
+                            zone_peche_nom=row["zone_de_peche"],
+                            debarcadere_id=debarcadere.id if debarcadere else None,
+                            details=details_selected,
+                        )
+
+                        deb_data = debarquement_data.model_dump(exclude={"details"})
+                        deb_data["numero_debarquement"] = generate_numero_debarquement()
+
+                        debarquement = Debarquement(**deb_data)
+                        db.add(debarquement)
+                        db.flush()  # pour récupérer debarquement.id
+
+                        details_list = []
+                        for detail_data in debarquement_data.details:
+                            detail = DetailDebarquement(
+                                debarquement_id=debarquement.id,
+                                **detail_data.model_dump(),
+                            )
+                            db.add(detail)
+                            details_list.append(detail)
+
+                        check_alertes(debarquement, details_list, db)
+
+                    # Sortie du savepoint sans exception => ligne OK
+                    batch_inserted += 1
+
+                except Exception as e:
+                    # Le savepoint a déjà été annulé automatiquement.
+                    error_row = row.to_dict()
+                    error_bateaux = row.to_dict()
+                    if not bateau:
+                        msg = (
+                            f'Bateau avec immatriculation {row["immatriculation_pirogue"]} '
+                            f"inexistant dans la base de données"
+                        )
+                        error_bateaux["error_message"] = msg
+                        errors_bateaux.append(error_bateaux)
+                        all_errors.append(error_bateaux)
+                        # error_row["error_message"] = msg
+                    else:
+                        error_row["error_message"] = str(e)
+                        errors.append(error_row)
+                        all_errors.append(error_row)
+
+            # ---- Un seul commit pour tout le lot ----
             try:
-
-                date_depart = parser_date(row.get("depart"), "Date de départ pêche")
-                date_debarq = parser_date(row.get("retour"), "Date de débarquement")
-
-                # Contrôle de cohérence métier tant qu'on y est
-                if date_depart and date_debarq and date_depart > date_debarq:
-                    raise ValueError(
-                        f"La date de départ ({date_depart.strftime('%d/%m/%Y')}) est supérieure "
-                        f"à la date de débarquement ({date_debarq.strftime('%d/%m/%Y')})"
-                    )
-
-                debarquement_data = DebarquementCreate(
-                    # numero_debarquement=generate_numero_debarquement(),
-                    bateau_id=bateau.id if bateau else None,
-                    pecheur_principal_id=(
-                        bateau.proprietaire_pecheur_id if bateau else None
-                    ),
-                    date_debarquement=date_debarq,
-                    date_depart_peche=date_depart,
-                    zone_peche_nom=row["zone_de_peche"],
-                    debarcadere_id=debarquement.id if debarquement else None,
-                    details=details_selected,
-                )
-
-                # Créer le débarquement
-                deb_data = debarquement_data.model_dump(exclude={"details"})
-                deb_data["numero_debarquement"] = generate_numero_debarquement()
-
-                debarquement = Debarquement(**deb_data)
-                db.add(debarquement)
-                db.flush()
-
-                # Créer les détails
-                details_list = []
-                for detail_data in debarquement_data.details:
-                    detail = DetailDebarquement(
-                        debarquement_id=debarquement.id, **detail_data.model_dump()
-                    )
-                    db.add(detail)
-                    details_list.append(detail)
-
-                # Vérifier les alertes
-                check_alertes(debarquement, details_list, db)
-
                 db.commit()
-                db.refresh(debarquement)
-                inserted_count += 1
+                inserted_count += batch_inserted
             except Exception as e:
                 db.rollback()
-                # print(e)
-
-                error_row = row.to_dict()
-                error_row_bateau = {}
-                if not bateau:
-                    error_row_bateau["immatriculation"] = row["immatriculation_pirogue"]
-                    error_row_bateau["nom_pirroge"] = row["identifiant_pirogue"]
-                    error_row_bateau["error_message"] = (
-                        f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
-                    )
-                    error_row["error_message"] = (
-                        f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
-                    )
-                    errors_bateaux.append(error_row_bateau)
-                else:
-                    error_row["error_message"] = str(e)
-                errors.append(error_row)
+                # Cas rare (perte de connexion, contrainte différée…) :
+                # tout le lot est considéré comme échoué.
+                for _, row in batch_df.iterrows():
+                    error_row = row.to_dict()
+                    error_row["error_message"] = f"Échec du commit du lot: {str(e)}"
+                    errors.append(error_row)
+                    all_errors.append(error_row)
 
         header = df.columns.tolist()
         header_bateau = ["immatriculation", "nom_pirroge"]
         if errors:
             save_errors(errors, header, ERROR_FILE)
-
         if errors_bateaux:
-            save_errors(errors_bateaux, header_bateau, ERROR_FILE_BATEAUX)
+            save_errors(errors_bateaux, header, ERROR_FILE_BATEAUX)
 
         return {
-            "total": len(df),
+            "total": total_rows,
             "inseres": inserted_count,
+            "bacth": batch_inserted,
             "echoues": len(errors),
-            "erreurs": errors,
+            "erreurs": all_errors,
             "error_file": ERROR_FILE if errors else None,
         }
 
@@ -278,6 +282,209 @@ async def upload_captures_excel(
         raise HTTPException(
             status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
         )
+
+
+# @router.post("/upload-excel2")
+# async def upload_captures_excel2(
+#     file: UploadFile = File(...), db: Session = Depends(get_db)
+# ):
+#     """
+#     Télécharge un fichier Excel contenant les données des bateaux et les insère dans la base de données.
+
+#     Format attendu du fichier Excel:
+#     - code_pirogue_bd:Code unique du bateau (ex: Pirogue-001)
+#     - nom: Nom du bateau (ex: La Belle Pirogue)
+#     - immatriculation: Numéro d'immatriculation du bateau (ex: GA-1234-AB)
+#     - depart: Date de départ en mer
+#     - retour: Date de retour au débarcadère
+#     - zone_de_peche: Zone de pêche habituelle (ex: Zone A, Zone B)
+#     - sitedebarquement: Nom du site de débarquement (ex: Port de Libreville)
+#     """
+
+#     # Vérifier l'extension du fichier
+#     if not file.filename.endswith((".xlsx", ".xls")):
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Le fichier doit être au format Excel (.xlsx ou .xls)",
+#         )
+
+#     try:
+#         # Lire le fichier Excel avec pandas
+#         contents = await file.read()
+#         excel_file = io.BytesIO(contents)
+#         engine = "openpyxl" if file.filename.endswith(".xlsx") else "xlrd"
+#         df = pd.read_excel(excel_file, engine=engine)
+
+#         # Valider les colonnes requises
+#         required_columns = {
+#             "code_pirogue_bd",
+#             "depart",
+#             "retour",
+#             "zone_de_peche",
+#             "sitedebarquement",
+#             "immatriculation_pirogue",
+#         }
+#         if not required_columns.issubset(df.columns):
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Le fichier Excel doit contenir les colonnes suivantes: {', '.join(required_columns)}",
+#             )
+
+#         # Nettoyer les données
+#         df = df.fillna("")  # Remplacer NaN par chaîne vide
+
+#         header = df.columns.tolist()
+#         print(header)
+
+#         # Statistiques d'import
+#         total_rows = len(df)
+#         inserted_count = 0
+#         updated_count = 0
+#         errors = []
+#         errors_bateaux = []
+
+#         # Précharger les données de référence pour éviter les requêtes répétées
+#         especes = db.query(Espece).all()
+
+#         # Insérer les données dans la base de données
+#         for _, row in df.iterrows():
+
+#             # print(f"Traitement de la ligne: {row.to_dict()}")  # Debug
+
+#             bateau = (
+#                 db.query(Bateau)
+#                 .filter(
+#                     Bateau.numero_immatriculation
+#                     == str(row["immatriculation_pirogue"]).strip()
+#                 )
+#                 .first()
+#             )
+
+#             debarquement = (
+#                 db.query(Debarcadere)
+#                 .filter(
+#                     or_(
+#                         func.lower(func.trim(Debarcadere.nom_local))
+#                         == str(row["sitedebarquement"]).strip().lower(),
+#                         func.lower(func.trim(Debarcadere.denomination))
+#                         == str(row["sitedebarquement"]).strip().lower(),
+#                     )
+#                 )
+#                 .first()
+#             )
+
+#             details_selected = []
+
+#             for espece in especes:
+#                 if (
+#                     espece.nom_commun_francais in df.columns
+#                     and row[espece.nom_commun_francais] != ""
+#                 ):
+#                     # print(
+#                     #     f"Colonne pour l'espèce {espece.nom_commun_francais} trouvée dans le fichier Excel"
+#                     # )  # Debug
+#                     espece_chosen = {
+#                         "espece_id": espece.id,
+#                         "quantite_kg": (
+#                             safe_int(row[espece.nom_commun_francais])
+#                             if row[espece.nom_commun_francais] != ""
+#                             else 0
+#                         ),
+#                     }
+#                     details_selected.append(espece_chosen)
+
+#             try:
+
+#                 date_depart = parser_date(row.get("depart"), "Date de départ pêche")
+#                 date_debarq = parser_date(row.get("retour"), "Date de débarquement")
+
+#                 # Contrôle de cohérence métier tant qu'on y est
+#                 if date_depart and date_debarq and date_depart > date_debarq:
+#                     raise ValueError(
+#                         f"La date de départ ({date_depart.strftime('%d/%m/%Y')}) est supérieure "
+#                         f"à la date de débarquement ({date_debarq.strftime('%d/%m/%Y')})"
+#                     )
+
+#                 debarquement_data = DebarquementCreate(
+#                     # numero_debarquement=generate_numero_debarquement(),
+#                     bateau_id=bateau.id if bateau else None,
+#                     pecheur_principal_id=(
+#                         bateau.proprietaire_pecheur_id if bateau else None
+#                     ),
+#                     date_debarquement=date_debarq,
+#                     date_depart_peche=date_depart,
+#                     zone_peche_nom=row["zone_de_peche"],
+#                     debarcadere_id=debarquement.id if debarquement else None,
+#                     details=details_selected,
+#                 )
+
+#                 # Créer le débarquement
+#                 deb_data = debarquement_data.model_dump(exclude={"details"})
+#                 deb_data["numero_debarquement"] = generate_numero_debarquement()
+
+#                 debarquement = Debarquement(**deb_data)
+#                 db.add(debarquement)
+#                 db.flush()
+
+#                 # Créer les détails
+#                 details_list = []
+#                 for detail_data in debarquement_data.details:
+#                     detail = DetailDebarquement(
+#                         debarquement_id=debarquement.id, **detail_data.model_dump()
+#                     )
+#                     db.add(detail)
+#                     details_list.append(detail)
+
+#                 # Vérifier les alertes
+#                 check_alertes(debarquement, details_list, db)
+
+#                 db.commit()
+#                 db.refresh(debarquement)
+#                 inserted_count += 1
+#             except Exception as e:
+#                 db.rollback()
+#                 # print(e)
+
+#                 error_row = row.to_dict()
+#                 error_row_bateau = {}
+#                 if not bateau:
+#                     error_row_bateau["immatriculation"] = row["immatriculation_pirogue"]
+#                     error_row_bateau["nom_pirroge"] = row["identifiant_pirogue"]
+#                     error_row_bateau["error_message"] = (
+#                         f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
+#                     )
+#                     error_row["error_message"] = (
+#                         f'Bateau avec immatriculation {row["immatriculation_pirogue"]} inexistant dans la base de données'
+#                     )
+#                     errors_bateaux.append(error_row_bateau)
+#                 else:
+#                     error_row["error_message"] = str(e)
+#                 errors.append(error_row)
+
+#         header = df.columns.tolist()
+#         header_bateau = ["immatriculation", "nom_pirroge"]
+#         if errors:
+#             save_errors(errors, header, ERROR_FILE)
+
+#         if errors_bateaux:
+#             save_errors(errors_bateaux, header_bateau, ERROR_FILE_BATEAUX)
+
+#         return {
+#             "total": len(df),
+#             "inseres": inserted_count,
+#             "echoues": len(errors),
+#             "erreurs": errors,
+#             "error_file": ERROR_FILE if errors else None,
+#         }
+
+#     except pd.errors.EmptyDataError:
+#         raise HTTPException(
+#             status_code=400, detail="Le fichier Excel est vide ou mal formaté"
+#         )
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=500, detail=f"Erreur lors du traitement du fichier: {str(e)}"
+#         )
 
 
 def save_errors(errors: list[dict], header: list[str], path_file: str):
@@ -428,6 +635,8 @@ def get_debarquements(
         if pecheur:
             deb_dict["pecheur_nom"] = f"{pecheur.nom} {pecheur.prenom}"
 
+        deb_dict["effort_peche"] = calculerEffortPeche(deb)
+
         # Récupérer les détails
         details = (
             db.query(DetailDebarquement)
@@ -461,6 +670,7 @@ def get_debarquements(
             or deb.alerte_taille_illegale
             or deb.alerte_bateau_non_conforme
         )
+        deb_dict["cpue"] = round(total_quantite / deb_dict["effort_peche"], 2)
 
         result.append(DebarquementResponse(**deb_dict))
 

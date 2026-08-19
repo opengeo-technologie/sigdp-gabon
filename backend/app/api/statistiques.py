@@ -653,7 +653,7 @@ def get_captures_par_zone(
 
     resultats = (
         db.query(
-            Debarquement.zone_peche_nom.label("zone_peche"),
+            func.lower(Debarquement.zone_peche_nom).label("zone_peche"),
             func.count(Debarquement.id).label("nombre"),
             func.sum(DetailDebarquement.quantite_kg).label("quantite_kg"),
         )
@@ -661,7 +661,6 @@ def get_captures_par_zone(
             DetailDebarquement,
             DetailDebarquement.debarquement_id == Debarquement.id,
         )
-        .join(Debarcadere, Debarcadere.id == Debarquement.debarcadere_id)
         .filter(
             and_(
                 extract("year", Debarquement.date_debarquement) == annee,

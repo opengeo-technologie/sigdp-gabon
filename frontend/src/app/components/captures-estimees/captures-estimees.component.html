@@ -1,0 +1,536 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">inventory</i> Captures estimées et Efforts
+      de pêche
+    </h1>
+    <p>Statistiques halieutiques extrapolées — par engin, espèce et mois</p>
+  </div>
+</div>
+<div class="container-fluid" style="padding: 16px 24px">
+  <div class="row valign-wrapper" style="margin-bottom: 4px">
+    <div class="col s8">
+      <!-- <h5 style="color: #0d47a1; margin: 0">Captures estimées</h5>
+      <span class="grey-text"
+        >Statistiques halieutiques extrapolées — par engin, espèce et mois</span
+      > -->
+      <div class="row">
+        <div class="col s12">
+          <ul class="tabs">
+            <li class="tab col s6">
+              <a [class.active]="showListCaptures" (click)="changeTab()"
+                >Liste captures de pêche estimées</a
+              >
+            </li>
+            <li class="tab col s6">
+              <a [class.active]="!showListCaptures" (click)="changeTab()"
+                >Liste des efforts de pêche</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col s4 right-align">
+      <a
+        class="btn-small waves-effect blue darken-3"
+        [class.disabled]="
+          !hasPermission('capturees_estimees.create') || isLoadingModal
+        "
+        (click)="ouvrirCreation()"
+      >
+        @if (isLoadingModal) {
+          Ouverture en cours...
+        } @else {
+          <i class="material-icons left">add</i>Nouvelle capture estimée
+        }
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card" style="padding: 8px 16px">
+    <div class="row" style="margin-bottom: 0">
+      <div class="form-input col s6 m2">
+        <label for="f_annee" class="active">Année</label>
+        <div class="input-field">
+          <input
+            id="f_annee"
+            type="number"
+            [(ngModel)]="filtre.annee"
+            (change)="recharger()"
+          />
+        </div>
+      </div>
+
+      <div class="form-input col s6 m2">
+        <label>Mois</label>
+        <div class="input-field">
+          <select
+            #selMois
+            [(ngModel)]="filtre.mois"
+            (change)="recharger()"
+            class="browser-default"
+          >
+            <option [ngValue]="null">Tous les mois</option>
+            <option *ngFor="let m of mois; let i = index" [ngValue]="i + 1">
+              {{ m }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-input col s6 m2">
+        <label for="engin_id">Engin de pêche</label>
+        <div class="input-field">
+          <select
+            #selEngin
+            [(ngModel)]="filtre.engin_id"
+            id="engin_id"
+            (change)="recharger()"
+          >
+            <option [ngValue]="null">Tous les engins</option>
+            <option *ngFor="let e of engins" [ngValue]="e.id">
+              {{ e.libelle }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-input col s6 m2">
+        <label for="espece_id">Espèce</label>
+        <div class="input-field">
+          <select
+            #selEspece
+            [(ngModel)]="filtre.espece_id"
+            id="espece_id"
+            (change)="recharger()"
+          >
+            <option [ngValue]="null">Toutes les espèces</option>
+            <option *ngFor="let s of especes" [ngValue]="s.id">
+              {{ s.nom_commun_francais }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-input col s6 m2">
+        <label for="strate_mineure_id">Strate mineure</label>
+        <div class="input-field">
+          <select
+            #selStrateMineure
+            [(ngModel)]="filtre.strate_mineure_id"
+            id="strate_mineure_id"
+            (change)="recharger()"
+          >
+            <option [ngValue]="null">Toutes les strates</option>
+            <option *ngFor="let s of localite" [ngValue]="s.id">
+              {{ s.libelle }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-input col s6 m2">
+        <label>Groupe</label>
+        <div class="input-field">
+          <select
+            #selGroupe
+            [(ngModel)]="filtre.groupe"
+            (change)="recharger()"
+            class="browser-default"
+          >
+            <option [ngValue]="null">Tous les groupes</option>
+            <option ngValue="PELAGIQUE">Pélagiques</option>
+            <option ngValue="DEMERSAL">Démersaux</option>
+            <option ngValue="CRUSTACE">Crustacés</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom: 4px">
+      <div class="col s12">
+        <a
+          class="btn btn-small waves-effect blue darken-2"
+          routerLink="/captures-estimees/dashboard"
+        >
+          <i class="material-icons left">dashboard</i>Tableau de bord
+        </a>
+        <!-- <label style="margin-right: 16px">
+          <input
+            type="checkbox"
+            class="filled-in"
+            [(ngModel)]="filtre.inclure_agrege"
+            (change)="recharger()"
+          />
+          <span>Inclure le cumul « toutes pêcheries »</span>
+        </label> -->
+        <span class="right btn-group">
+          <a
+            class="btn btn-small waves-effect green darken-2"
+            [class.disabled]="!hasPermission('capturees_estimees.import')"
+            routerLink="/captures-estimees/importer"
+          >
+            <i class="material-icons left">upload_file</i>Importer Excel
+          </a>
+          <input
+            #inputFichier
+            type="file"
+            accept=".xlsx,.xlsm"
+            hidden
+            (change)="importer($event)"
+          />
+          <a
+            class="btn btn-small waves-effect teal"
+            (click)="exporter('excel')"
+            [class.disabled]="!hasPermission('capturees_estimees.export')"
+            ><i class="material-icons left">grid_on</i>Excel</a
+          >
+          <a
+            class="btn btn-small waves-effect grey darken-1"
+            [class.disabled]="!hasPermission('capturees_estimees.export')"
+            (click)="exporter('csv')"
+            >CSV</a
+          >
+          <a
+            class="btn btn-small waves-effect grey darken-1"
+            [class.disabled]="!hasPermission('capturees_estimees.export')"
+            (click)="exporter('json')"
+            >JSON</a
+          >
+          <a
+            class="btn btn-small waves-effect red darken-2"
+            [class.disabled]="!hasPermission('capturees_estimees.export')"
+            (click)="exporter('pdf')"
+            ><i class="material-icons left">picture_as_pdf</i>PDF</a
+          >
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bandeau d'import -->
+  <div
+    *ngIf="resultatImport as r"
+    class="card-panel"
+    [class.green]="r.succes"
+    [class.orange]="!r.succes"
+    [class.lighten-4]="true"
+    style="padding: 10px 16px"
+  >
+    <b>{{ r.captures_importees }}</b> capture(s) et
+    <b>{{ r.efforts_importes }}</b> effort(s) importés —
+    {{ r.engins_crees }} engin(s), {{ r.especes_creees }} espèce(s) créés.
+    <span *ngIf="r.erreurs.length">
+      — {{ r.erreurs.length }} anomalie(s) à revoir :</span
+    >
+    <ul
+      *ngIf="r.erreurs.length"
+      class="browser-default"
+      style="max-height: 120px; overflow: auto; margin: 6px 0 0"
+    >
+      <li *ngFor="let e of r.erreurs.slice(0, 20)">
+        <small>{{ e.reference }} — {{ e.message }}</small>
+      </li>
+    </ul>
+  </div>
+
+  <div class="captures_estimee" *ngIf="showListCaptures">
+    <!-- Tableau captures de pêche estimées -->
+    <div class="card" style="padding: 8px 16px">
+      <span class="card-title">Captures de pêche estimées</span>
+      <table class="striped highlight responsive-table">
+        <thead>
+          <tr>
+            <th (click)="trier('annee')" style="cursor: pointer">Année</th>
+            <th (click)="trier('mois')" style="cursor: pointer">Mois</th>
+            <th>Engin</th>
+            <th>Espèce</th>
+            <th>Groupe</th>
+            <th>Strate mineure</th>
+            <th
+              class="right-align"
+              (click)="trier('capture_kg')"
+              style="cursor: pointer"
+            >
+              Capture (kg)
+            </th>
+            <th class="right-align">Tonnes</th>
+            <th
+              class="right-align"
+              (click)="trier('valeur_fcfa')"
+              style="cursor: pointer"
+            >
+              Valeur (f.CFA)
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of elements">
+            <td>{{ c.annee }}</td>
+            <td>{{ c.mois_libelle }}</td>
+            <td>{{ c.engin_libelle }}</td>
+            <td>{{ c.espece_nom }}</td>
+            <td>
+              <span class="chip" [ngClass]="couleurGroupe(c.espece_groupe)">{{
+                libelleGroupe(c.espece_groupe)
+              }}</span>
+            </td>
+            <td>{{ c.strate_mineure_libelle }}</td>
+            <td class="right-align">{{ c.capture_kg | number: "1.0-1" }}</td>
+            <td class="right-align">
+              {{ c.capture_tonnes | number: "1.0-3" }}
+            </td>
+            <td class="right-align">{{ c.valeur_fcfa | number: "1.0-0" }}</td>
+            <td class="right-align" style="white-space: nowrap">
+              <div class="btn-group">
+                <a class="btn btn-small blue" (click)="ouvrirEdition(c)"
+                  ><i class="material-icons">edit</i></a
+                >
+                <a class="btn btn-small red" (click)="supprimer(c)"
+                  ><i class="material-icons">delete</i></a
+                >
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!chargement && elements.length === 0">
+            <td colspan="9" class="center grey-text">
+              Aucune capture estimée pour ces critères.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="row valign-wrapper" style="margin-top: 8px">
+      <div class="col s6 grey-text">{{ total }} enregistrement(s)</div>
+      <div class="col s6 right-align">
+        <a
+          class="btn-flat"
+          [class.disabled]="filtre.page <= 1"
+          (click)="pagePrec()"
+          >‹ Précédent</a
+        >
+        <span>Page {{ filtre.page }} / {{ nbPages }}</span>
+        <a
+          class="btn-flat"
+          [class.disabled]="filtre.page >= nbPages"
+          (click)="pageSuiv()"
+          >Suivant ›</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="effort_peche" *ngIf="!showListCaptures">
+    <!-- Tableau cpatures de pêche estimées -->
+    <div class="card" style="padding: 8px 16px">
+      <span class="card-title">Efforts de pêche</span>
+      <table class="striped highlight responsive-table">
+        <thead>
+          <tr>
+            <th (click)="trier('annee')" style="cursor: pointer">Année</th>
+            <th (click)="trier('mois')" style="cursor: pointer">Mois</th>
+            <th>Engin</th>
+            <th>Strate mineure</th>
+            <th class="right-align">Effort de pêche (kg/jr)</th>
+            <th class="right-align">Nombre de débarquements</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of efforts">
+            <td>{{ c.annee }}</td>
+            <td>{{ c.mois_libelle }}</td>
+            <td>{{ c.engin_libelle }}</td>
+            <td>{{ c.strate_mineure_libelle }}</td>
+            <td class="right-align">{{ c.efforts_jours | number: "1.0-1" }}</td>
+            <td class="right-align">
+              {{ c.nombre_debarquements | number: "1.0-1" }}
+            </td>
+            <td class="right-align" style="white-space: nowrap">
+              <div class="btn-group">
+                <a class="btn btn-small blue" (click)="ouvrirEdition(c)"
+                  ><i class="material-icons">edit</i></a
+                >
+                <a class="btn btn-small red" (click)="supprimer(c)"
+                  ><i class="material-icons">delete</i></a
+                >
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!chargement && elements.length === 0">
+            <td colspan="9" class="center grey-text">
+              Aucune capture estimée pour ces critères.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="row valign-wrapper" style="margin-top: 8px">
+      <div class="col s6 grey-text">{{ total }} enregistrement(s)</div>
+      <div class="col s6 right-align">
+        <a
+          class="btn-flat"
+          [class.disabled]="filtre.page <= 1"
+          (click)="pagePrec()"
+          >‹ Précédent</a
+        >
+        <span>Page {{ filtre.page }} / {{ nbPages }}</span>
+        <a
+          class="btn-flat"
+          [class.disabled]="filtre.page >= nbPages"
+          (click)="pageSuiv()"
+          >Suivant ›</a
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale CRUD (déplacée dans <body> pour éviter le piège de z-index Materialize) -->
+<div #modale id="modaleCapture" class="modal">
+  <div class="modal-content">
+    <h6 style="color: #0d47a1">
+      {{
+        enEdition ? "Modifier la capture estimée" : "Nouvelle capture estimée"
+      }}
+    </h6>
+    <div class="row">
+      <div class="col s6 m3">
+        <div class="form-input">
+          <label class="active">Année</label>
+          <div class="input-field">
+            <input
+              type="number"
+              [(ngModel)]="form.annee"
+              [disabled]="enEdition"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="col s6 m3">
+        <label>Mois</label>
+        <div class="form-input">
+          <div class="input-field">
+            <select
+              #mMois
+              [(ngModel)]="form.mois"
+              [disabled]="enEdition"
+              class="browser-default"
+            >
+              <option *ngFor="let m of mois; let i = index" [ngValue]="i + 1">
+                {{ m }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6">
+        <label>Engin</label>
+        <div class="form-input">
+          <div class="input-field">
+            <select
+              #mEngin
+              [(ngModel)]="form.engin_id"
+              id="mEngin"
+              [disabled]="enEdition"
+            >
+              <option *ngFor="let e of engins" [ngValue]="e.id">
+                {{ e.libelle }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6">
+        <div class="form-input">
+          <label>Espèce</label>
+          <div class="input-field">
+            <select
+              #mEspece
+              [(ngModel)]="form.espece_id"
+              id="mEspece"
+              [disabled]="enEdition"
+            >
+              <option *ngFor="let s of especes" [ngValue]="s.id">
+                {{ s.nom_commun_francais }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m3">
+        <div class="form-input">
+          <label class="active">Capture (kg)</label>
+          <div class="input-field">
+            <input type="number" step="0.001" [(ngModel)]="form.capture_kg" />
+          </div>
+        </div>
+      </div>
+      <div class="col s6 m3">
+        <div class="form-input">
+          <label class="active">Valeur (f.CFA)</label>
+          <div class="input-field">
+            <input type="number" step="1" [(ngModel)]="form.valeur_fcfa" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top: -20px">
+      <div class="col s12 m6">
+        <div class="form-input">
+          <label>Strate majeure</label>
+          <div class="input-field">
+            <select
+              #mStrateMajeure
+              [(ngModel)]="strate_majeure_id"
+              class="browser-default"
+              [disabled]="enEdition"
+              (click)="selectStrateMajeure()"
+            >
+              <option value="null">
+                ------ Sélectionner strate majeure ------
+              </option>
+              <option *ngFor="let s of provinces" [ngValue]="s.id">
+                {{ s.libelle }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6">
+        <div class="form-input">
+          <label>Strate mineure</label>
+          <div class="input-field">
+            <select
+              #mStrateMineure
+              [(ngModel)]="form.strate_mineure_id"
+              id="mStrateMineure"
+              [disabled]="enEdition"
+            >
+              <option value="null">
+                ------ Sélectionner strate mineure ------
+              </option>
+              <option *ngFor="let s of filteredlocalites" [ngValue]="s.id">
+                {{ s.libelle }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p *ngIf="erreur" class="red-text">{{ erreur }}</p>
+  </div>
+  <div class="modal-footer">
+    <a class="modal-close btn-flat">Annuler</a>
+    <a class="btn blue darken-3 waves-effect" (click)="enregistrer()"
+      >Enregistrer</a
+    >
+  </div>
+</div>

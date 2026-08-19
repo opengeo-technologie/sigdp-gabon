@@ -1,0 +1,332 @@
+<div class="container-fluid">
+  <div class="stats-mareyeurs">
+    <!-- Barre d'outils / filtres -->
+    <div class="card toolbar z-depth-1">
+      <div class="row valign-wrapper toolbar-row">
+        <div class="col s12 m4 titre-zone" style="margin-top: 1rem">
+          <i class="material-icons">insights</i>
+          <span class="titre">Statistiques — Mareyeurs</span>
+        </div>
+
+        <div class="form-input col s6 m2">
+          <label for="d1" class="active">Du</label>
+          <div class="input-field">
+            <input id="d1" type="date" [(ngModel)]="filtre.date_debut" />
+          </div>
+        </div>
+
+        <div class="form-input col s6 m2">
+          <label for="d2" class="active">Au</label>
+          <div class="input-field">
+            <input id="d2" type="date" [(ngModel)]="filtre.date_fin" />
+          </div>
+        </div>
+
+        <div class="form-input col s6 m1">
+          <label for="topn" class="active">Top N</label>
+          <div class="input-field">
+            <input
+              id="topn"
+              type="number"
+              min="1"
+              max="50"
+              [(ngModel)]="filtre.top_n"
+            />
+          </div>
+        </div>
+
+        <div class="col s6 m3 actions" style="margin-top: 2rem">
+          <button
+            class="btn-small waves-effect blue darken-3"
+            (click)="charger()"
+            [disabled]="chargement"
+          >
+            <i class="material-icons left">refresh</i>Actualiser
+          </button>
+          <button
+            class="btn-small waves-effect grey lighten-1 black-text"
+            (click)="reinitialiser()"
+            [disabled]="chargement"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- États -->
+    <div *ngIf="chargement" class="center-align chargement">
+      <div class="preloader-wrapper active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Chargement des statistiques…</p>
+    </div>
+
+    <div *ngIf="erreur" class="card-panel red lighten-4 red-text text-darken-4">
+      <i class="material-icons left">error_outline</i>{{ erreur }}
+    </div>
+
+    <ng-container *ngIf="stats && !chargement">
+      <!-- Période -->
+      <p class="periode grey-text text-darken-1">
+        <ng-container
+          *ngIf="stats.periode_debut || stats.periode_fin; else toutes"
+        >
+          Période (transactions) : {{ stats.periode_debut || "…" }} →
+          {{ stats.periode_fin || "…" }}
+        </ng-container>
+        <ng-template #toutes>Ensemble des données</ng-template>
+        · Généré le {{ stats.genere_le | date: "dd/MM/yyyy HH:mm" }}
+      </p>
+
+      <!-- Cartes KPI -->
+      <div class="row kpis">
+        <div class="col s6 m3">
+          <div class="kpi card blue darken-3 white-text">
+            <div class="kpi-val">{{ fmt(stats.mareyeurs.total) }}</div>
+            <div class="kpi-lib">Mareyeurs</div>
+            <div class="kpi-sub">{{ fmt(stats.mareyeurs.actifs) }} actifs</div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div class="kpi card teal darken-2 white-text">
+            <div class="kpi-val">{{ fmt(stats.agrements.total) }}</div>
+            <div class="kpi-lib">Agréments</div>
+            <div class="kpi-sub">
+              {{ fmt(stats.agrements.nombre_delivres) }} délivrés
+            </div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div
+            class="kpi card"
+            [ngClass]="
+              stats.agrements.nombre_expires > 0
+                ? 'red darken-1 white-text'
+                : 'grey lighten-2'
+            "
+          >
+            <div class="kpi-val">{{ fmt(stats.agrements.nombre_expires) }}</div>
+            <div class="kpi-lib">Agréments expirés</div>
+            <div class="kpi-sub">
+              {{ fmt(stats.agrements.nombre_expirant_30j) }} expirent &lt; 30 j
+            </div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div class="kpi card deep-purple darken-1 white-text">
+            <div class="kpi-val kpi-val-sm">
+              {{ fcfa(stats.agrements.montant_total_redevances_fcfa) }}
+            </div>
+            <div class="kpi-lib">Redevances cumulées</div>
+            <div class="kpi-sub">
+              {{ fmt(stats.agrements.nombre_renouvellements) }} renouvellements
+            </div>
+          </div>
+        </div>
+
+        <div class="col s6 m3">
+          <div class="kpi card indigo darken-1 white-text">
+            <div class="kpi-val">{{ fmt(stats.installations.total) }}</div>
+            <div class="kpi-lib">Installations</div>
+            <div class="kpi-sub">
+              {{ stats.installations.capacite_totale_tonnes }} t de froid
+            </div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div class="kpi card orange darken-3 white-text">
+            <div class="kpi-val">{{ fmt(stats.transactions.total) }}</div>
+            <div class="kpi-lib">Transactions</div>
+            <div class="kpi-sub">registre d'achats</div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div class="kpi card blue-grey darken-1 white-text">
+            <div class="kpi-val">
+              {{ fmt(stats.transactions.quantite_totale_kg) }}
+            </div>
+            <div class="kpi-lib">Volume acheté (kg)</div>
+            <div class="kpi-sub">
+              {{ fcfa(stats.transactions.montant_total_fcfa) }}
+            </div>
+          </div>
+        </div>
+        <div class="col s6 m3">
+          <div class="kpi card green darken-2 white-text">
+            <div class="kpi-val kpi-val-sm">
+              {{ fmt(stats.transactions.prix_moyen_fcfa_par_kg) }}
+            </div>
+            <div class="kpi-lib">Prix moyen (FCFA/kg)</div>
+            <div class="kpi-sub">toutes espèces</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mareyeurs -->
+      <h6 class="section-titre">Répartition des mareyeurs</h6>
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="card graph">
+            <span class="graph-titre">Par statut</span>
+            <app-chart-canvas
+              type="doughnut"
+              label="Mareyeurs"
+              [labels]="stats.mareyeurs.par_statut.labels"
+              [data]="stats.mareyeurs.par_statut.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="card graph">
+            <span class="graph-titre">Par type de personne</span>
+            <app-chart-canvas
+              type="pie"
+              label="Mareyeurs"
+              [labels]="stats.mareyeurs.par_type_personne.labels"
+              [data]="stats.mareyeurs.par_type_personne.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m4">
+          <div class="card graph">
+            <span class="graph-titre">Par zone d'activité</span>
+            <app-chart-canvas
+              type="bar"
+              label="Mareyeurs"
+              [horizontal]="true"
+              [labels]="stats.mareyeurs.par_zone_activite.labels"
+              [data]="stats.mareyeurs.par_zone_activite.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agréments -->
+      <h6 class="section-titre">Agréments de mareyage</h6>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Par statut</span>
+            <app-chart-canvas
+              type="bar"
+              label="Agréments"
+              [labels]="stats.agrements.par_statut.labels"
+              [data]="stats.agrements.par_statut.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Par catégorie</span>
+            <app-chart-canvas
+              type="doughnut"
+              label="Agréments"
+              [labels]="stats.agrements.par_categorie.labels"
+              [data]="stats.agrements.par_categorie.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Installations -->
+      <h6 class="section-titre">Installations &amp; équipements</h6>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Par type</span>
+            <app-chart-canvas
+              type="bar"
+              label="Installations"
+              [labels]="stats.installations.par_type.labels"
+              [data]="stats.installations.par_type.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Par état</span>
+            <app-chart-canvas
+              type="doughnut"
+              label="Installations"
+              [labels]="stats.installations.par_statut.labels"
+              [data]="stats.installations.par_statut.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions -->
+      <h6 class="section-titre">Transactions d'achat</h6>
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Top espèces (kg)</span>
+            <app-chart-canvas
+              type="bar"
+              label="Quantité (kg)"
+              [horizontal]="true"
+              unite="kg"
+              [labels]="stats.transactions.top_especes_quantite.labels"
+              [data]="stats.transactions.top_especes_quantite.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Par état du poisson (kg)</span>
+            <app-chart-canvas
+              type="doughnut"
+              label="Quantité (kg)"
+              unite="kg"
+              [labels]="stats.transactions.par_etat_poisson.labels"
+              [data]="stats.transactions.par_etat_poisson.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Évolution mensuelle — volume (kg)</span>
+            <app-chart-canvas
+              type="line"
+              label="Volume (kg)"
+              unite="kg"
+              [labels]="stats.transactions.evolution_mensuelle_kg.labels"
+              [data]="stats.transactions.evolution_mensuelle_kg.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card graph">
+            <span class="graph-titre">Évolution mensuelle — valeur (FCFA)</span>
+            <app-chart-canvas
+              type="line"
+              label="Valeur (FCFA)"
+              unite="FCFA"
+              [labels]="stats.transactions.evolution_mensuelle_fcfa.labels"
+              [data]="stats.transactions.evolution_mensuelle_fcfa.data"
+            ></app-chart-canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Téléchargement -->
+      <div class="center-align telecharger-zone">
+        <button
+          class="btn-large waves-effect red darken-2"
+          (click)="telecharger()"
+          [disabled]="export"
+        >
+          <i class="material-icons left">{{
+            export ? "hourglass_empty" : "picture_as_pdf"
+          }}</i>
+          {{ export ? "Génération…" : "Télécharger le rapport PDF" }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

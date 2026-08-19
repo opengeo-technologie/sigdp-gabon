@@ -11,6 +11,7 @@ from app.api import (
     bateaux,
     especes,
     debarquements,
+    debarquements_rapports,
     statistiques,
     statistiques_evolution,
     auth,
@@ -23,12 +24,20 @@ from app.api import (
     signataire,
     licence_signature,
     mareyeur,
+    mareyeur_rapports,
     stations_piscicoles,
     stations_piscicoles_import,
     stations_piscicoles_export,
     # stations_piscicoles_analyses_ia,
     stations_piscicoles_rapport,
     zone,
+    strates_routers,
+    captures_estimees,
+    infractions,
+    agent_controle,
+    missions,
+    fiche_mission,
+    surveillance,
 )
 
 # Créer les tables
@@ -59,12 +68,20 @@ app.add_middleware(
 )
 
 # Inclusion des routers
-app.include_router(stations_piscicoles_rapport.router)
+app.include_router(missions.router)
+app.include_router(fiche_mission.router)
+app.include_router(surveillance.router)
+app.include_router(agent_controle.router)
+app.include_router(infractions.router)
+app.include_router(captures_estimees.router)
+app.include_router(strates_routers.router)
 app.include_router(zone.router)
+app.include_router(stations_piscicoles_rapport.router)
 app.include_router(stations_piscicoles_import.router)
 app.include_router(stations_piscicoles_export.router)
 app.include_router(stations_piscicoles.router)
 app.include_router(mareyeur.router)
+app.include_router(mareyeur_rapports.router)
 app.include_router(signataire.router)
 app.include_router(licence2.router)
 app.include_router(licence_signature.router)
@@ -78,6 +95,7 @@ app.include_router(bateaux.router)
 app.include_router(especes.router)
 app.include_router(engin_peche.router)
 app.include_router(debarquements.router)
+app.include_router(debarquements_rapports.router)
 app.include_router(statistiques.router)
 app.include_router(statistiques_evolution.router)
 app.include_router(rapports.router)

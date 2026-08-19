@@ -264,6 +264,14 @@ export const routes: Routes = [
     canActivate: [authGuard, PermissionGuard],
   },
   {
+    path: "debarquements/rapport",
+    loadComponent: () =>
+      import("./components/debarquements/debarquement-stats/debarquement-stats.component").then(
+        (m) => m.DebarquementStatsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "debarquements/new",
     loadComponent: () =>
       import("./components/debarquements/debarquement-form/debarquement-form.component").then(
@@ -446,6 +454,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "mareyeurs/rapport",
+    loadComponent: () =>
+      import("./components/mareyeurs/mareyeurs-stats/mareyeurs-stats.component").then(
+        (m) => m.MareyeurStatsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "mareyeurs/add",
     loadComponent: () =>
       import("./components/mareyeurs/mareyeur-form/mareyeur-form.component").then(
@@ -530,6 +546,30 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./components/stations-piscicoles/station-piscicole-rapport/station-piscicole-rapport.component").then(
         (m) => m.StationPiscicoleRapportComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "captures-estimees",
+    loadComponent: () =>
+      import("./components/captures-estimees/captures-estimees.component").then(
+        (m) => m.CapturesEstimeesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "captures-estimees/importer",
+    loadComponent: () =>
+      import("./components/captures-estimees/import-captures-estimees/import-captures-estimees.component").then(
+        (m) => m.ImportCapturesEstimeesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: "captures-estimees/dashboard",
+    loadComponent: () =>
+      import("./components/captures-estimees/dashboard-captures/dashboard-captures.component").then(
+        (m) => m.DashboardCapturesComponent,
       ),
     canActivate: [authGuard],
   },

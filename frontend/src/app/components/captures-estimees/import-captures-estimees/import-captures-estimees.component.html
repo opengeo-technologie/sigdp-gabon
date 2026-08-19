@@ -1,0 +1,135 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">inventory</i> Importer captures de pêche
+      estimées
+    </h1>
+    <p>Module d'importtion des données sur des captures de pêche estimées</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-content">
+      <span class="card-title">
+        <i class="material-icons left">inventory</i>
+        Import des captures estimées
+      </span>
+      <p class="grey-text">
+        Importez un fichier Excel (.xlsx) contenant la liste des captures
+        estimées.
+      </p>
+
+      <!-- Zone de sélection du fichier -->
+      <div
+        class="drop-zone"
+        [class.drop-zone-active]="isDragging"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()"
+      >
+        <i class="material-icons large grey-text">cloud_upload</i>
+        <p *ngIf="!selectedFile">
+          Glissez votre fichier ici ou cliquez pour sélectionner
+        </p>
+        <p *ngIf="selectedFile" class="teal-text">
+          <i class="material-icons tiny">insert_drive_file</i>
+          {{ selectedFile.name }} ({{ formatSize(selectedFile.size) }})
+        </p>
+        <input
+          #fileInput
+          type="file"
+          accept=".xlsx,.xls"
+          hidden
+          (change)="onFileSelected($event)"
+        />
+      </div>
+
+      <!-- Barre de progression -->
+      <div *ngIf="isUploading" class="progress" style="margin-top: 20px">
+        <div class="indeterminate"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="section">
+        <button
+          class="btn waves-effect waves-light teal"
+          [disabled]="!selectedFile || isUploading"
+          (click)="upload()"
+        >
+          <i class="material-icons left">file_upload</i>
+          {{ isUploading ? "Import en cours..." : "Importer" }}
+        </button>
+        <button
+          *ngIf="selectedFile && !isUploading"
+          class="btn-flat waves-effect"
+          style="margin-left: 10px"
+          (click)="reset()"
+        >
+          Annuler
+        </button>
+        <a class="btn-flat waves-effect right" (click)="downloadTemplate()">
+          <i class="material-icons left">download</i>
+          Modèle Excel
+        </a>
+      </div>
+
+      <!-- Résultat de l'import -->
+      <div *ngIf="result" class="section">
+        <div class="row" style="margin-bottom: 0">
+          <div class="col s12 m4">
+            <div class="card-panel center-align">
+              <span class="stat-number">{{ result.total }}</span>
+              <p class="grey-text">Lignes traitées</p>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div class="card-panel center-align green lighten-5">
+              <span class="stat-number green-text">{{ result.inseres }}</span>
+              <p class="grey-text">Insérés</p>
+            </div>
+          </div>
+          <div class="col s12 m4">
+            <div
+              class="card-panel center-align"
+              [class.red]="result.echoues > 0"
+              [class.lighten-5]="result.echoues > 0"
+            >
+              <span class="stat-number" [class.red-text]="result.echoues > 0">{{
+                result.echoues
+              }}</span>
+              <p class="grey-text">Échecs</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Erreurs par ligne -->
+        <div *ngIf="result.erreurs.length > 0">
+          <h6 class="red-text">
+            <i class="material-icons tiny">error_outline</i>
+            Erreurs détectées
+          </h6>
+          <table class="striped responsive-table">
+            <thead>
+              <tr>
+                <th>Immatriculation embarquation</th>
+                <th>Site de débarquement</th>
+                <th>Zone de pêche</th>
+                <th>Erreur</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let err of result.erreurs">
+                <td>{{ err.immatriculation_pirogue }}</td>
+                <td>{{ err.sitedebarquement }}</td>
+                <td>{{ err.zone_de_peche }}</td>
+                <td>{{ err.error_message }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

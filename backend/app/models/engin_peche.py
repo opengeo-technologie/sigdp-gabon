@@ -25,5 +25,8 @@ class EnginPeche(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    captures = relationship("CaptureEstimee", back_populates="engin")
+    efforts = relationship("EffortEstime", back_populates="engin")
+
     def __repr__(self):
         return f"<EnginPecheEmbarque Bateau ID: {self.bateau_id}, Type: {self.type_engin}, Quantité: {self.quantite}>"

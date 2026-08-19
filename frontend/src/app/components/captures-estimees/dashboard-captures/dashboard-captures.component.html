@@ -1,0 +1,131 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>
+      <i class="material-icons left">inventory</i> Tableau de bord — Captures
+      estimées
+    </h1>
+    <!-- <p>Statistiques halieutiques extrapolées — par engin, espèce et mois</p> -->
+  </div>
+</div>
+<div class="container-fluid">
+  <div class="card-panel">
+    <div class="row valign-wrapper">
+      <div class="col s8">
+        <h5 style="color: #0d47a1; margin: 0; font-size: 18px">
+          Tableau de bord — Captures estimées - Filtres
+        </h5>
+      </div>
+      <div class="col s2 form-input">
+        <label class="active">Année</label>
+        <div class="input-field">
+          <input type="number" [(ngModel)]="annee" (change)="charger()" />
+        </div>
+      </div>
+
+      <div class="form-input col s2">
+        <label>Engin</label>
+        <div class="input-field">
+          <select #selEngin [(ngModel)]="enginId" (change)="charger()">
+            <option [ngValue]="null">Tous les engins</option>
+            <option *ngFor="let e of engins" [ngValue]="e.id">
+              {{ e.libelle }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="row" *ngIf="stats as s">
+    <div class="col s6 m3">
+      <div class="card-panel blue lighten-5">
+        <span class="grey-text text-darken-1"
+          >Production (engins détaillés)</span
+        >
+        <h5 style="margin: 4px 0; color: #0d47a1">
+          {{ s.kpi.captures_tonnes | number: "1.0-0" }} t
+        </h5>
+      </div>
+    </div>
+    <div class="col s6 m3">
+      <div class="card-panel indigo lighten-5">
+        <span class="grey-text text-darken-1"
+          >Total toutes pêcheries (source)</span
+        >
+        <h5 style="margin: 4px 0; color: #283593">
+          {{ s.kpi.captures_tonnes_source | number: "1.0-0" }} t
+        </h5>
+      </div>
+    </div>
+    <div class="col s6 m3">
+      <div class="card-panel teal lighten-5">
+        <span class="grey-text text-darken-1"
+          >Valeur estimée (en Millions FCFA)</span
+        >
+        <h5 style="margin: 4px 0; color: #00695c">
+          {{ s.kpi.valeur_millions_fcfa | number: "1.0-0" }} Millions FCFA
+        </h5>
+      </div>
+    </div>
+    <div class="col s6 m3">
+      <div class="card-panel orange lighten-5">
+        <span class="grey-text text-darken-1">Couverture</span>
+        <h5 style="margin: 4px 0; color: #e65100">
+          {{ s.kpi.nb_especes }} espèces · {{ s.kpi.nb_engins }} engins
+        </h5>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 m8">
+      <div class="card" style="padding: 12px">
+        <span class="grey-text"
+          >Captures mensuelles (tonnes) & valeur (Millions FCFA)</span
+        >
+        <div style="position: relative; height: 300px">
+          <canvas #cMensuel></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m4">
+      <div class="card" style="padding: 12px">
+        <span class="grey-text">Répartition par groupe</span>
+        <div style="position: relative; height: 300px">
+          <canvas #cGroupe></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 m6">
+      <div class="card" style="padding: 12px">
+        <span class="grey-text">Captures par engin (tonnes)</span>
+        <div style="position: relative; height: 300px">
+          <canvas #cEngin></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m6">
+      <div class="card" style="padding: 12px">
+        <span class="grey-text">CPUE mensuelle (kg/jour)</span>
+        <div style="position: relative; height: 300px">
+          <canvas #cCpue></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12">
+      <div class="card" style="padding: 12px">
+        <span class="grey-text">Top 10 espèces (tonnes)</span>
+        <div style="position: relative; height: 300px">
+          <canvas #cTop></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
