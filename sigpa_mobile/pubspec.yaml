@@ -1,0 +1,42 @@
+name: sigpa_mobile
+description: SIGPA - Application d'inspection et de saisie des captures (pêche Gabon). Offline-first, scan QR prioritaire.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # State
+  provider: ^6.1.2
+  # Local database (offline-first)
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  # Networking
+  dio: ^5.5.0
+  # Connectivity detection
+  connectivity_plus: ^6.0.5
+  # QR / barcode scanning
+  mobile_scanner: ^5.2.3
+  # Geolocation (PostGIS points)
+  geolocator: ^13.0.1
+  # Client-side IDs for offline creation
+  uuid: ^4.4.2
+  # Formatting
+  intl: ^0.19.0
+  # Config / token storage
+  shared_preferences: ^2.3.2
+  # HMAC signature verification for offline card trust
+  crypto: ^3.0.5
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

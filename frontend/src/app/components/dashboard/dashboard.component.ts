@@ -5,6 +5,7 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
 import { FormsModule } from "@angular/forms";
 import { Chart, registerables } from "chart.js";
+import { ConnectedUsersComponent } from "../user/connected-users/connected-users.component";
 declare var M: any;
 
 Chart.register(...registerables);
@@ -30,7 +31,7 @@ export interface StatistiquesMensuelles {
 @Component({
   selector: "app-dashboard",
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ConnectedUsersComponent],
   templateUrl: "./dashboard.component.html",
   styleUrls: ["./dashboard.component.scss"],
 })

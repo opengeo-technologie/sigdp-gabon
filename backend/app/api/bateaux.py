@@ -557,8 +557,24 @@ def get_bateau(bateau_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/dropdown-list/list/data")
-def get_bateau_simple_list(db: Session = Depends(get_db)):
-    bateaux = db.query(Bateau).all()
+def get_bateau_simple_list(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    type_bateau: Optional[str] = None,
+    statut: Optional[str] = None,
+    proprietaire_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Bateau)
+
+    if type_bateau:
+        query = query.filter(Bateau.type_bateau == type_bateau)
+    if statut:
+        query = query.filter(Bateau.statut == statut)
+    if proprietaire_id:
+        query = query.filter(Bateau.proprietaire_pecheur_id == proprietaire_id)
+
+    bateaux = query.all()
     result = []
     for bateau in bateaux:
         result.append(

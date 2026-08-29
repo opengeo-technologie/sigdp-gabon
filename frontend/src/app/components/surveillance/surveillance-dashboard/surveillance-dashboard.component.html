@@ -1,0 +1,242 @@
+<div class="db-wrap">
+  <!-- ============================ EN-TÊTE ============================ -->
+  <div class="db-header blue-grey darken-3 white-text">
+    <div>
+      <h5>
+        <i class="material-icons left">insights</i>Tableau de bord —
+        Surveillance
+      </h5>
+      <p class="grey-text text-lighten-3">
+        Opérations, infractions, saisies et rapports
+      </p>
+    </div>
+    <div class="db-head-actions">
+      <a
+        class="btn-small white indigo-text text-darken-3"
+        (click)="apercuRapport()"
+        ><i class="material-icons left">picture_as_pdf</i>Rapport</a
+      >
+      <a
+        class="btn-small white indigo-text text-darken-3"
+        (click)="telechargerRapport()"
+        ><i class="material-icons left">download</i>Télécharger</a
+      >
+    </div>
+  </div>
+
+  <!-- ============================ FILTRES ============================ -->
+  <div class="db-toolbar">
+    <div class="form-input db-date">
+      <label>Date de début</label>
+      <div class="input-field">
+        <input type="date" [(ngModel)]="filtre.date_debut" /><span
+          class="helper"
+          >Depuis</span
+        >
+      </div>
+    </div>
+
+    <div class="form-input db-date">
+      <label>Date de fin</label>
+      <div class="input-field">
+        <input type="date" [(ngModel)]="filtre.date_fin" /><span class="helper"
+          >Jusqu'à</span
+        >
+      </div>
+    </div>
+
+    <a class="btn btn-small indigo darken-1" (click)="charger()"
+      ><i class="material-icons left">filter_alt</i>Appliquer</a
+    >
+    <a class="btn btn-small" (click)="reinitialiser()"
+      ><i class="material-icons left">filter_alt</i>Réinitialiser</a
+    >
+  </div>
+
+  <div *ngIf="data" class="db-body">
+    <!-- ============================ KPI ============================ -->
+    <div class="db-kpi-row">
+      <div class="db-kpi blue darken-2 white-text">
+        <span>{{ data.kpi.missions }}</span
+        ><small>Missions</small>
+      </div>
+      <div class="db-kpi teal darken-1 white-text">
+        <span>{{ data.kpi.operations }}</span
+        ><small>Opérations</small>
+      </div>
+      <div class="db-kpi red darken-1 white-text">
+        <span>{{ data.kpi.infractions }}</span
+        ><small>Infractions</small>
+      </div>
+      <div class="db-kpi purple darken-1 white-text">
+        <span>{{ data.kpi.saisies }}</span
+        ><small>Saisies</small>
+      </div>
+      <div class="db-kpi green darken-1 white-text">
+        <span>{{ data.kpi.rapports }}</span
+        ><small>Rapports</small>
+      </div>
+      <div class="db-kpi orange darken-1 white-text">
+        <span>{{ data.kpi.taux_conformite }}%</span><small>Conformité</small>
+      </div>
+    </div>
+
+    <!-- ============================ GRAPHIQUES ============================ -->
+    <div class="db-charts">
+      <div class="card db-chart">
+        <div class="card-content">
+          <span class="card-title">Opérations par type</span>
+          <div class="cbox"><canvas #cType></canvas></div>
+        </div>
+      </div>
+      <div class="card db-chart">
+        <div class="card-content">
+          <span class="card-title">Opérations par résultat</span>
+          <div class="cbox"><canvas #cResultat></canvas></div>
+        </div>
+      </div>
+      <div class="card db-chart">
+        <div class="card-content">
+          <span class="card-title">Infractions par gravité</span>
+          <div class="cbox"><canvas #cGravite></canvas></div>
+        </div>
+      </div>
+      <div class="card db-chart">
+        <div class="card-content">
+          <span class="card-title">Infractions par type</span>
+          <div class="cbox"><canvas #cInfType></canvas></div>
+        </div>
+      </div>
+      <div class="card db-chart wide">
+        <div class="card-content">
+          <span class="card-title">Activité mensuelle (12 mois)</span>
+          <div class="cbox"><canvas #cMois></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================ TABLEAUX ============================ -->
+    <div class="db-tables">
+      <div class="card db-tbl">
+        <div class="card-content">
+          <span class="card-title">Dernières opérations</span>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Lieu</th>
+                <th>Type</th>
+                <th>Résultat</th>
+                <th class="center">Infr.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of data.dernieres_operations">
+                <td>{{ o.date | date: "dd/MM/yyyy" }}</td>
+                <td>{{ o.lieu }}</td>
+                <td>{{ o.type }}</td>
+                <td>
+                  <span
+                    class="badge white-text"
+                    [ngClass]="
+                      o.resultat === 'conforme'
+                        ? 'green'
+                        : o.resultat === '—'
+                          ? 'grey'
+                          : 'red'
+                    "
+                    >{{ o.resultat }}</span
+                  >
+                </td>
+                <td class="center">{{ o.nb_infractions }}</td>
+              </tr>
+              <tr *ngIf="!data.dernieres_operations.length">
+                <td colspan="5" class="center grey-text">Aucune opération.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card db-tbl">
+        <div class="card-content">
+          <span class="card-title">Missions les plus actives</span>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Mission</th>
+                <th class="center">Opér.</th>
+                <th class="center">Infr.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of data.missions_actives">
+                <td>{{ m.mission }}</td>
+                <td class="center">{{ m.nb_operations }}</td>
+                <td class="center">
+                  <span
+                    class="chip"
+                    [class.red]="m.nb_infractions > 0"
+                    [class.white-text]="m.nb_infractions > 0"
+                    >{{ m.nb_infractions }}</span
+                  >
+                </td>
+              </tr>
+              <tr *ngIf="!data.missions_actives.length">
+                <td colspan="3" class="center grey-text">Aucune donnée.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card db-tbl">
+        <div class="card-content">
+          <span class="card-title">Saisies par agent</span>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th class="center">Saisies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of data.saisies_par_agent">
+                <td>{{ a.agent }}</td>
+                <td class="center">{{ a.nb }}</td>
+              </tr>
+              <tr *ngIf="!data.saisies_par_agent.length">
+                <td colspan="2" class="center grey-text">Aucune saisie.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card db-tbl">
+        <div class="card-content">
+          <span class="card-title">Sanctions proposées</span>
+          <table class="striped compact">
+            <thead>
+              <tr>
+                <th>Sanction</th>
+                <th class="center">Nombre</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of data.sanctions_proposees">
+                <td>{{ s.sanction }}</td>
+                <td class="center">{{ s.nb }}</td>
+              </tr>
+              <tr *ngIf="!data.sanctions_proposees.length">
+                <td colspan="2" class="center grey-text">Aucune sanction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="chargement" class="db-loading grey-text">Chargement…</div>
+</div>

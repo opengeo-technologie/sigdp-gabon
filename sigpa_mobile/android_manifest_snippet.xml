@@ -1,0 +1,10 @@
+<!-- Merge into android/app/src/main/AndroidManifest.xml -->
+<!-- Place these <uses-permission> lines just inside <manifest>, before <application> -->
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+<!-- mobile_scanner needs minSdk 21; set in android/app/build.gradle:
+     defaultConfig { minSdkVersion 21 } -->

@@ -40,8 +40,32 @@ export class BateauService {
     return this.http.get<Bateau[]>(this.apiUrl, { params });
   }
 
-  getBateauxDropdown() {
-    return this.http.get<any[]>(`${this.apiUrl}/dropdown-list/list/data`);
+  getBateauxDropdown(filters?: {
+    skip?: number;
+    limit?: number;
+    type_bateau?: string;
+    statut?: string;
+    proprietaire_id?: number;
+  }) {
+    let params = new HttpParams();
+
+    if (filters) {
+      if (filters.skip !== undefined)
+        params = params.set("skip", filters.skip.toString());
+      if (filters.limit !== undefined)
+        params = params.set("limit", filters.limit.toString());
+      if (filters.type_bateau)
+        params = params.set("type_bateau", filters.type_bateau);
+      if (filters.statut) params = params.set("statut", filters.statut);
+      if (filters.proprietaire_id)
+        params = params.set(
+          "proprietaire_id",
+          filters.proprietaire_id.toString(),
+        );
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/dropdown-list/list/data`, {
+      params,
+    });
   }
 
   getBateau(id: number): Observable<Bateau> {

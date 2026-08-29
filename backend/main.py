@@ -1,10 +1,12 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import engine, Base
+from app.api.sessions import close_orphan_sessions
 from app.api import (
     debarcaderes,
     pecheurs,
@@ -38,12 +40,25 @@ from app.api import (
     missions,
     fiche_mission,
     surveillance,
+    surveillance_dashboard,
+    sessions,
+    presence,
 )
 
 # Créer les tables
 Base.metadata.create_all(bind=engine)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- startup ---
+    close_orphan_sessions()  # close any session left "active" by a prior run
+    yield
+    # --- shutdown (optional) ---
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="API pour le Système d'Information pour la Gestion des Débarcadères et de la Pêche au Gabon",
@@ -68,9 +83,12 @@ app.add_middleware(
 )
 
 # Inclusion des routers
+app.include_router(presence.router)
+app.include_router(sessions.router)
 app.include_router(missions.router)
 app.include_router(fiche_mission.router)
 app.include_router(surveillance.router)
+app.include_router(surveillance_dashboard.router)
 app.include_router(agent_controle.router)
 app.include_router(infractions.router)
 app.include_router(captures_estimees.router)

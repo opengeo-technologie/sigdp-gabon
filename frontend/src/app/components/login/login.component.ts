@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { AuthService } from "../../services/auth.service";
+import { PresenceService } from "../../services/presence.service";
 
 declare var M: any;
 
@@ -170,6 +171,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private presence: PresenceService,
   ) {
     // Rediriger si déjà connecté
     if (this.authService.isAuthenticated()) {
@@ -188,6 +190,7 @@ export class LoginComponent {
     this.authService.login(this.username, this.password).subscribe({
       next: () => {
         M.toast({ html: "Connexion réussie !", classes: "green" });
+        this.presence.start();
         setTimeout(() => {
           this.router.navigate(["/dashboard"]);
         }, 200);

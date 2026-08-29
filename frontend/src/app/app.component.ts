@@ -4,6 +4,7 @@ import { RouterModule, Router, NavigationEnd } from "@angular/router";
 import { AuthService, User } from "./services/auth.service";
 import { Subscription, filter } from "rxjs";
 import { HasPermissionDirective } from "./directives/has-permission.directive";
+import { PresenceService } from "./services/presence.service";
 
 declare var M: any;
 
@@ -26,6 +27,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private presence: PresenceService,
   ) {}
 
   ngOnInit() {
@@ -87,6 +89,7 @@ export class AppComponent implements OnInit, OnDestroy {
       "/missions",
       "/infractions",
       "/agent-de-controle",
+      "/surveillance/tableau-de-bord",
     ];
 
     const isPublicRoute = publicRoutes.includes(currentRoute);
@@ -134,6 +137,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   logout() {
     this.closeSidenav();
+    // this.presence.logout();
     this.authService.logout();
   }
 }

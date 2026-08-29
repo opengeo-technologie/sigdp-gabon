@@ -139,7 +139,19 @@ def build_pdf(data=None) -> bytes:
                 cx = xs[ci]
                 val = str(row[ci]) if ci < len(row) and row[ci] is not None else ""
                 if ci in checks:
-                    checkbox(f"{prefix}_{r}_{ci}", cx + w / 2 - 5, yy + rh / 2 - 5, 10)
+                    coche = val.strip().lower() not in (
+                        "",
+                        "0",
+                        "false",
+                        "non",
+                    )  # <-- calcule l'état
+                    checkbox(
+                        f"{prefix}_{r}_{ci}",
+                        cx + w / 2 - 5,
+                        yy + rh / 2 - 5,
+                        10,
+                        checked=coche,
+                    )
                 else:
                     textfield(
                         f"{prefix}_{r}_{ci}",

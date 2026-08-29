@@ -353,7 +353,7 @@ def get_activite_debarcaderes(
             Debarcadere.denomination,
         )
         .order_by(func.count(Bateau.id).desc())
-        .all()
+        .limit(10)
     )
 
     classement = []

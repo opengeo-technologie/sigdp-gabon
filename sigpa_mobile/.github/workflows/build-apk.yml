@@ -1,0 +1,70 @@
+name: Build APK
+
+# Builds a release APK on every push and on manual trigger.
+# The artifact "sigpa-apk" is downloadable from the run's summary page.
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "Base URL of the SIGPA API"
+        default: "https://sigpa.gabon.ga/api"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Generate Android platform folder
+        run: flutter create --platforms=android .
+
+      - name: Inject Android permissions (camera, GPS, network)
+        run: |
+          python3 - <<'PY'
+          import re, io
+          f = "android/app/src/main/AndroidManifest.xml"
+          s = open(f, encoding="utf-8").read()
+          perms = """
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.CAMERA"/>
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+          """
+          if "android.permission.CAMERA" not in s:
+              s = re.sub(r"(<manifest[^>]*>)", r"\1" + perms, s, count=1)
+              open(f, "w", encoding="utf-8").write(s)
+              print("Permissions injected.")
+          else:
+              print("Permissions already present.")
+          PY
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: |
+          flutter build apk --release \
+            --dart-define=SIGPA_API="${{ github.event.inputs.api_url || vars.SIGPA_API || 'https://sigpa.gabon.ga/api' }}" \
+            --dart-define=SIGPA_CARD_KEY="${{ secrets.SIGPA_CARD_KEY }}"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigpa-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error

@@ -67,6 +67,7 @@ class UserStatusUpdate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    session_id: str
 
 
 class TokenData(BaseModel):

@@ -5,6 +5,7 @@ import { tap, catchError } from "rxjs/operators";
 import { Router } from "@angular/router";
 import { environment } from "../../environments/environment";
 import { PermissionsRolesService } from "./permissions-roles.service";
+import { PresenceService } from "./presence.service";
 
 export interface User {
   id: number;
@@ -23,6 +24,7 @@ export interface User {
 export interface LoginResponse {
   access_token: string;
   token_type: string;
+  session_id: string;
 }
 
 export interface LoginRequest {
@@ -45,6 +47,7 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private userPermissions: PermissionsRolesService,
+    private presence: PresenceService,
   ) {
     // Charger l'utilisateur au démarrage si un token existe
     const token = this.getToken();
@@ -60,15 +63,19 @@ export class AuthService {
       .post<LoginResponse>(`${this.apiUrl}/login`, loginData)
       .pipe(
         tap((response) => {
+          // console.log(response);
           this.setToken(response.access_token);
+          localStorage.setItem("sigpa_session_id", response.session_id);
           setTimeout(() => {
             this.loadCurrentUser();
+            // this.presence.start();
           }, 100);
         }),
       );
   }
 
   logout() {
+    // this.presence.logout();
     localStorage.removeItem("access_token");
     this.currentUserSubject.next(null);
     this.router.navigate(["/login"]);

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -25,6 +25,7 @@ from app.auth import (
     get_current_admin_user,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
+from app.api.sessions import open_session  # <-- import the helper
 
 router = APIRouter(prefix="/api/auth", tags=["Authentification"])
 
@@ -69,7 +70,7 @@ def register_user(
 
 
 @router.post("/login", response_model=Token)
-def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+def login(login_data: LoginRequest, request: Request, db: Session = Depends(get_db)):
     """
     Se connecter et obtenir un token d'accès
     """
@@ -93,6 +94,8 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         expires_delta=access_token_expires,
     )
 
+    session_id = open_session(db, user, request)  # <-- the one line to add
+
     # Logger l'activité
     log_activity(
         db,
@@ -102,7 +105,11 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         user.username,
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "session_id": session_id,
+    }
 
 
 @router.post("/token", response_model=Token)
@@ -131,7 +138,10 @@ def login_for_access_token(
         expires_delta=access_token_expires,
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
 
 
 @router.get("/me", response_model=UserResponse)

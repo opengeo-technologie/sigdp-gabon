@@ -136,62 +136,314 @@
             operationEnEdition ? "Modifier l'opération" : "Nouvelle opération"
           }}
         </h5>
+        <hr />
         <div class="row">
-          <div class="form-input col s12 m4">
-            <label>Date</label>
-            <div class="input-field">
-              <input type="date" [(ngModel)]="operationForm.date_operation" />
-            </div>
-          </div>
+          <div class="col s12">
+            <fieldset class="form-zone">
+              <legend>Informations générales sur la surveillance</legend>
+              <div class="row" style="margin-bottom: 0px">
+                <div class="form-input col s12 m4">
+                  <label>Date</label>
+                  <div class="input-field">
+                    <input
+                      type="date"
+                      [(ngModel)]="operationForm.date_operation"
+                    />
+                  </div>
+                </div>
 
-          <div class="form-input col s12 m8">
-            <label>Lieu de l'opération</label>
-            <div class="input-field">
-              <input
-                type="text"
-                [(ngModel)]="operationForm.lieu_operation"
-                placeholder="Lieu de l'opération"
-              />
-            </div>
-          </div>
+                <div class="form-input col s12 m8">
+                  <label>Lieu de l'opération</label>
+                  <div class="input-field">
+                    <input
+                      type="text"
+                      [(ngModel)]="operationForm.lieu_operation"
+                      placeholder="Lieu de l'opération"
+                    />
+                  </div>
+                </div>
 
-          <div class="form-input col s12 m6">
-            <label>Type d'opération</label>
-            <div class="input-field">
-              <select
-                class="browser-default"
-                [(ngModel)]="operationForm.type_operation"
-              >
-                <option [ngValue]="null">— Type —</option>
-                <option *ngFor="let t of typesOperation" [value]="t">
-                  {{ t }}
-                </option>
-              </select>
-            </div>
-          </div>
+                <div class="form-input col s12 m6">
+                  <label>Type d'opération</label>
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="operationForm.type_operation"
+                    >
+                      <option [ngValue]="null">— Type —</option>
+                      <option *ngFor="let t of typesOperation" [value]="t">
+                        {{ t }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
 
-          <div class="form-input col s12 m6">
-            <label>Résultat</label>
-            <div class="input-field">
-              <select
-                class="browser-default"
-                [(ngModel)]="operationForm.resultat"
-              >
-                <option [ngValue]="null">— Résultat —</option>
-                <option *ngFor="let r of resultats" [value]="r">{{ r }}</option>
-              </select>
-            </div>
-          </div>
+                <div class="form-input col s12 m6">
+                  <label>Résultat</label>
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="operationForm.resultat"
+                    >
+                      <option [ngValue]="null">— Résultat —</option>
+                      <option *ngFor="let r of resultats" [value]="r">
+                        {{ r }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
 
-          <div class="form-input col s12">
-            <label>Remarques</label>
-            <div class="input-field">
-              <textarea
-                class="materialize-textarea"
-                [(ngModel)]="operationForm.remarques"
-                placeholder="Remarques"
-              ></textarea>
-            </div>
+                <div class="form-input col s12">
+                  <label>Remarques</label>
+                  <div class="input-field">
+                    <textarea
+                      class="materialize-textarea"
+                      [(ngModel)]="operationForm.remarques"
+                      placeholder="Remarques"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="form-zone">
+              <legend>Identification de l'embarcation</legend>
+
+              <div class="row" style="margin-bottom: 0px">
+                <div class="form-input col s12 m4">
+                  <label
+                    >Type d'embarcation
+                    <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="type_embarcation"
+                      (change)="chargerEmbarcations()"
+                    >
+                      <option value="" disabled selected>
+                        Type d'embarcation
+                      </option>
+                      <option *ngFor="let t of typesEmbarcation" [value]="t">
+                        {{ labelsTypeEmbarcation[t] }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <ng-container *ngIf="!saisirEmbarcation">
+                  <div class="form-input col s12 m4">
+                    <label
+                      >Choisir immatriculation
+                      <span class="required-field">(*)</span></label
+                    >
+                    <div class="input-field">
+                      <select
+                        #selectBateau
+                        id="select_bateau"
+                        [(ngModel)]="operationForm.bateau_id"
+                        (change)="chargerInfoEmbarcation()"
+                      >
+                        <option value="0" disabled selected>
+                          Choisir immatriculation
+                        </option>
+                        <option
+                          *ngFor="let item of embarcations"
+                          [value]="item.id"
+                        >
+                          {{ item.numero_immatriculation }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="saisirEmbarcation">
+                  <div class="form-input col s12 m4">
+                    <label>Saisir immatriculation</label>
+                    <div class="input-field">
+                      <input
+                        id="navire_immatriculation"
+                        type="text"
+                        [(ngModel)]="operationForm.bateau_immatriculation"
+                        required
+                      />
+                    </div>
+                  </div>
+                </ng-container>
+                <div class="form-input col s12 m4">
+                  <label for="navire_nom"
+                    >Nom du navire ou pirogue
+                    <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <input
+                      id="navire_nom"
+                      type="text"
+                      [(ngModel)]="operationForm.bateau_nom"
+                      [readOnly]="!saisirEmbarcation"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-input col s12 m4">
+                  <label for="navire_proprio"
+                    >Propriétaire <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <input
+                      id="navire_proprio"
+                      type="text"
+                      [(ngModel)]="operationForm.bateau_proprietaire"
+                      [readOnly]="!saisirEmbarcation"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-input col s12 m4">
+                  <label
+                    >Pavillon <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="operationForm.bateau_pavillon"
+                    >
+                      <option [value]="null" disabled selected>Pavillon</option>
+                      <option value="NATIONAL">National</option>
+                      <option value="ETRANGER">Étranger</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col s12 m4" style="margin-top: 2rem">
+                  <a
+                    (click)="btnSaisirInfo()"
+                    class="btn-small blue withe-text"
+                    *ngIf="!saisirEmbarcation"
+                  >
+                    <i class="material-icons">edit</i> Saisir info
+                  </a>
+                  <a
+                    (click)="btnCloseSaisirInfo()"
+                    class="btn-small grey withe-text"
+                    *ngIf="saisirEmbarcation"
+                  >
+                    <i class="material-icons">close</i> Annuler
+                  </a>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-zone">
+              <legend>Localisation & activité</legend>
+
+              <div class="row" style="margin-bottom: 0px">
+                <div class="form-input col s12 m4">
+                  <label for="navire_lat">Latitude</label>
+                  <div class="input-field">
+                    <input
+                      id="navire_lat"
+                      type="text"
+                      [(ngModel)]="operationForm.lat_entree"
+                    />
+                  </div>
+                </div>
+                <div class="form-input col s12 m4">
+                  <label for="navire_lon">Longitude</label>
+                  <div class="input-field">
+                    <input
+                      id="navire_lon"
+                      type="text"
+                      [(ngModel)]="operationForm.lon_entree"
+                    />
+                  </div>
+                </div>
+                <div class="form-input col s12 m4">
+                  <label
+                    >Activité <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="operationForm.activite"
+                    >
+                      <option [value]="null" disabled selected>Activité</option>
+                      <option
+                        *ngFor="let a of activitesEmbarcation"
+                        [value]="a"
+                      >
+                        {{ labelsActiviteEmbarcation[a] }}
+                      </option>
+                      <option value="autre">Autres</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-input col s12 m4">
+                  <label
+                    >Position <span class="required-field">(*)</span></label
+                  >
+                  <div class="input-field">
+                    <select
+                      class="browser-default"
+                      [(ngModel)]="selectedPosition"
+                      (change)="chargerPositions()"
+                    >
+                      <option [value]="null" disabled selected>Position</option>
+                      <option
+                        *ngFor="let p of positionsEmbarcation"
+                        [value]="p"
+                      >
+                        {{ labelsPositionEmbarcation[p] }}
+                      </option>
+                      <option value="autre">Autres</option>
+                    </select>
+                  </div>
+                </div>
+                <ng-container *ngIf="selectedPosition == 'debarcadere'">
+                  <div class="form-input col s12 m4">
+                    <label
+                      >Choisir débarcadère ou port
+                      <span class="required-field">(*)</span></label
+                    >
+                    <div class="input-field">
+                      <select
+                        #selectPort
+                        id="select_port"
+                        [(ngModel)]="operationForm.debarcadere_id"
+                        (change)="selectDebarcadere()"
+                      >
+                        <option [value]="null" disabled selected>
+                          Choisir débarcadère ou port
+                        </option>
+                        <option
+                          *ngFor="let item of debarcaderes"
+                          [value]="item.id"
+                        >
+                          {{ item.site }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-container>
+                  <div class="form-input col s12 m4">
+                    <label>Saisir lieu opération </label>
+                    <div class="input-field">
+                      <input
+                        id="position_nom"
+                        type="text"
+                        [(ngModel)]="operationForm.lieu_operation"
+                        [readonly]="
+                          selectedPosition == 'debarcadere' ||
+                          selectedPosition == null
+                        "
+                      />
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </fieldset>
           </div>
         </div>
       </div>

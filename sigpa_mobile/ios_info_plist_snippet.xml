@@ -1,0 +1,5 @@
+<!-- Merge into ios/Runner/Info.plist inside the top-level <dict> -->
+<key>NSCameraUsageDescription</key>
+<string>Le scan des QR (cartes, licences, agréments) nécessite la caméra.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>La position GPS est enregistrée avec les captures et inspections.</string>

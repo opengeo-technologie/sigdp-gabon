@@ -155,12 +155,32 @@ declare var M: any;
                     >
                   </td>
                   <td>
-                    <a
-                      [routerLink]="['/debarquements', deb.id]"
-                      class="btn-small btn-flat"
-                    >
-                      <i class="material-icons">visibility</i>
-                    </a>
+                    <div class="btn-group">
+                      <a
+                        [routerLink]="['/debarquements', deb.id]"
+                        class="btn btn-small blue"
+                        [class.disabled]="
+                          !hasPermission('debarquements.update')
+                        "
+                      >
+                        <i class="material-icons">edit</i>
+                      </a>
+                      <a
+                        [routerLink]="['/debarquements', deb.id]"
+                        class="btn btn-small"
+                      >
+                        <i class="material-icons">visibility</i>
+                      </a>
+                      <a
+                        [routerLink]="['/debarquements', deb.id]"
+                        class="btn btn-small red"
+                        [class.disabled]="
+                          !hasPermission('debarquements.delete')
+                        "
+                      >
+                        <i class="material-icons">delete</i>
+                      </a>
+                    </div>
                   </td>
                 </tr>
                 <tr *ngIf="debarquements.length === 0">

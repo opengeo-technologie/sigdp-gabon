@@ -136,7 +136,7 @@
     </li>
     <li class="divider"></li>
     <li>
-      <a routerLink="/surveillance" routerLinkActive="active">
+      <a routerLink="/surveillance/tableau-de-bord" routerLinkActive="active">
         <i class="material-icons left">visibility</i>Surveillance de pêche
       </a>
     </li>
@@ -280,9 +280,16 @@
     </div>
 
     <ul class="menu">
+      <li [class.active]="currentRoute === '/surveillance/tableau-de-bord'">
+        <a routerLink="/surveillance/tableau-de-bord">
+          <span class="material-icons">dashboard</span>
+          Tableau de bord
+        </a>
+      </li>
+      <li class="divider"></li>
       <li [class.active]="currentRoute === '/missions'">
         <a routerLink="/missions">
-          <span class="material-icons">dashboard</span>
+          <span class="material-icons">explore</span>
           Missions
         </a>
       </li>

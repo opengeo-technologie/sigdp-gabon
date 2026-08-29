@@ -9,6 +9,8 @@ import {
   Infraction,
   Saisie,
   ApiMessage,
+  DashboardData,
+  PeriodeFiltre,
 } from "../models/operations.model";
 
 /**
@@ -77,5 +79,27 @@ export class OperationsService {
   }
   supprimerSaisie(id: number): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(`${this.base}/saisies/delete`, { id });
+  }
+
+  // SIGPA — Service tableau de bord & rapport de surveillance.
+
+  dashboard(filtre: PeriodeFiltre = {}): Observable<DashboardData> {
+    return this.http.post<DashboardData>(`${this.base}/dashboard`, filtre);
+  }
+
+  /** URL du rapport de surveillance (PDF) — aperçu navigateur. */
+  rapportUrl(filtre: PeriodeFiltre = {}, download = false): string {
+    const p = new URLSearchParams();
+    if (filtre.date_debut) p.set("debut", filtre.date_debut);
+    if (filtre.date_fin) p.set("fin", filtre.date_fin);
+    if (download) p.set("download", "true");
+    const qs = p.toString();
+    return `${this.base}/rapport${qs ? "?" + qs : ""}`;
+  }
+
+  telechargerRapport(filtre: PeriodeFiltre = {}): Observable<Blob> {
+    return this.http.get(this.rapportUrl(filtre, true), {
+      responseType: "blob",
+    });
   }
 }

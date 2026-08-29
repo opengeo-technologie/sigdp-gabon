@@ -1,0 +1,17 @@
+/* online-users.component.css */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.status-dot.online {
+  background: #26a69a;
+  box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.2);
+}
+.status-dot.idle {
+  background: #ffb300;
+  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.2);
+}

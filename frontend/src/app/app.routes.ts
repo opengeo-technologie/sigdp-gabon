@@ -414,6 +414,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: "surveillance/tableau-de-bord",
+    loadComponent: () =>
+      import("./components/surveillance/surveillance-dashboard/surveillance-dashboard.component").then(
+        (m) => m.SurveillanceDashboardComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: "missions",
     loadComponent: () =>
       import("./components/surveillance/missions/missions.component").then(
